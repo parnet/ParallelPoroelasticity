@@ -49,10 +49,13 @@ if num_world_ranks % XARGS.num_spatial_procs == 0 then
     num_temporal_procs = num_world_ranks / XARGS.num_spatial_procs;
     print("Using: " .. num_temporal_procs .. " of " .. num_world_ranks .. " for spatial")
 else
-    xCommunicator:split(1)
+    space_time_communicator:split(1)
     print("Using: " .. 1 .. " of " .. num_world_ranks .. " for spatial") -- todo exit?
 end
 
+repl = ReplaceStandardStream()
+repl:set_space_time_comm(space_time_communicator)
+repl:apply()
 
 -- PARALLEL ]]
 
@@ -186,8 +189,8 @@ print("uorder is " .. uorder)
 InitUG(dim, AlgebraType("CPU", cpu));
 
 -- OUTPUT-ASSISTANT FOR SEVERAL PROCESSES
-GetLogAssistant():enable_file_output(true, "output_p_" .. ProcRank() .. "_Lev" .. numRefs .. ".txt")
-GetLogAssistant():set_debug_level("SchurDebug", 7);
+--GetLogAssistant():enable_file_output(true, "output_p_" .. ProcRank() .. "_Lev" .. numRefs .. ".txt")
+--GetLogAssistant():set_debug_level("SchurDebug", 7);
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Domain / ApproximationSpace setup
@@ -218,7 +221,7 @@ local balancerDesc = {
     }
 } -- balancerDesc
 
-
+repl:apply() -- reapply
 -- Create, Load, Refine and Distribute Domain
 local gridName = problem:get_gridname()
 -- local dom = problem:create_domain(numRefs, numPreRefs)
@@ -485,8 +488,8 @@ gmg:set_transfer(transfer)
 -- debug solver /iter
 --------------------------------
 
-local p0 = 1.0
 
+local p0 = 1.0
 local cmpConvCheck = CompositeConvCheck(approxSpace)
 cmpConvCheck:set_component_check("ux", p0 * 1e-14, 1e-6)
 cmpConvCheck:set_component_check("uy", p0 * 1e-14, 1e-6)
@@ -510,7 +513,7 @@ cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20)
 
 local dbgSolver = LinearSolver()
 dbgSolver:set_preconditioner(gmg) -- cgs, gmg, uzawa
-dbgSolver:set_convergence_check(cmpConvCheck2)
+-- dbgSolver:set_convergence_check(cmpConvCheck2) todo check
 dbgSolver:set_convergence_check(cmpConvCheck)
 
 local dbgIter = DebugIterator()
@@ -519,6 +522,22 @@ dbgIter:set_solver(dbgSolver)
 dbgIter:set_solution(dbgVector)
 dbgIter:set_random_bounds(-5e-6, 5e-6)
 dbgIter:set_debug(dbgWriter)  -- print t_0 anf t_N
+
+
+
+--
+--
+--
+
+local convCheckCoarse = ConvCheck()
+convCheckCoarse:set_maximum_steps(10)
+convCheckCoarse:set_reduction(1e-3)
+convCheckCoarse:set_minimum_defect(1e-14)
+convCheckCoarse:set_supress_unsuccessful(true)
+
+coarseSolver = LinearSolver()
+coarseSolver:set_preconditioner(dbgIter)
+coarseSolver:set_convergence_check(convCheckCoarse)
 
 --------------------------------
 -- create and choose a Solver
@@ -571,6 +590,7 @@ solver["GMG"]:set_convergence_check(convCheck) -- cmpConvCheck
 --solver["LU"]:set_convergence_check(convCheck)
 
 local myIter = gmg
+ARGS.useDebugIter = false
 if (ARGS.useDebugIter) then
     myIter = dbgIter
 end
@@ -657,7 +677,7 @@ braid_desc = {
     mgrit_cycle_type = XARGS.p_cycle,
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
-    print_level = 2,
+    print_level = 3,
     access_level = 1,
 
     sequential = false, -- todo change for parallel
@@ -676,7 +696,7 @@ braid_desc = {
     spatial_coarsen_and_refine = false,
     min_coarsening = 2,
 
-    printfile = "#"..XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .."_".. XARGS.p_num_time .. "_" .. XARGS.p_max_level .."_"..XARGS.p_cycle.."_"..XARGS.p_relaxation .."_"..XARGS.p_level_factor..".mgrit",
+    printfile = "000 "..XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .."_".. XARGS.p_num_time .. "_" .. XARGS.p_max_level .."_"..XARGS.p_cycle.."_"..XARGS.p_relaxation .."_"..XARGS.p_level_factor..".mgrit",
     outputfile = "integrator_out",
     -- output = Scriptor or multiscriptor if table
 
@@ -906,7 +926,7 @@ if (doTransient) then
         elseif XARGS.p_coarse_integrator == "L" then
             integrator_linear = LinearTimeIntegratorFactory()
             integrator_linear:set_time_disc(ThetaTimeStep(domainDiscT))
-            integrator_linear:set_solver(lsolver)
+            integrator_linear:set_solver(coarseSolver) -- lsolver
             coarse_integrator = integrator_linear
             print("XBRAID fine integrator: using linear time integrator")
         elseif XARGS.p_coarse_integrator == "A" then
@@ -1011,23 +1031,26 @@ if (doTransient) then
         --print("starttttt ")
         --space_time_communicator:sleep(100000000)
 
-        repl = ReplaceStandardStream()
-        repl:set_space_time_comm(space_time_communicator)
-        repl:apply()
 
         braid:apply(u_start,endTime, u_start,startTime)
+
+
         time:stop()
         braid:print_settings()
         braid:print_summary()
         logging:release()
-        print(time:get() .. " seconds for parallel time stepping")
+        repl:undo()
+        paratime = time:get()
     end
 end -- doTransient
 
 -- PARALLEL [[
 walltime:stop()
 
-print(walltime:get() .. " seconds wall time")
+if space_time_communicator:get_temporal_rank()  == 0 then
+    print(paratime ..   " seconds for parallel time stepping")
+    print(walltime:get() .. " seconds wall time  (rank=" .. space_time_communicator:get_temporal_rank()..")")
+end
 
 -- PARALLEL ]]
 
