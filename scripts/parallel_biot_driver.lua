@@ -626,13 +626,13 @@ local lsolver = solver[ARGS.solverID]
 -- lsolver = sluSolver
 
 local vtk = VTKOutput()
-vtk:select_nodal("p", "PNodal")
-if (dim == 2) then
-    vtk:select({ "ux", "uy" }, "uNodal")
-end
-if (dim == 3) then
-    vtk:select({ "ux", "uy", "uz" }, "uNodal")
-end
+--vtk:select_nodal("p", "PNodal")
+--if (dim == 2) then
+--    vtk:select({ "ux", "uy" }, "uNodal")
+--end
+--if (dim == 3) then
+--    vtk:select({ "ux", "uy", "uz" }, "uNodal")
+--end
 
 --vtk:select_element( displacementEqDisc:displacement(), "DispElem")
 --vtk:select_element( displacementEqDisc:divergence(), "DivElem")
@@ -927,8 +927,9 @@ if (doTransient) then
             --integrator:prepare(uapprox_tstart)
             print("SeqStep: ", i,"\t\t from ", tstart," to ", tstop ,"  with dt=", dt)
             integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
-            outputval = uapprox_tstop:clone()
-            scriptor:lua_write(outputval,i,tstop,0,0)
+
+            --outputval = uapprox_tstop:clone()
+            -- scriptor:lua_write(outputval,i,tstop,0,0)
 
             outputval = uapprox_tstop:clone()
             vtk_scriptor:lua_write(outputval,i,tstop,0,0)
