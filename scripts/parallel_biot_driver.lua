@@ -24,15 +24,17 @@ ug_load_script("xbraid_util.lua") -- load neccessary XBraid lua interfaces
 -- PARALLEL [[
 XARGS = {
     p_sequential_exec = util.GetParam("--sequential", "X",""),
-    num_spatial_procs = util.GetParamNumber("--np-x", 1, "number of spatial procs (must divide totalproc number)"),  -- numSpatialProcs * numTimeProcs = numGlobalProcs
+
+    num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"),  -- numSpatialProcs * numTimeProcs = numGlobalProcs
     p_coarseningStrategy = util.GetParamNumber("--coarsening-strategy", 1, " see list below for specific coarsening strategies"),
     p_max_iter = util.GetParamNumber("--maxiter", 257, " maximum number of iterations"),
     p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
-	p_level_factor = util.GetParam("--levelfactor", 0.5, "relaxation type FCF, FFCF or F-relaxation"),
-	
+	p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
+	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
+
     p_coarse_integrator = util.GetParam("--coarse", "T", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
 	
@@ -713,7 +715,7 @@ braid_desc = {
 }
 scriptor = BraidBiotCheck()
 scriptor:set_problem(problem)
-scriptor:set_napprox(512)
+scriptor:set_napprox(XARGS.p_napprox)
 
 vtk_scriptor = VTKScriptor(vtk,"method_solution")
 -- PARALLEL ]]
