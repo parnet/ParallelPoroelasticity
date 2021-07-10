@@ -720,6 +720,28 @@ scriptor:set_napprox(XARGS.p_napprox)
 vtk_scriptor = VTKScriptor(vtk,"method_solution")
 -- PARALLEL ]]
 
+local newtonCheck = ConvCheck()
+newtonCheck:set_maximum_steps(10)
+newtonCheck:set_minimum_defect(1e-14)
+newtonCheck:set_reduction(5e-6)
+newtonCheck:set_verbose(true)
+
+local newtonCheck2 = CompositeConvCheck(approxSpace)
+newtonCheck2:set_component_check("ux", p0 * 1e-7, 5e-6)
+newtonCheck2:set_component_check("uy", p0 * 1e-7, 5e-6)
+if (dim == 3) then
+    newtonCheck2:set_component_check("uz", p0 * 1e-7, 5e-6)
+end
+newtonCheck2:set_component_check("p", p0 * 1e-9, 5e-6)
+newtonCheck2:set_maximum_steps(2)
+
+local newtonSolver = NewtonSolver()
+newtonSolver:set_linear_solver(lsolver)
+newtonSolver:set_convergence_check(newtonCheck)
+
+local nlsolver = newtonSolver
+
+print(lsolver:config_string())
 
 
 local coarse_integrator = ThetaIntegratorFactory()
@@ -852,28 +874,7 @@ end
 
 
 if (doTransient) then
-    local newtonCheck = ConvCheck()
-    newtonCheck:set_maximum_steps(10)
-    newtonCheck:set_minimum_defect(1e-14)
-    newtonCheck:set_reduction(5e-6)
-    newtonCheck:set_verbose(true)
 
-    local newtonCheck2 = CompositeConvCheck(approxSpace)
-    newtonCheck2:set_component_check("ux", p0 * 1e-7, 5e-6)
-    newtonCheck2:set_component_check("uy", p0 * 1e-7, 5e-6)
-    if (dim == 3) then
-        newtonCheck2:set_component_check("uz", p0 * 1e-7, 5e-6)
-    end
-    newtonCheck2:set_component_check("p", p0 * 1e-9, 5e-6)
-    newtonCheck2:set_maximum_steps(2)
-
-    local newtonSolver = NewtonSolver()
-    newtonSolver:set_linear_solver(lsolver)
-    newtonSolver:set_convergence_check(newtonCheck)
-
-    local nlsolver = newtonSolver
-
-    print(lsolver:config_string())
 
     print("Interpolation start values")
     problem:interpolate_start_values(u_start, startTime)
