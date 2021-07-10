@@ -858,7 +858,7 @@ elseif XARGS.p_fine_integrator == "A" then
     integrator_adaptive:set_time_stepper_1(ThetaTimeStep(domainDiscT))
     integrator_adaptive:set_time_stepper_2(ThetaTimeStep(domainDiscT))
     integrator_adaptive:set_time_step_min(endTime/131072)
-    integrator_adaptive:set_time_step_max(desc.time.endTime)
+    integrator_adaptive:set_time_step_max(endTime)
     integrator_adaptive:set_tol(1e-3)
     integrator_adaptive:set_level_factor(XARGS.levelfactor)
     fine_integrator = integrator_adaptive
