@@ -945,7 +945,7 @@ if (doTransient) then
         end
         time:stop()
         integration_time = time:get()
-        print(endtime, "finished sequential timestepping with integrator factory")
+        print(integration_time, "finished sequential timestepping with integrator factory")
 
     elseif (ARGS.LimexNStages == 0) then
         print("Solving predefined step sizes (TESTING) ")
