@@ -917,6 +917,13 @@ if (doTransient) then
 
         time = BraidTimer()
         time:start()
+
+        outputval = uapprox_tstop:clone()
+        scriptor:lua_write(outputval,0,tstop,0,0)
+
+        outputval = uapprox_tstop:clone()
+        vtk_scriptor:lua_write(outputval,0,tstop,0,0)
+
         for i = 1 , braid_desc.time.n do
 
             tstart = tstop
@@ -930,8 +937,8 @@ if (doTransient) then
             print("SeqStep: ", i,"\t\t from ", tstart," to ", tstop ,"  with dt=", dt)
             integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
 
-            --outputval = uapprox_tstop:clone()
-            -- scriptor:lua_write(outputval,i,tstop,0,0)
+            outputval = uapprox_tstop:clone()
+            scriptor:lua_write(outputval,i,tstop,0,0)
 
             outputval = uapprox_tstop:clone()
             vtk_scriptor:lua_write(outputval,i,tstop,0,0)
