@@ -23,7 +23,7 @@ ug_load_script("xbraid_util.lua") -- load neccessary XBraid lua interfaces
 
 -- PARALLEL [[
 XARGS = {
-    p_sequential_exec = util.GetParam("--sequential", "X",""),
+    p_sequential_exec = util.GetParam("--sequential", "",""),
 
     num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"),  -- numSpatialProcs * numTimeProcs = numGlobalProcs
     p_coarseningStrategy = util.GetParamNumber("--coarsening-strategy", 1, " see list below for specific coarsening strategies"),
@@ -33,6 +33,7 @@ XARGS = {
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 	p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
+	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 
     p_coarse_integrator = util.GetParam("--coarse", "T", "relaxation type FCF, FFCF or F-relaxation"),
@@ -669,19 +670,19 @@ desc_conv_control = {
 braid_desc = {
     type = "integrator",
     time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time},--math.ceil((endTime-startTime)/dt) },
-    cfactor = {2,2,2,2,2}, -- 0 finest level,
+    cfactor = {XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
     --cfactor = 2,
-    default_cfactor = 2,
+    default_cfactor = XARGS.p_c_factor,
     max_level = XARGS.p_max_level,
 
     integrator = limex, -- todo or table
 
-    coarsening_factor = 2,
+    coarsening_factor = XARGS.p_c_factor, -- todo delete
     mgrit_cycle_type = XARGS.p_cycle,
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 1,
+    access_level = 3,
 
     sequential = false, -- todo change for parallel
 
@@ -713,11 +714,11 @@ braid_desc = {
     richardson_local_order = 2,
 
 }
-scriptor = BraidBiotCheck()
-scriptor:set_problem(problem)
-scriptor:set_napprox(XARGS.p_napprox)
+--scriptor = BraidBiotCheck()
+--scriptor:set_problem(problem)
+--scriptor:set_napprox(XARGS.p_napprox)
 
-vtk_scriptor = VTKScriptor(vtk,"method_solution")
+vtk_scriptor = VTKScriptor(vtk,"access")
 -- PARALLEL ]]
 
 local newtonCheck = ConvCheck()

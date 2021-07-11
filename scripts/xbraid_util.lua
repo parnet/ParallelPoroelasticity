@@ -115,6 +115,7 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     app:set_end_time(desc.time.t_end)
     app:set_number_of_timesteps(desc.time.n)
     app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
+    app:set_vtk_scriptor(scriptor)
     -- app:set_start_vector()
     -- app:set_scriptor()
     app:set_max_levels(desc.max_level)
