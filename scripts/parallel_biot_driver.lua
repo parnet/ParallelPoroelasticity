@@ -969,7 +969,7 @@ if (doTransient) then
             ctime = tstart + i*dt_fine
             print(t_rank, "\t", i,"\t",  ctime)
             outputval = u_start:clone()
-            scriptor:lua_write(outputval,i,time,0,0)
+            scriptor:lua_write(outputval,i,ctime,0,0)
         end
         time:stop()
         integration_time = time:get()
