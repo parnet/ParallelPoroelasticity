@@ -947,7 +947,32 @@ if (doTransient) then
         time:stop()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator factory")
+    elseif (XARGS.p_sequential_exec == "R") then
+        local tstop = braid_desc.time.t_end
+        local tstart = braid_desc.time.t_0
+        offset = 1
+        dt_total = tstop - tstart
+        t_N = braid_desc.time.n
+        dt_fine = dt_total / t_N
 
+        print(space_time_communicator:get_temporal_rank())
+
+        t_rank = space_time_communicator:get_temporal_rank()
+        t_rank_total = space_time_communicator:get_temporal_size()
+        t_proc = t_N / t_rank_total
+
+        proc_offset = offset + t_proc * t_rank
+
+        print(tstart,"\n",tstop,"\n",t_N,"\n\n",offset,"\n",proc_offset,"\n",dt_total,"\n",dt_fine,"\n\n",t_rank,"\n",t_proc,"\n",proc_offset,"\n\n\n")
+        time = BraidTimer()
+        for i = proc_offset, proc_offset+t_proc-1 do
+            ctime = tstart + i*dt_fine
+            print(t_rank, "\t", i,"\t",  ctime)
+            outputval = u_start:clone()
+            scriptor:lua_write(outputval,i,time,0,0)
+        end
+        time:stop()
+        integration_time = time:get()
     elseif (ARGS.LimexNStages == 0) then
         print("Solving predefined step sizes (TESTING) ")
         -- Execute linear solver test suite.
