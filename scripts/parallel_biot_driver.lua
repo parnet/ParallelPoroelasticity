@@ -838,9 +838,9 @@ elseif XARGS.p_fine_integrator == "C" then
     fine_integrator = integrator_const
     print("XBRAID fine integrator: using const step linear")
 elseif XARGS.p_fine_integrator == "S" then
-    time_stepper  =  LinearImplicitEuler(domainDiscT)
+    --time_stepper  =  LinearImplicitEuler(domainDiscT)
     integrator_simple = SimpleIntegratorFactory()
-    integrator_simple:set_time_stepper(time_stepper)
+    --integrator_simple:set_time_stepper(time_stepper)
     integrator_simple:set_domain_disc(domainDiscT)
     integrator_simple:set_solver(nlsolver)
     integrator_simple:set_dt_min(endTime/131072)
