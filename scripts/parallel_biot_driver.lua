@@ -1062,7 +1062,7 @@ if (doTransient) then
         function myLuaLimexPostProcess(step, time, currdt)
             print("Time per step :" .. stepClock:toc()) -- get time for last step
             local usol = luaobserver:get_current_solution()
-            -- problem:post_processing(usol, step, time) -- todo uncommment to use
+            problem:post_processing(usol, step, time) -- todo uncommment to use
             stepClock:tic() -- reset timing
             return 0;
         end
@@ -1098,7 +1098,7 @@ if (doTransient) then
                 logging,
                 fine_integrator,
                 coarse_integrator,
-                vtk_scriptor)
+                vtk_scriptor,domainDiscT)
 
         v = u_start:clone()
 
