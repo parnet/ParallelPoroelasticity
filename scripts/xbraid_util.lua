@@ -103,7 +103,7 @@ function xbraid_util.CreateTimeHierarchy(braid,desc)
     end
 end
 
-function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegrator,cintegrator,scriptor, domain)
+function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegrator,cintegrator,scriptor,domain)
     -- creating app
     app = BraidIntegratorFactory()
     -- set app base values
@@ -115,7 +115,7 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     app:set_end_time(desc.time.t_end)
     app:set_number_of_timesteps(desc.time.n)
     app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
-    app:set_vtk_scriptor(scriptor)
+
     app:set_domain(domain)
     -- app:set_start_vector()
     -- app:set_scriptor()
@@ -123,6 +123,13 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     app:set_fine_time_integrator(fintegrator)
     app:set_coarse_time_integrator(cintegrator)
     app:set_scriptor(scriptor)
+
+    -- app:set_vtk_scriptor(scriptor)
+    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"ustart_before"))
+    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"ustart_after"))
+    app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
+    app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
+
     -- set app specific values
     -- app:set_adapt_convergence()
     -- todo set time integration method

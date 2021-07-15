@@ -682,7 +682,7 @@ braid_desc = {
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 3,
+    access_level = 3,--3,
 
     sequential = false, -- todo change for parallel
 
@@ -789,7 +789,7 @@ elseif XARGS.p_coarse_integrator == "S" then
 elseif XARGS.p_coarse_integrator == "L" then
     integrator_linear = LinearTimeIntegratorFactory()
     integrator_linear:set_time_disc(ThetaTimeStep(domainDiscT))
-    integrator_linear:set_solver(coarseSolver) -- lsolver
+    integrator_linear:set_solver(lsolver) -- lsolver
     coarse_integrator = integrator_linear
     print("XBRAID fine integrator: using linear time integrator")
 elseif XARGS.p_coarse_integrator == "A" then
@@ -1083,6 +1083,7 @@ if (doTransient) then
 
 
 
+
         -- A Adaptive
         -- C Const
         -- D Discontinuity
@@ -1091,15 +1092,21 @@ if (doTransient) then
         -- T Theta
         -- X Limex
 
-
+        vtk_scriptor = VTKScriptor(vtk, "access")
 		
         braid = xbraid_util.CreateBraidIntegrator(braid_desc,
                 space_time_communicator,
                 logging,
                 fine_integrator,
                 coarse_integrator,
-                vtk_scriptor,domainDiscT)
+                vtk_scriptor,
+                domainDiscT)
 
+        script_logging = Paralog() -- todo move to desc
+        script_logging:set_comm(space_time_communicator)
+        script_logging:set_file_name("script")
+        script_logging:init()
+        braid:set_paralog_script(script_logging)
         v = u_start:clone()
 
         sv_init = StartValueInitializer() -- todo move to desc
