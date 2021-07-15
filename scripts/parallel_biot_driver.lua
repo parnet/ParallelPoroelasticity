@@ -753,7 +753,7 @@ if XARGS.p_coarse_integrator == "T" then
     integrator_theta:set_solver(lsolver)
     integrator_theta:set_domain(domainDiscT)
 
-    coarse_integrator = fine_integrator_theta
+    coarse_integrator = integrator_theta
     print("XBRAID fine integrator: using theta time step")
 
 elseif XARGS.p_coarse_integrator == "X" then
