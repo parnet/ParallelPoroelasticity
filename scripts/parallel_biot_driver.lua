@@ -589,9 +589,9 @@ solver["GMG"]:set_convergence_check(convCheck) -- cmpConvCheck
 
 --solver["SuperLU"] = SuperLU() -- SuperLU
 
---solver["LU"] = LinearSolver()
---solver["LU"]:set_preconditioner(LU())
---solver["LU"]:set_convergence_check(convCheck)
+solver["LU"] = LinearSolver()
+solver["LU"]:set_preconditioner(LU())
+solver["LU"]:set_convergence_check(convCheck)
 
 local myIter = gmg
 ARGS.useDebugIter = false
