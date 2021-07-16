@@ -996,6 +996,9 @@ if (doTransient) then
 
     elseif (ARGS.LimexNStages == 1) then
         print("Linear time Stepping")
+        time = BraidTimer()
+        time:start()
+        time:stop()
         -- STANDARD (implicit Euler) time-stepping.
         local bCheckpointing = false
 
@@ -1012,7 +1015,7 @@ if (doTransient) then
 
         --util.SolveNonlinearTimeProblem(u, domainDiscT, nlsolver, myStepCallback0, "PoroElasticityTransient",
         --             "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5);
-
+        integration_time = time:get()
     else
         print("Using Limex for Time Stepping")
         newtonCheck:set_maximum_steps(1)
