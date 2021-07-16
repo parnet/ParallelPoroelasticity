@@ -124,11 +124,13 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     app:set_coarse_time_integrator(cintegrator)
     app:set_scriptor(scriptor)
 
-    -- app:set_vtk_scriptor(scriptor)
-    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"ustart_before"))
-    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"ustart_after"))
-    app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
-    app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
+    --app:set_vtk_scriptor(scriptor)
+    --app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"ustart_before"))
+    --app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"ustart_after"))
+    --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
+    --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
+
+    app:set_vtk_residual(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
     -- app:set_adapt_convergence()
@@ -194,7 +196,7 @@ braid_timestepper_desc = {
     mgrit_relax_type = "FCF",
     store_values = 0,
     print_level = 3,
-    access_level = 3,
+    access_level = 0,
     verbose = true,
 
     temporalNorm = 3, -- {1,2,3}
