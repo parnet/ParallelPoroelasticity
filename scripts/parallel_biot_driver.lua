@@ -975,6 +975,7 @@ if (doTransient) then
         end
         time:stop()
         integration_time = time:get()
+        print("timer " .. integration_time)
     elseif (ARGS.LimexNStages == 0) then
         print("Solving predefined step sizes (TESTING) ")
         -- Execute linear solver test suite.
