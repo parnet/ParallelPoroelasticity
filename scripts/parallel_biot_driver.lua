@@ -996,6 +996,10 @@ if (doTransient) then
 
     elseif (ARGS.LimexNStages == 1) then
         print("Linear time Stepping")
+        function myStepCallback0(u, step, time)
+            -- problem:post_processing(u, step, time)
+            vtk:print("PoroElasticity.vtu", u, step, time)
+        end
         time = BraidTimer()
         time:start()
         time:stop()
