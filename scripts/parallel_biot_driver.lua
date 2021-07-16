@@ -36,7 +36,7 @@ XARGS = {
 	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 
-    p_coarse_integrator = util.GetParam("--coarse", "T", "relaxation type FCF, FFCF or F-relaxation"),
+    p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
 	
     -- p_useResidual = util.GetParamNumber("-useResidual", 0, " 0 use residual, 1 xbraid residual"),
@@ -153,7 +153,7 @@ local charTime = problem:get_char_time()  -- implemented by C++ object
 print("characteristic time is " .. charTime)
 
 startTime = 0.0
-endTime = 4.0 * charTime * math_pi -- todo check 2.0 mul
+endTime = 2.0 * charTime * math_pi -- todo check 2.0 mul
 print("Integrate from " .. startTime .. " to " .. endTime)
 
 local dt = dtFrac * charTime
