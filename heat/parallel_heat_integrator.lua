@@ -973,7 +973,7 @@ if (doTransient) then
         --scriptor:set_problem(problem)
         --scriptor:set_napprox(0)
 
-        vtk_scriptor = VTKScriptor(vtk, "v_output")
+        vtk_scriptor = VTKScriptor(vtk, "output")
         u = ustart:clone()
         t = p_startTime
         i = 0

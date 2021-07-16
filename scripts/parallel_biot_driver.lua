@@ -76,7 +76,7 @@ local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction fact
 
 -- REFINEMENT
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
-local numRefs = util.GetParamNumber("--num-refs", 3, "total number of refinements (incl. pre-Refinements)") --4 --
+local numRefs = util.GetParamNumber("--num-refs", 4, "total number of refinements (incl. pre-Refinements)") --4 --
 
 
 local ARGS = {
@@ -714,9 +714,9 @@ braid_desc = {
     richardson_local_order = 2,
 
 }
---scriptor = BraidBiotCheck()
---scriptor:set_problem(problem)
---scriptor:set_napprox(XARGS.p_napprox)
+scriptor = BraidBiotCheck()
+scriptor:set_problem(problem)
+scriptor:set_napprox(XARGS.p_napprox)
 
 vtk_scriptor = VTKScriptor(vtk,"access")
 -- PARALLEL ]]
@@ -907,6 +907,7 @@ if (doTransient) then
     end
 
     if(XARGS.p_sequential_exec == "X") then
+        vtk_scriptor = VTKScriptor(vtk, "output")
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
 
@@ -997,6 +998,14 @@ if (doTransient) then
         print("Linear time Stepping")
         -- STANDARD (implicit Euler) time-stepping.
         local bCheckpointing = false
+
+        local tstop = braid_desc.time.t_end
+        local tstart = braid_desc.time.t_0
+        dt_total = tstop - tstart
+        t_N = braid_desc.time.n
+        dt = dt_total / t_N
+        dtMin = dt/2
+
         util.SolveLinearTimeProblem(u_start, domainDiscT, lsolver, nil, "PoroElasticityTransient",
                 "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5,
                 bCheckpointing, myStepCallback0);
