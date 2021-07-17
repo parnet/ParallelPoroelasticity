@@ -502,7 +502,7 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * 1e-14, 1e-6)
 cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_supress_unsuccessful(true)
+--cmpConvCheck:set_supress_unsuccessful(true)
 
 local cmpConvCheck2 = CompositeConvCheck(approxSpace)
 cmpConvCheck2:set_component_check("ux", p0 * 1e-12, 1e-6)
@@ -568,8 +568,9 @@ convCheck:set_minimum_defect(1e-14)
 --solver["UzawaSmoother"]:set_convergence_check(convCheck)
 
 solver["GMG"] = LinearSolver()
-solver["GMG"]:set_preconditioner(dbgIter) -- gmg, dbgIter
-solver["GMG"]:set_convergence_check(convCheck) -- cmpConvCheck
+solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
+solver["GMG"]:set_convergence_check(cmpConvCheck) -- cmpConvCheck
+--solver["GMG"]:set_convergence_check(convCheck) -- cmpConvCheck
 --solver["GMGKrylov"] = BiCGStab()
 --solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
 --solver["GMGKrylov"]:set_convergence_check(convCheck) -- cmpConvCheck
