@@ -125,8 +125,8 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     app:set_scriptor(scriptor)
 
     --app:set_vtk_scriptor(scriptor)
-    --app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"ustart_before"))
-    --app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"ustart_after"))
+    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
+    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
     --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
     --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
