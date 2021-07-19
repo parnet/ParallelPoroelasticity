@@ -35,6 +35,7 @@ XARGS = {
 	p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
 	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
+	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
 
     p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
@@ -683,7 +684,7 @@ braid_desc = {
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 3,--3,
+    access_level = 1,--3,
 
     sequential = false, -- todo change for parallel
 
@@ -968,12 +969,13 @@ if (doTransient) then
 
         print(tstart,"\n",tstop,"\n",t_N,"\n\n",offset,"\n",proc_offset,"\n",dt_total,"\n",dt_fine,"\n\n",t_rank,"\n",t_proc,"\n",proc_offset,"\n\n\n")
         time = BraidTimer()
-        for i = proc_offset, proc_offset+t_proc-1 do
+        --for i = proc_offset, proc_offset+t_proc-1 do
+        i=128
             ctime = tstart + i*dt_fine
             print(t_rank, "\t", i,"\t",  ctime)
             outputval = u_start:clone()
             scriptor:lua_write(outputval,i,ctime,0,0)
-        end
+        --end
         time:stop()
         integration_time = time:get()
         print("timer " .. integration_time)
@@ -1111,14 +1113,23 @@ if (doTransient) then
         -- X Limex
 
         vtk_scriptor = VTKScriptor(vtk, "access")
-		
-        braid = xbraid_util.CreateBraidIntegrator(braid_desc,
-                space_time_communicator,
-                logging,
-                fine_integrator,
-                coarse_integrator,
-                vtk_scriptor,
-                domainDiscT)
+
+        if XARGS.p_driver == "IntegratorFactory" then
+            braid = xbraid_util.CreateBraidIntegrator(braid_desc,
+                    space_time_communicator,
+                    logging,
+                    fine_integrator,
+                    coarse_integrator,
+                    vtk_scriptor,
+                    domainDiscT)
+        elseif  XARGS.p_driver == "TimeStepper" then
+            braid = xbraid_util.CreateBraidStepper(braid_desc,
+                    space_time_communicator,
+                    logging,
+                    lsolver,
+                    vtk_scriptor,
+                    domainDiscT)
+        end
 
         script_logging = Paralog() -- todo move to desc
         script_logging:set_comm(space_time_communicator)

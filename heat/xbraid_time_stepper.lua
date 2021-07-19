@@ -164,33 +164,70 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, scriptor
     braid:print_settings()
     app:print_settings()
     print("XBraid Integrator created")
-
-
-
-
-
-
     return braid
 end
 
 
-braid_timestepper_desc = {
-    time = { t_0 = 0, t_end = 1, n = 100 },
-    max_level = 15,
-    integrator = impliciteuler, -- or table
+function xbraid_util.CreateBraidStepper(desc, communicator, logging, scriptor,domainDisc,solver)
+    -- creating app
+    app = BraidTimeStepper()
+    -- set app base values
+    app:set_domain(domainDisc)
+    app:set_solver(solver)
 
-    coarsening_factor = 2,
-    mgrit_cycle_type = "V",
-    mgrit_relax_type = "FCF",
-    store_values = 0,
-    print_level = 3,
-    access_level = 3,
-    verbose = true,
+    app:set_verbose(desc.verbose)
 
-    temporalNorm = 3, -- {1,2,3}
-    conv_check = {
-        iterations = 100,
-        -- reduction = 1e-9
-        absolute = 5e-7
-    }
-}
+    app:set_start_time(desc.time.t_0)
+    app:set_end_time(desc.time.t_end)
+    app:set_number_of_timesteps(desc.time.n)
+    app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
+    -- app:set_start_vector()
+    -- app:set_scriptor()
+    app:set_max_levels(desc.max_level)
+    app:set_scriptor(scriptor)
+    -- set app specific values
+    -- app:set_adapt_convergence()
+    -- todo set time integration method
+
+    -- creating executor
+    braid = BraidExecutor(communicator, app)
+    -- braid:apply()
+    -- braid:test()
+    -- braid:set_app()
+    -- braid:get_app()
+
+    braid:set_residual(desc.use_residual)
+    braid:set_temporal_norm(desc.temporal_norm)
+
+    xbraid_util.set_relax_type(braid,desc.mgrit_relax_type)
+    -- braid:set_n_relax()
+    xbraid_util.set_cycle_type(braid,desc.mgrit_cycle_type)
+    -- braid:set_cycle_fmg()
+    -- braid:set_cycle_nfmg()
+    -- braid:set_cycle_nfmgv()
+    xbraid_util.CreateTimeHierarchy(braid,desc)
+    xbraid_util.SetConvCheck(braid,desc)
+    -- braid:set_max_iterations(desc.conv_check.max_iter)
+    braid:set_access_level(desc.access_level)
+    braid:set_print_level(desc.print_level)
+    braid:set_store_values(desc.store_values)
+    braid:set_skip_downcycle_work(desc.skip_downcycle_work)
+    braid:set_max_levels(desc.max_level) -- todo dublicate?
+    braid:set_min_coarse(desc.min_coarsening)
+    braid:set_sequential(desc.sequential)
+    braid:set_spatial_coarsen_and_refine(desc.spatial_coarsen_and_refine)
+    braid:set_refine(desc.time_refinement)
+    braid:set_max_refinements(desc.max_refinement)
+    braid:set_print_file(desc.printfile)
+    -- braid:set_output()
+    braid:set_filename(desc.outputfile)
+    braid:set_paralog(logging)
+
+    braid:set_richardson_estimation(desc.richardson_estimation,desc.richardson_extrapolation,desc.richardson_local_order)
+
+    app:init()
+    braid:print_settings()
+    app:print_settings()
+    print("XBraid Integrator created")
+    return braid
+end
