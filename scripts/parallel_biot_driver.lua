@@ -969,12 +969,13 @@ if (doTransient) then
 
         print(tstart,"\n",tstop,"\n",t_N,"\n\n",offset,"\n",proc_offset,"\n",dt_total,"\n",dt_fine,"\n\n",t_rank,"\n",t_proc,"\n",proc_offset,"\n\n\n")
         time = BraidTimer()
-        for i = proc_offset, proc_offset+t_proc-1 do
+        -- for i = proc_offset, proc_offset+t_proc-1 do
+        i = 128
             ctime = tstart + i*dt_fine
             print(t_rank, "\t", i,"\t",  ctime)
             outputval = u_start:clone()
             scriptor:lua_write(outputval,i,ctime,0,0)
-        end
+        -- end
         time:stop()
         integration_time = time:get()
         print("timer " .. integration_time)
