@@ -203,13 +203,19 @@ function xbraid_util.CreateBraidStepper(desc, communicator, logging, solver,scri
     --app:set_coarse_time_integrator(cintegrator)
     app:set_scriptor(scriptor)
     app:set_solver(solver)
-    --app:set_vtk_scriptor(scriptor)
-    --app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
-    --app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
-    --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
-    --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
-    app:set_vtk_residual(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    --app:set_vtk_scriptor(scriptor)
+    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
+    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
+    app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
+    app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
+
+    app:set_vtk_resr_before(VTKScriptor(VTKOutput(),"resr_before"))
+    app:set_vtk_resr_after(VTKScriptor(VTKOutput(),"resr_after"))
+    app:set_vtk_resu_before(VTKScriptor(VTKOutput(),"resu_before"))
+    app:set_vtk_resu_after(VTKScriptor(VTKOutput(),"resu_after"))
+
+    app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
     -- app:set_adapt_convergence()

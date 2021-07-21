@@ -684,7 +684,7 @@ braid_desc = {
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 2,--3,
+    access_level = 1,--3,
 
     sequential = false, -- todo change for parallel
 
@@ -705,16 +705,13 @@ braid_desc = {
     printfile = "000 "..XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .."_".. XARGS.p_num_time .. "_" .. XARGS.p_max_level .."_"..XARGS.p_cycle.."_"..XARGS.p_relaxation .."_"..XARGS.p_level_factor..".mgrit",
     outputfile = "integrator_out",
     -- output = Scriptor or multiscriptor if table
-
     -- store_operator
     verbose = true,
     use_residual = false,
 
-
     richardson_estimation = false, --set_richardson_estimation
     richardson_extrapolation = false,
     richardson_local_order = 2,
-
 }
 scriptor = BraidBiotCheck()
 scriptor:set_problem(problem)
