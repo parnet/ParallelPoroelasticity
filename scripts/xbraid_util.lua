@@ -182,7 +182,8 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
 end
 
 
-function xbraid_util.CreateBraidStepper(desc, communicator, logging, solver,scriptor,domain)
+function xbraid_util.CreateBraidStepper(
+        desc, communicator, logging, solver,scriptor,domain, approxspace)
     -- creating app
     app = BraidTimeStepper()
     -- set app base values
@@ -196,6 +197,7 @@ function xbraid_util.CreateBraidStepper(desc, communicator, logging, solver,scri
     app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
 
     app:set_domain(domain)
+    app:set_approx_space(approxspace)
     -- app:set_start_vector()
     -- app:set_scriptor()
     app:set_max_levels(desc.max_level)
@@ -215,6 +217,9 @@ function xbraid_util.CreateBraidStepper(desc, communicator, logging, solver,scri
     app:set_vtk_resu_before(VTKScriptor(VTKOutput(),"resu_before"))
     app:set_vtk_resu_after(VTKScriptor(VTKOutput(),"resu_after"))
 
+    app:set_vtk_rhs(VTKScriptor(VTKOutput(),"rhs"))
+    app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
+
     app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
@@ -230,7 +235,7 @@ function xbraid_util.CreateBraidStepper(desc, communicator, logging, solver,scri
 
 
     -- braid:set_residual(desc.use_residual)
-    braid:set_residual(true)
+    -- braid:set_residual(true)
     braid:set_temporal_norm(desc.temporal_norm)
 
     xbraid_util.set_relax_type(braid,desc.mgrit_relax_type)

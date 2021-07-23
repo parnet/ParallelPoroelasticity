@@ -503,16 +503,30 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * 1e-14, 1e-6)
 cmpConvCheck:set_maximum_steps(100)
+
+
+
+
+local cmpConvCheckC = CompositeConvCheck(approxSpace)
+cmpConvCheckC:set_component_check("ux", p0 * 1e-14, 1e-10)
+cmpConvCheckC:set_component_check("uy", p0 * 1e-14, 1e-10)
+if (dim == 3) then
+    cmpConvCheckC:set_component_check("uz", p0 * 1e-14, 1e-10)
+end
+cmpConvCheckC:set_component_check("p", p0 * 1e-14, 1e-10)
+cmpConvCheckC:set_maximum_steps(100)
+
+
 --cmpConvCheck:set_supress_unsuccessful(true)
 
-local cmpConvCheck2 = CompositeConvCheck(approxSpace)
-cmpConvCheck2:set_component_check("ux", p0 * 1e-12, 1e-6)
-cmpConvCheck2:set_component_check("uy", p0 * 1e-12, 1e-6)
-if (dim == 3) then
-    cmpConvCheck2:set_component_check("uz", p0 * 1e-12, 1e-6)
-end
-cmpConvCheck2:set_component_check("p", p0 * 1e-12, 1e-6)
-cmpConvCheck2:set_maximum_steps(100)
+--local cmpConvCheck2 = CompositeConvCheck(approxSpace)
+--cmpConvCheck2:set_component_check("ux", p0 * 1e-12, 1e-6)
+--cmpConvCheck2:set_component_check("uy", p0 * 1e-12, 1e-6)
+--if (dim == 3) then
+--    cmpConvCheck2:set_component_check("uz", p0 * 1e-12, 1e-6)
+--end
+--cmpConvCheck2:set_component_check("p", p0 * 1e-12, 1e-6)
+--cmpConvCheck2:set_maximum_steps(100)
 
 cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20)
 
@@ -541,8 +555,8 @@ convCheckCoarse:set_minimum_defect(1e-14)
 convCheckCoarse:set_supress_unsuccessful(true)
 
 coarseSolver = LinearSolver()
-coarseSolver:set_preconditioner(dbgIter)
-coarseSolver:set_convergence_check(convCheckCoarse)
+coarseSolver:set_preconditioner(gmg)
+coarseSolver:set_convergence_check(cmpConvCheckC)
 
 --------------------------------
 -- create and choose a Solver
@@ -788,7 +802,7 @@ elseif XARGS.p_coarse_integrator == "S" then
 elseif XARGS.p_coarse_integrator == "L" then
     integrator_linear = LinearTimeIntegratorFactory()
     integrator_linear:set_time_disc(ThetaTimeStep(domainDiscT))
-    integrator_linear:set_solver(lsolver) -- lsolver
+    integrator_linear:set_solver(coarseSolver) -- lsolver
     coarse_integrator = integrator_linear
     print("XBRAID fine integrator: using linear time integrator")
 elseif XARGS.p_coarse_integrator == "A" then
@@ -1125,7 +1139,7 @@ if (doTransient) then
                     logging,
                     lsolver,
                     vtk_scriptor,
-                    domainDiscT)
+                    domainDiscT, approxSpace)
         end
 
         script_logging = Paralog() -- todo move to desc
