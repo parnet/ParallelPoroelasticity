@@ -37,6 +37,12 @@ XARGS = {
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
 
+	pp_cmin = util.GetParamNumber("--cmin", 3, "relaxation type FCF, FFCF or F-relaxation"),
+	pp_cmax = util.GetParamNumber("--cmax", 3, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_fmin = util.GetParamNumber("--fmin", 3, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_fmax = util.GetParamNumber("--fmax", 15, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_iter = util.GetParamNumber("--iter", 7, "relaxation type FCF, FFCF or F-relaxation"),
+
     p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
 	
@@ -1139,7 +1145,12 @@ if (doTransient) then
                     logging,
                     lsolver,
                     vtk_scriptor,
-                    domainDiscT, approxSpace)
+                    domainDiscT, approxSpace,
+                    XARGS.pp_cmin,
+                    XARGS.pp_cmax,
+                    XARGS.pp_fmin,
+                    XARGS.pp_fmax,
+                    XARGS.pp_iter)
         end
 
         script_logging = Paralog() -- todo move to desc

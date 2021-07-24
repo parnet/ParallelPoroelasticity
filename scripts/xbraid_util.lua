@@ -183,12 +183,13 @@ end
 
 
 function xbraid_util.CreateBraidStepper(
-        desc, communicator, logging, solver,scriptor,domain, approxspace)
+        desc, communicator, logging, solver,scriptor,domain, approxspace,cmin,cmax, fmin,fmax, iter)
     -- creating app
     app = BraidTimeStepper()
     -- set app base values
 
-
+    -- cmin, cmax, fmin, fmax, iteration
+    app:set_iteration_param(cmin,cmax, fmin,fmax, iter)
     app:set_verbose(desc.verbose)
 
     app:set_start_time(desc.time.t_0)
