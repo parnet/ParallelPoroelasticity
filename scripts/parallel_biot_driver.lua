@@ -43,6 +43,7 @@ XARGS = {
     pp_fmax = util.GetParamNumber("--fmax", 15, "relaxation type FCF, FFCF or F-relaxation"),
     pp_iter = util.GetParamNumber("--iter", 7, "relaxation type FCF, FFCF or F-relaxation"),
 
+    pp_skip_downcylce = util.GetParam("--skip", "", "relaxation type FCF, FFCF or F-relaxation"),
     p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
 	
@@ -688,6 +689,11 @@ desc_conv_control = {
     force_convergence = false
 }
 
+
+local boolskipdown =true
+if XARGS.pp_skip_downcylce == "NO" then
+    boolskipdown =false
+end
 -- PARALLEL [[
 braid_desc = {
     type = "integrator",
@@ -716,7 +722,7 @@ braid_desc = {
         absolute = 5e-7
     },
 
-    skip_downcycle_work = true,
+    skip_downcycle_work = boolskipdown,
     time_refinement = false,
     max_refinement = 10,
     spatial_coarsen_and_refine = false,
