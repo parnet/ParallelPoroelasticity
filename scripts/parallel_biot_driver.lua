@@ -80,8 +80,6 @@ local dtFrac = util.GetParamNumber("--dtFrac", 1e-5, "time step size")
 local dtMinFrac = util.GetParamNumber("--dtminFrac", 1e-2, "minimal admissible time step size")
 -- local dtMaxFrac = util.GetParamNumber("--dtmaxFrac", 0.1, "minimal admissible time step size (as fraction of tend)")
 local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction factor on divergence")
-
-
 -- REFINEMENT
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
 local numRefs = util.GetParamNumber("--num-refs", 4, "total number of refinements (incl. pre-Refinements)") --4 --
@@ -192,8 +190,8 @@ local dim = 2
 local cpu = 1    -- default: block dim+1
 
 -- Order for Ansatz functions.
-local porder = problem:get_porder() or 1
-local uorder = problem:get_uorder() or (porder + 1)
+local porder = 1 --problem:get_porder() or 1
+local uorder = 1 --problem:get_uorder() or (porder + 1)
 
 print("porder is " .. porder)
 print("uorder is " .. uorder)
