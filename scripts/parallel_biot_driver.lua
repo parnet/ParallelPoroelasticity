@@ -43,6 +43,10 @@ XARGS = {
     pp_fmax = util.GetParamNumber("--fmax", 15, "relaxation type FCF, FFCF or F-relaxation"),
     pp_iter = util.GetParamNumber("--iter", 7, "relaxation type FCF, FFCF or F-relaxation"),
 
+    pp_scaling = util.GetParamNumber("--scaling", 1.0, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_adaptiter = util.GetParamNumber("--adaptiter", 0, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_fulliter = util.GetParamNumber("--fulliter", 0, "relaxation type FCF, FFCF or F-relaxation"),
+
     pp_skip_downcylce = util.GetParam("--skip", "", "relaxation type FCF, FFCF or F-relaxation"),
     p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
@@ -190,8 +194,8 @@ local dim = 2
 local cpu = 1    -- default: block dim+1
 
 -- Order for Ansatz functions.
-local porder = 1 --problem:get_porder() or 1
-local uorder = 1 --problem:get_uorder() or (porder + 1)
+local porder = problem:get_porder() or 1
+local uorder = problem:get_uorder() or (porder + 1)
 
 print("porder is " .. porder)
 print("uorder is " .. uorder)
@@ -1155,6 +1159,16 @@ if (doTransient) then
                     XARGS.pp_fmin,
                     XARGS.pp_fmax,
                     XARGS.pp_iter)
+        elseif  XARGS.p_driver == "ResidualStepper" then
+            braid = xbraid_util.CreateBraidResidualStepper(braid_desc,
+                    space_time_communicator,
+                    logging,
+                    lsolver,
+                    vtk_scriptor,
+                    domainDiscT, approxSpace,
+                    XARGS.pp_scaling,
+                    XARGS.pp_adaptiter,
+                    XARGS.pp_fulliter)
         end
 
         script_logging = Paralog() -- todo move to desc
