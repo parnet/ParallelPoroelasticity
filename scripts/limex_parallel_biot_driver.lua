@@ -63,6 +63,8 @@ local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction fact
 -- REFINEMENT
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
 local numRefs = util.GetParamNumber("--num-refs", 3, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinements (incl. pre-Refinements)") --4 --
 
 
 local ARGS = {
@@ -123,7 +125,7 @@ local problemList = {
 local problem = problemList[ARGS.problemID]
 problem:set_stab(1.0/4.0)
 problem:set_uorder(1)
-problem:set_porder(1)
+problem:set_porder(paraPOrder)
 
 if (not problem) then
     print("ERROR: Problem '" .. ARGS.problemID .. "' not found")

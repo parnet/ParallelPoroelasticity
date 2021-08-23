@@ -37,11 +37,11 @@ XARGS = {
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
 
-	pp_cmin = util.GetParamNumber("--cmin", 3, "relaxation type FCF, FFCF or F-relaxation"),
-	pp_cmax = util.GetParamNumber("--cmax", 3, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_fmin = util.GetParamNumber("--fmin", 3, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_fmax = util.GetParamNumber("--fmax", 15, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_iter = util.GetParamNumber("--iter", 7, "relaxation type FCF, FFCF or F-relaxation"),
+	pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
+	pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_fmax = util.GetParamNumber("--fmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_iter = util.GetParamNumber("--iter", 1, "relaxation type FCF, FFCF or F-relaxation"),
 
     pp_scaling = util.GetParamNumber("--scaling", 1.0, "relaxation type FCF, FFCF or F-relaxation"),
     pp_adaptiter = util.GetParamNumber("--adaptiter", 0, "relaxation type FCF, FFCF or F-relaxation"),
@@ -87,6 +87,9 @@ local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction fact
 -- REFINEMENT
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
 local numRefs = util.GetParamNumber("--num-refs", 4, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraStab = util.GetParamNumber("--stab", 4, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraPOrder = util.GetParamNumber("--porder", 4, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraUOrder = util.GetParamNumber("--uorder", 4, "total number of refinements (incl. pre-Refinements)") --4 --
 
 
 local ARGS = {
@@ -145,6 +148,8 @@ local problemList = {
 }
 
 local problem = problemList[ARGS.problemID]
+problem:set_stab(paraStab)
+problem:set_order(paraUOrder,paraPOrder)
 if (not problem) then
     print("ERROR: Problem '" .. ARGS.problemID .. "' not found")
     quit()
