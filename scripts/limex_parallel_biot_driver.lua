@@ -121,6 +121,10 @@ local problemList = {
 }
 
 local problem = problemList[ARGS.problemID]
+problem:set_stab(1.0/4.0)
+problem:set_uorder(1)
+problem:set_porder(1)
+
 if (not problem) then
     print("ERROR: Problem '" .. ARGS.problemID .. "' not found")
     quit()
