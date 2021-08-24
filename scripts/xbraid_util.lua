@@ -37,9 +37,6 @@ function xbraid_util.set_relax_type(braid, p_mgrit_relax_type)
     end
 end
 
-
-
-
 function coarsening_strategie(numTemporalProcs, initial_time_steps, cfactor_communication, cfactor_innerproc)
 
 end
@@ -80,7 +77,7 @@ braid_integration_desc = {
     }
 }
 
-function xbraid_util.SetConvCheck(braid,desc)
+function xbraid_util.SetConvCheck(braid, desc)
     braid:set_max_iterations(desc.conv_check.max_iter)
     if (desc.conv_check.absolute ~= nil) then
         braid:set_absolute_tol(desc.conv_check.absolute)
@@ -89,33 +86,29 @@ function xbraid_util.SetConvCheck(braid,desc)
     end
 end
 
-function xbraid_util.CreateTimeHierarchy(braid,desc)
+function xbraid_util.CreateTimeHierarchy(braid, desc)
     if desc.default_cfactor ~= nil then
-        braid:set_c_factor(-1,desc.default_cfactor)
+        braid:set_c_factor(-1, desc.default_cfactor)
     end
 
     if type(desc.cfactor) == "table" then
-        for key,value in pairs(desc.cfactor) do
-            braid:set_c_factor(key-1,value)
+        for key, value in pairs(desc.cfactor) do
+            braid:set_c_factor(key - 1, value)
         end
     else
-        braid:set_c_factor(-1,desc.cfactor)
+        braid:set_c_factor(-1, desc.cfactor)
     end
 end
 
-function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegrator,cintegrator,scriptor,domain)
+function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegrator, cintegrator, scriptor, domain)
     -- creating app
     app = BraidIntegratorFactory()
     -- set app base values
-
-
     app:set_verbose(desc.verbose)
-
     app:set_start_time(desc.time.t_0)
     app:set_end_time(desc.time.t_end)
     app:set_number_of_timesteps(desc.time.n)
-    app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
-
+    app:set_time_values(desc.time.t_0, desc.time.t_end, desc.time.n)
     app:set_domain(domain)
     -- app:set_start_vector()
     -- app:set_scriptor()
@@ -125,12 +118,12 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     app:set_scriptor(scriptor)
 
     --app:set_vtk_scriptor(scriptor)
-    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
-    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
+    --app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
+    --app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
     --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
     --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
-    app:set_vtk_residual(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    --app:set_vtk_residual(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
     -- app:set_adapt_convergence()
@@ -146,14 +139,14 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     braid:set_residual(desc.use_residual)
     braid:set_temporal_norm(desc.temporal_norm)
 
-    xbraid_util.set_relax_type(braid,desc.mgrit_relax_type)
+    xbraid_util.set_relax_type(braid, desc.mgrit_relax_type)
     -- braid:set_n_relax()
-    xbraid_util.set_cycle_type(braid,desc.mgrit_cycle_type)
+    xbraid_util.set_cycle_type(braid, desc.mgrit_cycle_type)
     -- braid:set_cycle_fmg()
     -- braid:set_cycle_nfmg()
     -- braid:set_cycle_nfmgv()
-    xbraid_util.CreateTimeHierarchy(braid,desc)
-    xbraid_util.SetConvCheck(braid,desc)
+    xbraid_util.CreateTimeHierarchy(braid, desc)
+    xbraid_util.SetConvCheck(braid, desc)
     -- braid:set_max_iterations(desc.conv_check.max_iter)
     braid:set_access_level(desc.access_level)
     braid:set_print_level(desc.print_level)
@@ -170,32 +163,31 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_estimation,desc.richardson_extrapolation,desc.richardson_local_order)
+    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
     app:print_settings()
     print("XBraid Integrator created")
 
-
     return braid
 end
 
-
 function xbraid_util.CreateBraidStepper(
-        desc, communicator, logging, solver,scriptor,domain, approxspace,cmin,cmax, fmin,fmax, iter)
+        desc, communicator, logging, solver, scriptor, domain, approxspace)
+    --cmin,cmax, fmin,fmax, iter)
     -- creating app
     app = BraidTimeStepper()
     -- set app base values
 
     -- cmin, cmax, fmin, fmax, iteration
-    app:set_iteration_param(cmin,cmax, fmin,fmax, iter)
+    --app:set_iteration_param(cmin,cmax, fmin,fmax, iter)
     app:set_verbose(desc.verbose)
 
     app:set_start_time(desc.time.t_0)
     app:set_end_time(desc.time.t_end)
     app:set_number_of_timesteps(desc.time.n)
-    app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
+    app:set_time_values(desc.time.t_0, desc.time.t_end, desc.time.n)
 
     app:set_domain(domain)
     app:set_approx_space(approxspace)
@@ -208,20 +200,20 @@ function xbraid_util.CreateBraidStepper(
     app:set_solver(solver)
 
     --app:set_vtk_scriptor(scriptor)
-    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
-    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
-    app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
-    app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
+    --app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
+    --app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
+    --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
+    --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
-    app:set_vtk_resr_before(VTKScriptor(VTKOutput(),"resr_before"))
-    app:set_vtk_resr_after(VTKScriptor(VTKOutput(),"resr_after"))
-    app:set_vtk_resu_before(VTKScriptor(VTKOutput(),"resu_before"))
-    app:set_vtk_resu_after(VTKScriptor(VTKOutput(),"resu_after"))
+    --app:set_vtk_resr_before(VTKScriptor(VTKOutput(),"resr_before"))
+    --app:set_vtk_resr_after(VTKScriptor(VTKOutput(),"resr_after"))
+    --app:set_vtk_resu_before(VTKScriptor(VTKOutput(),"resu_before"))
+    --app:set_vtk_resu_after(VTKScriptor(VTKOutput(),"resu_after"))
 
-    app:set_vtk_rhs(VTKScriptor(VTKOutput(),"rhs"))
-    app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
+    --app:set_vtk_rhs(VTKScriptor(VTKOutput(),"rhs"))
+    --app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
 
-    app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    --app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
     -- app:set_adapt_convergence()
@@ -239,14 +231,14 @@ function xbraid_util.CreateBraidStepper(
     -- braid:set_residual(true)
     braid:set_temporal_norm(desc.temporal_norm)
 
-    xbraid_util.set_relax_type(braid,desc.mgrit_relax_type)
+    xbraid_util.set_relax_type(braid, desc.mgrit_relax_type)
     -- braid:set_n_relax()
-    xbraid_util.set_cycle_type(braid,desc.mgrit_cycle_type)
+    xbraid_util.set_cycle_type(braid, desc.mgrit_cycle_type)
     -- braid:set_cycle_fmg()
     -- braid:set_cycle_nfmg()
     -- braid:set_cycle_nfmgv()
-    xbraid_util.CreateTimeHierarchy(braid,desc)
-    xbraid_util.SetConvCheck(braid,desc)
+    xbraid_util.CreateTimeHierarchy(braid, desc)
+    xbraid_util.SetConvCheck(braid, desc)
     -- braid:set_max_iterations(desc.conv_check.max_iter)
     braid:set_access_level(desc.access_level)
     braid:set_print_level(desc.print_level)
@@ -263,31 +255,31 @@ function xbraid_util.CreateBraidStepper(
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_estimation,desc.richardson_extrapolation,desc.richardson_local_order)
+    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
     app:print_settings()
     print("XBraid Integrator created")
 
-
     return braid
 end
 
 function xbraid_util.CreateBraidResidualStepper(
-        desc, communicator, logging, solver,scriptor,domain, approxspace,scaling, adapt, full)
+        desc, communicator, logging, solver, scriptor, domain, approxspace)
+    --,scaling, adapt, full)
     -- creating app
     app = BraidResidualStepper()
     -- set app base values
 
     -- cmin, cmax, fmin, fmax, iteration
-    app:set_scaling(scaling,adapt,full)
+    --app:set_scaling(scaling,adapt,full)
     app:set_verbose(desc.verbose)
 
     app:set_start_time(desc.time.t_0)
     app:set_end_time(desc.time.t_end)
     app:set_number_of_timesteps(desc.time.n)
-    app:set_time_values(desc.time.t_0,desc.time.t_end,desc.time.n)
+    app:set_time_values(desc.time.t_0, desc.time.t_end, desc.time.n)
 
     app:set_domain(domain)
     app:set_approx_space(approxspace)
@@ -300,20 +292,20 @@ function xbraid_util.CreateBraidResidualStepper(
     app:set_solver(solver)
 
     --app:set_vtk_scriptor(scriptor)
-    app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
-    app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
-    app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
-    app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
+    --app:set_vtk_ustart_before(VTKScriptor(VTKOutput(),"u_step_before"))
+    --app:set_vtk_ustart_after(VTKScriptor(VTKOutput(),"u_step_after"))
+    --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
+    --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
-    app:set_vtk_resr_before(VTKScriptor(VTKOutput(),"resr_before"))
-    app:set_vtk_resr_after(VTKScriptor(VTKOutput(),"resr_after"))
-    app:set_vtk_resu_before(VTKScriptor(VTKOutput(),"resu_before"))
-    app:set_vtk_resu_after(VTKScriptor(VTKOutput(),"resu_after"))
+    --app:set_vtk_resr_before(VTKScriptor(VTKOutput(),"resr_before"))
+    --app:set_vtk_resr_after(VTKScriptor(VTKOutput(),"resr_after"))
+    --app:set_vtk_resu_before(VTKScriptor(VTKOutput(),"resu_before"))
+    --app:set_vtk_resu_after(VTKScriptor(VTKOutput(),"resu_after"))
 
-    app:set_vtk_rhs(VTKScriptor(VTKOutput(),"rhs"))
-    app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
+    --app:set_vtk_rhs(VTKScriptor(VTKOutput(),"rhs"))
+    --app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
 
-    app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    --app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
     -- app:set_adapt_convergence()
@@ -331,14 +323,14 @@ function xbraid_util.CreateBraidResidualStepper(
     -- braid:set_residual(true)
     braid:set_temporal_norm(desc.temporal_norm)
 
-    xbraid_util.set_relax_type(braid,desc.mgrit_relax_type)
+    xbraid_util.set_relax_type(braid, desc.mgrit_relax_type)
     -- braid:set_n_relax()
-    xbraid_util.set_cycle_type(braid,desc.mgrit_cycle_type)
+    xbraid_util.set_cycle_type(braid, desc.mgrit_cycle_type)
     -- braid:set_cycle_fmg()
     -- braid:set_cycle_nfmg()
     -- braid:set_cycle_nfmgv()
-    xbraid_util.CreateTimeHierarchy(braid,desc)
-    xbraid_util.SetConvCheck(braid,desc)
+    xbraid_util.CreateTimeHierarchy(braid, desc)
+    xbraid_util.SetConvCheck(braid, desc)
     -- braid:set_max_iterations(desc.conv_check.max_iter)
     braid:set_access_level(desc.access_level)
     braid:set_print_level(desc.print_level)
@@ -355,13 +347,12 @@ function xbraid_util.CreateBraidResidualStepper(
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_estimation,desc.richardson_extrapolation,desc.richardson_local_order)
+    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
     app:print_settings()
     print("XBraid Integrator created")
-
 
     return braid
 end

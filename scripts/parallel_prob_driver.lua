@@ -20,6 +20,8 @@ ug_load_script("plugins/Limex/limex_util.lua")
 -- load lua scripts - local
 ug_load_script("xbraid_util.lua") -- load neccessary XBraid lua interfaces
 
+ug_load_script("generic.lua")
+ug_load_script("cryer.lua")
 
 -- PARALLEL [[
 XARGS = {
@@ -32,13 +34,13 @@ XARGS = {
     p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
-	p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
-	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
-	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
-	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
+    p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
+    p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
+    p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
 
-	pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
-	pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
     pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
     pp_fmax = util.GetParamNumber("--fmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
     pp_iter = util.GetParamNumber("--iter", 1, "relaxation type FCF, FFCF or F-relaxation"),
@@ -50,7 +52,7 @@ XARGS = {
     pp_skip_downcylce = util.GetParam("--skip", "", "relaxation type FCF, FFCF or F-relaxation"),
     p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
-	
+
     -- p_useResidual = util.GetParamNumber("-useResidual", 0, " 0 use residual, 1 xbraid residual"),
     -- p_adaptiveSolver = util.GetParamNumber("-adaptiveSolver", 0, " use a tight and a loose tol for solving"),
     -- p_solver = util.GetParamNumber("-solver", 0, "see list below; 0 for GMG(V,1,1,jac(0.66))[reduction], 1 for GMG(V,1,1, ilu)[absolute]"),
@@ -121,48 +123,32 @@ print("MGDebugLevel=" .. ARGS.MGDebugLevel)
 GetLogAssistant():set_debug_level("LIB_DISC_MULTIGRID", ARGS.MGDebugLevel);
 --SetDebugLevel("LIB_DISC_MULTIGRID", 0)
 -- Set parameters
---local kperm = 1e-0 -- m/s 1e-3
---local poro = 0.2
---local nu = 0.25
---local EYoung = 2.0 * 1e+2                  -- kPa 2.0 * 1e+4
---local Kmedium = EYoung / (3.0 * (1.0 - 2.0 * nu))
---local Kfluid = 2.2 * 1e+6                  -- kPa -- 2.2 * 1e+6 --
---print("Kmedium = " .. Kmedium)
---print("Kfluid  = " .. Kfluid)
+local kperm = 1e-0 -- m/s 1e-3
+local poro = 0.2
+local nu = 0.25
+local EYoung = 2.0 * 1e+2                  -- kPa 2.0 * 1e+4
+local Kmedium = EYoung / (3.0 * (1.0 - 2.0 * nu))
+local Kfluid = 2.2 * 1e+6                  -- kPa -- 2.2 * 1e+6 --
+print("Kmedium = " .. Kmedium)
+print("Kfluid  = " .. Kfluid)
 
---deleeuw2d--deleeuw2d -- cryer3d --cryer2d -- mandel3d --, mandel--, cryer3d
-local problemList = {
-    -- legacy style
-    --    ["deleeuw2d"] = deleeuw2d,
-    --    ["deleeuw3d"] = deleeuw3d,
-    --    ["deleeuw3dTet"] = deleeuw3dTet,
-    --    ["cryer3d"] = cryer3d,
-    --    ["cryer3dTet"] = cryer3dTet,
-    --    ["footing2D"] = footing2D,
-    --    ["footing2D_tri"] = footing2D_tri,
-    --    ["footing3D"] = footing3D,
 
-    --    ["bm2D_tri"] = barrymercer2D_tri,
-    -- new style
-    ["bm2D_new"] = BarryMercerProblem2dCPU1("ux,uy", "p"),
-}
-
-local problem = problemList[ARGS.problemID]
-problem:set_stab(paraStab)
-problem:set_order(paraUOrder,paraPOrder)
+local problem = deleeuw2d
+--problem:set_stab(paraStab)
+-- problem:set_order(paraUOrder,paraPOrder)
 if (not problem) then
     print("ERROR: Problem '" .. ARGS.problemID .. "' not found")
     quit()
 end
 
---if (problem.parse_cmd_args) then
---  problem:parse_cmd_args()
---end
+if (problem.parse_cmd_args) then
+  problem:parse_cmd_args()
+end
 
---problem:init(kperm, poro, nu, 1.0/Kmedium, 1.0/Kfluid, 0.0)
---if(problem.init) then
---  problem:init(kperm, poro, nu, 1.0/Kmedium, 0.0, 0.0)
---end
+problem:init(kperm, poro, nu, 1.0/Kmedium, 1.0/Kfluid, 0.0)
+if(problem.init) then
+  problem:init(kperm, poro, nu, 1.0/Kmedium, 0.0, 0.0)
+end
 
 local charTime = problem:get_char_time()  -- implemented by C++ object
 print("characteristic time is " .. charTime)
@@ -242,7 +228,7 @@ local balancerDesc = {
 repl:undo()
 repl:apply() -- reapply
 -- Create, Load, Refine and Distribute Domain
-local gridName = problem:get_gridname()
+local gridName = problem.gridName
 -- local dom = problem:create_domain(numRefs, numPreRefs)
 local mandatorySubsets = nil
 local dom = util.CreateDomain(gridName, 0, mandatorySubsets)
@@ -746,9 +732,9 @@ braid_desc = {
     richardson_extrapolation = false,
     richardson_local_order = 2,
 }
-scriptor = BraidBiotCheck()
-scriptor:set_problem(problem)
-scriptor:set_napprox(XARGS.p_napprox)
+--scriptor = BraidBiotCheck()
+--scriptor:set_problem(problem)
+--scriptor:set_napprox(XARGS.p_napprox)
 
 vtk_scriptor = VTKScriptor(vtk,"access")
 -- PARALLEL ]]
@@ -1001,10 +987,10 @@ if (doTransient) then
         time = BraidTimer()
         -- for i = proc_offset, proc_offset+t_proc-1 do
         i = 128
-            ctime = tstart + i*dt_fine
-            print(t_rank, "\t", i,"\t",  ctime)
-            outputval = u_start:clone()
-            scriptor:lua_write(outputval,i,ctime,0,0)
+        ctime = tstart + i*dt_fine
+        print(t_rank, "\t", i,"\t",  ctime)
+        outputval = u_start:clone()
+        scriptor:lua_write(outputval,i,ctime,0,0)
         -- end
         time:stop()
         integration_time = time:get()
@@ -1176,8 +1162,6 @@ if (doTransient) then
             --XARGS.pp_adaptiter,
             --XARGS.pp_fulliter
             )
-        else
-            print("integrator type not supported " .. XARGS.p_driver)
         end
 
         script_logging = Paralog() -- todo move to desc
