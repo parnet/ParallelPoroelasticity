@@ -60,7 +60,7 @@ braid_integration_desc = {
     mgrit_relax_type = "FCF",
     store_values = 0,
     print_level = 3,
-    access_level = 3,
+    access_level = 1,
     verbose = true,
 
     richardson_estimation = true, --set_richardson_estimation
