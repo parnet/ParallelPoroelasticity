@@ -88,8 +88,8 @@ local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction fact
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
 local numRefs = util.GetParamNumber("--num-refs", 4, "total number of refinements (incl. pre-Refinements)") --4 --
 local paraStab = util.GetParamNumber("--stab", 4, "total number of refinements (incl. pre-Refinements)") --4 --
-local paraPOrder = util.GetParamNumber("--porder", 4, "total number of refinements (incl. pre-Refinements)") --4 --
-local paraUOrder = util.GetParamNumber("--uorder", 4, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraPOrder = util.GetParamNumber("--porder", 2, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraUOrder = util.GetParamNumber("--uorder", 1, "total number of refinements (incl. pre-Refinements)") --4 --
 
 
 local ARGS = {
@@ -717,7 +717,7 @@ braid_desc = {
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 3,
+    access_level = 1,
 
     sequential = false, -- todo change for parallel
 
