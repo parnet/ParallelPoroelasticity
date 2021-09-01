@@ -36,7 +36,7 @@ XARGS = {
 	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
-
+    p_theta = util.GetParam("--theta", "theta", "relaxation type FCF, FFCF or F-relaxation"),
 	pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
 	pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
     pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
@@ -784,7 +784,7 @@ if XARGS.p_coarse_integrator == "T" then
     integrator_theta = ThetaIntegratorFactory()
     integrator_theta:set_solver(lsolver)
     integrator_theta:set_domain(domainDiscT)
-
+    integrator_theta:set_theta(XARGS.p_theta)
     coarse_integrator = integrator_theta
     print("XBRAID fine integrator: using theta time step")
 
@@ -846,7 +846,7 @@ if XARGS.p_fine_integrator == "T" then
     integrator_theta = ThetaIntegratorFactory()
     integrator_theta:set_solver(lsolver)
     integrator_theta:set_domain(domainDiscT)
-
+    integrator_theta:set_theta(XARGS.p_theta)
     fine_integrator = integrator_theta
     print("XBRAID fine integrator: using theta time step")
 
