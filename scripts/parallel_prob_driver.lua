@@ -38,6 +38,7 @@ XARGS = {
     p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
     p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
     p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
+    p_nu = util.GetParamNumber("--nu", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
 
     pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
     pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
@@ -125,7 +126,7 @@ GetLogAssistant():set_debug_level("LIB_DISC_MULTIGRID", ARGS.MGDebugLevel);
 -- Set parameters
 local kperm = 1e-0 -- m/s 1e-3
 local poro = 0.2
-local nu = 0.25
+local nu = XARGS.p_nu
 local EYoung = 2.0 * 1e+2                  -- kPa 2.0 * 1e+4
 local Kmedium = EYoung / (3.0 * (1.0 - 2.0 * nu))
 local Kfluid = 2.2 * 1e+6                  -- kPa -- 2.2 * 1e+6 --
