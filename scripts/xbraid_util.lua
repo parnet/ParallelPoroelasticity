@@ -228,7 +228,7 @@ function xbraid_util.CreateBraidStepper(
 
 
     -- braid:set_residual(desc.use_residual)
-    -- braid:set_residual(true)
+    braid:set_residual(true)
     braid:set_temporal_norm(desc.temporal_norm)
 
     xbraid_util.set_relax_type(braid, desc.mgrit_relax_type)
