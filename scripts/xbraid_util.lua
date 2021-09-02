@@ -124,7 +124,7 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
     --app:set_vtk_residual(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
-
+    app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
     -- set app specific values
     -- app:set_adapt_convergence()
     -- todo set time integration method
