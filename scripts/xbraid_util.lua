@@ -123,8 +123,8 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     --app:set_vtk_uend_before(VTKScriptor(VTKOutput(),"uend_before"))
     --app:set_vtk_uend_after(VTKScriptor(VTKOutput(),"uend_after"))
 
-    --app:set_vtk_residual(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
-    app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    app:set_vtk_residuum(VTKScriptor(VTKOutput(),"cresiduum_p" .. communicator:get_temporal_rank()))
+    app:set_vtk_norm(VTKScriptor(VTKOutput(),"norm_p" .. communicator:get_temporal_rank()))
     -- set app specific values
     -- app:set_adapt_convergence()
     -- todo set time integration method
@@ -213,7 +213,8 @@ function xbraid_util.CreateBraidStepper(
     --app:set_vtk_rhs(VTKScriptor(VTKOutput(),"rhs"))
     --app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
 
-    app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    app:set_vtk_residuum(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    app:set_vtk_norm(VTKScriptor(VTKOutput(),"norm_p" .. communicator:get_temporal_rank()))
     app:set_vtk_fstop(VTKScriptor(VTKOutput(),"fstop_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values

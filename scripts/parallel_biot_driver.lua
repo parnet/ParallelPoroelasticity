@@ -760,12 +760,12 @@ newtonCheck:set_reduction(5e-6)
 newtonCheck:set_verbose(true)
 
 local newtonCheck2 = CompositeConvCheck(approxSpace)
-newtonCheck2:set_component_check("ux", p0 * 1e-7, 5e-6)
-newtonCheck2:set_component_check("uy", p0 * 1e-7, 5e-6)
+newtonCheck2:set_component_check("ux", p0 * 1e-7, 5e-8)
+newtonCheck2:set_component_check("uy", p0 * 1e-7, 5e-8)
 if (dim == 3) then
-    newtonCheck2:set_component_check("uz", p0 * 1e-7, 5e-6)
+    newtonCheck2:set_component_check("uz", p0 * 1e-7, 5e-8)
 end
-newtonCheck2:set_component_check("p", p0 * 1e-9, 5e-6)
+newtonCheck2:set_component_check("p", p0 * 1e-9, 5e-8)
 newtonCheck2:set_maximum_steps(2)
 
 local newtonSolver = NewtonSolver()
