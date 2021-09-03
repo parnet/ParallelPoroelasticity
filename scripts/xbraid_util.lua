@@ -214,6 +214,7 @@ function xbraid_util.CreateBraidStepper(
     --app:set_vtk_rhs_res(VTKScriptor(VTKOutput(),"rhs_res"))
 
     app:set_vtk_norm(VTKScriptor(VTKOutput(),"residuum_p" .. communicator:get_temporal_rank()))
+    app:set_vtk_fstop(VTKScriptor(VTKOutput(),"fstop_p" .. communicator:get_temporal_rank()))
 
     -- set app specific values
     -- app:set_adapt_convergence()
