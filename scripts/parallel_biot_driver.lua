@@ -740,7 +740,7 @@ braid_desc = {
     -- output = Scriptor or multiscriptor if table
     -- store_operator
     verbose = true,
-    use_residual = true,
+    use_residual = false,
 
     richardson_estimation = false, --set_richardson_estimation
     richardson_extrapolation = false,
@@ -777,135 +777,11 @@ local nlsolver = newtonSolver
 print(lsolver:config_string())
 
 
-local coarse_integrator = ThetaIntegratorFactory()
-local fine_integrator = ThetaIntegratorFactory()
+fine_integrator = xbraid_util.create_integrator(XARGS.p_fine_integrator,
+        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime)
 
-if XARGS.p_coarse_integrator == "T" then
-    integrator_theta = ThetaIntegratorFactory()
-    integrator_theta:set_solver(lsolver)
-    integrator_theta:set_domain(domainDiscT)
-    integrator_theta:set_level_theta(1,XARGS.p_theta)
-    integrator_theta:set_level_theta(2,XARGS.p_theta)
-    integrator_theta:set_level_theta(3,XARGS.p_theta)
-    coarse_integrator = integrator_theta
-    print("XBRAID fine integrator: using theta time step")
-
-elseif XARGS.p_coarse_integrator == "X" then
-    integrator_limex = LimexFactory()
-    integrator_limex:set_domain_disc(domainDiscT)
-    integrator_limex:set_solver(nlsolver)
-    integrator_limex:set_error_estimator(biotErrorEst)
-    integrator_limex:set_tol(1e-3)
-    integrator_limex:set_dt_min(1e-20)
-
-    coarse_integrator = integrator_limex
-    print("XBRAID fine integrator: using limex ")
-
-elseif XARGS.p_coarse_integrator == "C" then
-    integrator_const = ConstStepLinearTimeIntegratorFactory()
-    integrator_const:set_num_steps(2)
-    integrator_const:set_time_disc(ThetaTimeStep(domainDiscT))
-    integrator_const:set_solver(lsolver)
-
-    coarse_integrator = integrator_const
-    print("XBRAID fine integrator: using const step linear")
-elseif XARGS.p_coarse_integrator == "S" then
-    time_stepper  =  LinearImplicitEuler(domainDiscT)
-    integrator_simple = SimpleIntegratorFactory()
-    integrator_simple:set_time_stepper(time_stepper)
-    integrator_simple:set_domain_disc(domainDiscT)
-    integrator_simple:set_solver(nlsolver)
-    integrator_simple:set_dt_min(endTime/131072)
-    integrator_simple:set_dt_max(endTime)
-    integrator_simple:set_reduction_factor(0.2)
-    coarse_integrator = integrator_simple
-    print("XBRAID fine integrator: using simple integrator")
-elseif XARGS.p_coarse_integrator == "L" then
-    integrator_linear = LinearTimeIntegratorFactory()
-    integrator_linear:set_time_disc(ThetaTimeStep(domainDiscT))
-    integrator_linear:set_solver(coarseSolver) -- lsolver
-    coarse_integrator = integrator_linear
-    print("XBRAID fine integrator: using linear time integrator")
-elseif XARGS.p_coarse_integrator == "A" then
-    integrator_adaptive = TimeIntegratorLinearAdaptiveFactory()
-    integrator_adaptive:set_time_stepper_1(ThetaTimeStep(domainDiscT))
-    integrator_adaptive:set_time_stepper_2(ThetaTimeStep(domainDiscT))
-    integrator_adaptive:set_time_step_min(endTime/131072)
-    integrator_adaptive:set_time_step_max(endTime)
-    integrator_adaptive:set_tol(1e-3)
-    integrator_adaptive:set_level_factor(XARGS.p_level_factor)
-
-    coarse_integrator = integrator_adaptive
-elseif XARGS.p_coarse_integrator == "D" then
-    print("XBRAID coarse integrator: Discontinuity not implemented yet.")
-    exit()
-else
-    print("XBRAID coarse integrator: ERROR T or C or L (future or D)")
-    exit()
-end
-
-if XARGS.p_fine_integrator == "T" then
-    integrator_theta = ThetaIntegratorFactory()
-    integrator_theta:set_solver(lsolver)
-    integrator_theta:set_domain(domainDiscT)
-    integrator_theta:set_level_theta(0,1)
-    fine_integrator = integrator_theta
-    print("XBRAID fine integrator: using theta time step")
-
-elseif XARGS.p_fine_integrator == "X" then
-    integrator_limex = LimexFactory()
-    integrator_limex:set_domain_disc(domainDiscT)
-    integrator_limex:set_solver(nlsolver)
-    integrator_limex:set_error_estimator(biotErrorEst)
-    integrator_limex:set_tol(1e-3)
-    integrator_limex:set_dt_min(1e-20)
-
-    fine_integrator = integrator_limex
-    print("XBRAID fine integrator: using limex ")
-
-elseif XARGS.p_fine_integrator == "C" then
-    integrator_const = ConstStepLinearTimeIntegratorFactory()
-    integrator_const:set_num_steps(1)
-    integrator_const:set_time_disc(ThetaTimeStep(domainDiscT))
-    integrator_const:set_solver(lsolver)
-
-    fine_integrator = integrator_const
-    print("XBRAID fine integrator: using const step linear")
-elseif XARGS.p_fine_integrator == "S" then
-    --time_stepper  =  LinearImplicitEuler(domainDiscT)
-    integrator_simple = SimpleIntegratorFactory()
-    --integrator_simple:set_time_stepper(time_stepper)
-    integrator_simple:set_domain_disc(domainDiscT)
-    integrator_simple:set_solver(nlsolver)
-    integrator_simple:set_dt_min(endTime/131072)
-    integrator_simple:set_dt_max(endTime)
-    integrator_simple:set_reduction_factor(0.2)
-    fine_integrator = integrator_simple
-    print("XBRAID fine integrator: using simple integrator")
-elseif XARGS.p_fine_integrator == "L" then
-    integrator_linear = LinearTimeIntegratorFactory()
-    integrator_linear:set_time_disc(ThetaTimeStep(domainDiscT))
-    integrator_linear:set_solver(lsolver)
-    fine_integrator = integrator_linear
-    print("XBRAID fine integrator: using linear time integrator")
-elseif XARGS.p_fine_integrator == "A" then
-    integrator_adaptive = TimeIntegratorLinearAdaptiveFactory()
-    integrator_adaptive:set_time_stepper_1(ThetaTimeStep(domainDiscT))
-    integrator_adaptive:set_time_stepper_2(ThetaTimeStep(domainDiscT))
-    integrator_adaptive:set_time_step_min(endTime/131072)
-    integrator_adaptive:set_time_step_max(endTime)
-    integrator_adaptive:set_tol(1e-3)
-    integrator_adaptive:set_level_factor(XARGS.p_level_factor)
-    fine_integrator = integrator_adaptive
-elseif XARGS.p_fine_integrator == "D" then
-    print("XBRAID coarse integrator: Discontinuity not implemented yet.")
-    exit()
-else
-    print("XBRAID coarse integrator: ERROR T or C or L (future or D)")
-    exit()
-end
-
-
+coarse_integrator = xbraid_util.create_integrator(XARGS.p_coarse_integrator,
+        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime)
 
 
 if (doTransient) then

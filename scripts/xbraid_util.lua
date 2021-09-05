@@ -19,6 +19,85 @@ function xbraid_util.set_cycle_type(braid, p_mgrit_cycle_type)
     end
 end
 
+
+function xbraid_util.create_integrator(name, domainDiscT, lsolver, nlsolver, biotErrorEst,endTime)
+    if name == "T" then
+        integrator_theta = ThetaIntegratorFactory()
+        integrator_theta:set_domain(domainDiscT)
+        integrator_theta:set_solver(lsolver)
+        integrator_theta:set_level_theta(0,1)
+        integrator = integrator_theta
+        print("XBRAID fine integrator: using theta time step")
+    elseif name == "B" then
+        integrator_bdf = BDF_IntegratorFactory()
+        integrator_bdf:set_domain(domainDiscT)
+        integrator_bdf:set_solver(lsolver)
+        integrator_bdf:set_level_order(10,4)
+        integrator_bdf:set_level_order(9,4)
+        integrator_bdf:set_level_order(8,4)
+        integrator_bdf:set_level_order(7,4)
+        integrator_bdf:set_level_order(6,4)
+        integrator_bdf:set_level_order(5,4)
+        integrator_bdf:set_level_order(4,4)
+        integrator_bdf:set_level_order(3,4)
+        integrator_bdf:set_level_order(2,4)
+        integrator_bdf:set_level_order(1,4)
+        integrator_bdf:set_level_order(0,4)
+        integrator = integrator_bdf
+        print("XBRAID fine integrator: using theta time step")
+    elseif name == "X" then
+        integrator_limex = LimexFactory()
+        integrator_limex:set_domain_disc(domainDiscT)
+        integrator_limex:set_solver(nlsolver)
+        integrator_limex:set_error_estimator(biotErrorEst)
+        integrator_limex:set_tol(1e-3)
+        integrator_limex:set_dt_min(1e-20)
+        integrator = integrator_limex
+        print("XBRAID fine integrator: using limex ")
+    elseif name == "C" then
+        integrator_const = ConstStepLinearTimeIntegratorFactory()
+        integrator_const:set_time_disc(ThetaTimeStep(domainDiscT))
+        integrator_const:set_num_steps(1)
+        integrator_const:set_solver(lsolver)
+        integrator = integrator_const
+        print("XBRAID fine integrator: using const step linear")
+    elseif name == "S" then
+        --time_stepper  =  LinearImplicitEuler(domainDiscT)
+        integrator_simple = SimpleIntegratorFactory()
+        --integrator_simple:set_time_stepper(time_stepper)
+        integrator_simple:set_domain_disc(domainDiscT)
+        integrator_simple:set_solver(nlsolver)
+        integrator_simple:set_dt_min(endTime/131072)
+        integrator_simple:set_dt_max(endTime)
+        integrator_simple:set_reduction_factor(0.2)
+        integrator = integrator_simple
+        print("XBRAID fine integrator: using simple integrator")
+    elseif name == "L" then
+        integrator_linear = LinearTimeIntegratorFactory()
+        integrator_linear:set_time_disc(ThetaTimeStep(domainDiscT))
+        integrator_linear:set_solver(lsolver)
+        integrator = integrator_linear
+        print("XBRAID fine integrator: using linear time integrator")
+    elseif name == "A" then
+        integrator_adaptive = TimeIntegratorLinearAdaptiveFactory()
+        integrator_adaptive:set_time_stepper_1(ThetaTimeStep(domainDiscT))
+        integrator_adaptive:set_time_stepper_2(ThetaTimeStep(domainDiscT))
+        integrator_adaptive:set_time_step_min(endTime/131072)
+        integrator_adaptive:set_time_step_max(endTime)
+        integrator_adaptive:set_tol(1e-3)
+        integrator_adaptive:set_level_factor(1)
+        integrator = integrator_adaptive
+    elseif name == "D" then
+        print("XBRAID coarse integrator: Discontinuity not implemented yet.")
+        exit()
+    else
+        print("XBRAID coarse integrator: ERROR T or C or L (future or D)")
+        exit()
+    end
+    return integrator
+end
+
+
 function xbraid_util.set_relax_type(braid, p_mgrit_relax_type)
     if p_mgrit_relax_type == "F" then
         braid:set_n_relax(-1, 0)
@@ -257,7 +336,7 @@ function xbraid_util.CreateBraidStepper(
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
+    braid:set_richardson_estimation(desc.richardson_efstimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
