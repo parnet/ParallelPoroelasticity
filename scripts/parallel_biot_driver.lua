@@ -1069,9 +1069,10 @@ if (doTransient) then
         sv_init:set_start_vector(u_start)
         braid:set_initializer(sv_init)
 
-        bio_norm = BiotBraidSpatialNorm()
-        bio_norm:set_order(4,2)
-        bio_norm:set_parameter(1.0, 142857,35714.3)
+        --bio_norm = BiotBraidSpatialNorm()
+        --bio_norm:set_order(4,2)
+        --bio_norm:set_parameter(1.0, 142857,35714.3)
+        bio_norm = BraidEuclidianNorm()
         braid:set_norm_provider(bio_norm)
 
         time = BraidTimer()
