@@ -510,12 +510,12 @@ gmg:set_transfer(transfer)
 
 local p0 = 1.0
 local cmpConvCheck = CompositeConvCheck(approxSpace)
-cmpConvCheck:set_component_check("ux", p0 * 1e-14, 1e-6)
-cmpConvCheck:set_component_check("uy", p0 * 1e-14, 1e-6)
+cmpConvCheck:set_component_check("ux", p0 * 1e-14, 1e-10)
+cmpConvCheck:set_component_check("uy", p0 * 1e-14, 1e-10)
 if (dim == 3) then
-    cmpConvCheck:set_component_check("uz", p0 * 1e-14, 1e-6)
+    cmpConvCheck:set_component_check("uz", p0 * 1e-14, 1e-10)
 end
-cmpConvCheck:set_component_check("p", p0 * 1e-14, 1e-6)
+cmpConvCheck:set_component_check("p", p0 * 1e-14, 1e-10)
 cmpConvCheck:set_maximum_steps(100)
 
 
