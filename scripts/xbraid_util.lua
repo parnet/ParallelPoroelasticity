@@ -242,7 +242,7 @@ function xbraid_util.CreateBraidIntegrator(desc, communicator, logging, fintegra
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
+    --braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
@@ -336,7 +336,7 @@ function xbraid_util.CreateBraidStepper(
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_efstimation, desc.richardson_extrapolation, desc.richardson_local_order)
+    -- braid:set_richardson_estimation(desc.richardson_efstimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
@@ -428,7 +428,7 @@ function xbraid_util.CreateBraidResidualStepper(
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
 
-    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
+    -- braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
