@@ -20,29 +20,29 @@ function xbraid_util.set_cycle_type(braid, p_mgrit_cycle_type)
 end
 
 
-function xbraid_util.create_integrator(name, domainDiscT, lsolver, nlsolver, biotErrorEst,endTime)
+function xbraid_util.create_integrator(name, domainDiscT, lsolver, nlsolver, biotErrorEst,endTime, orderOrTheta)
     if name == "T" then
         integrator_theta = ThetaIntegratorFactory()
         integrator_theta:set_domain(domainDiscT)
         integrator_theta:set_solver(lsolver)
-        integrator_theta:set_level_theta(0,1)
+        integrator_theta:set_level_theta(0,orderOrTheta)
         integrator = integrator_theta
         print("XBRAID fine integrator: using theta time step")
     elseif name == "B" then
         integrator_bdf = BDF_IntegratorFactory()
         integrator_bdf:set_domain(domainDiscT)
         integrator_bdf:set_solver(lsolver)
-        integrator_bdf:set_level_order(10,4)
-        integrator_bdf:set_level_order(9,4)
-        integrator_bdf:set_level_order(8,4)
-        integrator_bdf:set_level_order(7,4)
-        integrator_bdf:set_level_order(6,4)
-        integrator_bdf:set_level_order(5,4)
-        integrator_bdf:set_level_order(4,4)
-        integrator_bdf:set_level_order(3,4)
-        integrator_bdf:set_level_order(2,4)
-        integrator_bdf:set_level_order(1,4)
-        integrator_bdf:set_level_order(0,4)
+        integrator_bdf:set_level_order(10,orderOrTheta)
+        integrator_bdf:set_level_order(9,orderOrTheta)
+        integrator_bdf:set_level_order(8,orderOrTheta)
+        integrator_bdf:set_level_order(7,orderOrTheta)
+        integrator_bdf:set_level_order(6,orderOrTheta)
+        integrator_bdf:set_level_order(5,orderOrTheta)
+        integrator_bdf:set_level_order(4,orderOrTheta)
+        integrator_bdf:set_level_order(3,orderOrTheta)
+        integrator_bdf:set_level_order(2,orderOrTheta)
+        integrator_bdf:set_level_order(1,orderOrTheta)
+        integrator_bdf:set_level_order(0,orderOrTheta)
         integrator = integrator_bdf
         print("XBRAID fine integrator: using theta time step")
     elseif name == "X" then
@@ -85,7 +85,7 @@ function xbraid_util.create_integrator(name, domainDiscT, lsolver, nlsolver, bio
         integrator_adaptive:set_time_step_min(endTime/131072)
         integrator_adaptive:set_time_step_max(endTime)
         integrator_adaptive:set_tol(1e-3)
-        integrator_adaptive:set_level_factor(1)
+        integrator_adaptive:set_level_factor(orderOrTheta)
         integrator = integrator_adaptive
     elseif name == "D" then
         print("XBRAID coarse integrator: Discontinuity not implemented yet.")

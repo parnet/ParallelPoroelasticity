@@ -36,7 +36,7 @@ XARGS = {
 	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
-    p_theta = util.GetParamNumber("--theta", "theta", "relaxation type FCF, FFCF or F-relaxation"),
+    orderOrTheta = util.GetParamNumber("--orderOrTheta", "theta", "relaxation type FCF, FFCF or F-relaxation"),
 	pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
 	pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
     pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
@@ -778,10 +778,10 @@ print(lsolver:config_string())
 
 
 fine_integrator = xbraid_util.create_integrator(XARGS.p_fine_integrator,
-        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime)
+        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime,XARGS.orderOrTheta)
 
 coarse_integrator = xbraid_util.create_integrator(XARGS.p_coarse_integrator,
-        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime)
+        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime, XARGS.orderOrTheta)
 
 
 if (doTransient) then
