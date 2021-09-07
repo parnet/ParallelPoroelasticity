@@ -705,7 +705,7 @@ end
 braid_desc = {
     type = "integrator",
     time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time},--math.ceil((endTime-startTime)/dt) },
-    cfactor = {XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
+    cfactor = {XARGS.p_c_factor,XARGS.p_c_factor,XARGS.p_c_factor,XARGS.p_c_factor},--{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
     --cfactor = 2,
     default_cfactor = XARGS.p_c_factor,
     max_level = XARGS.p_max_level,
