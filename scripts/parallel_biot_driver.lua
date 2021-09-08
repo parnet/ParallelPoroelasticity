@@ -23,22 +23,22 @@ ug_load_script("xbraid_util.lua") -- load neccessary XBraid lua interfaces
 
 -- PARALLEL [[
 XARGS = {
-    p_sequential_exec = util.GetParam("--sequential", "",""),
+    p_sequential_exec = util.GetParam("--sequential", "", ""),
 
-    num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"),  -- numSpatialProcs * numTimeProcs = numGlobalProcs
+    num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"), -- numSpatialProcs * numTimeProcs = numGlobalProcs
     p_coarseningStrategy = util.GetParamNumber("--coarsening-strategy", 1, " see list below for specific coarsening strategies"),
     p_max_iter = util.GetParamNumber("--maxiter", 257, " maximum number of iterations"),
     p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
-	p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
-	p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
-	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
-	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
+    p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
+    p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
+    p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
     orderOrTheta = util.GetParamNumber("--orderOrTheta", 1, "relaxation type FCF, FFCF or F-relaxation"),
-	--pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
-	--pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    --pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    --pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
     --pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
     --pp_fmax = util.GetParamNumber("--fmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
     --pp_iter = util.GetParamNumber("--iter", 1, "relaxation type FCF, FFCF or F-relaxation"),
@@ -50,7 +50,7 @@ XARGS = {
     pp_skip_downcylce = util.GetParam("--skip", "", "relaxation type FCF, FFCF or F-relaxation"),
     p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
     p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
-	
+
     -- p_useResidual = util.GetParamNumber("-useResidual", 0, " 0 use residual, 1 xbraid residual"),
     -- p_adaptiveSolver = util.GetParamNumber("-adaptiveSolver", 0, " use a tight and a loose tol for solving"),
     -- p_solver = util.GetParamNumber("-solver", 0, "see list below; 0 for GMG(V,1,1,jac(0.66))[reduction], 1 for GMG(V,1,1, ilu)[absolute]"),
@@ -149,7 +149,7 @@ local problemList = {
 
 local problem = problemList[ARGS.problemID]
 problem:set_stab(paraStab)
-problem:set_order(paraUOrder,paraPOrder)
+problem:set_order(paraUOrder, paraPOrder)
 if (not problem) then
     print("ERROR: Problem '" .. ARGS.problemID .. "' not found")
     quit()
@@ -519,8 +519,6 @@ cmpConvCheck:set_component_check("p", p0 * 1e-22, 1e-16)
 cmpConvCheck:set_maximum_steps(100)
 cmpConvCheck:set_verbose(false)
 
-
-
 local cmpConvCheckC = CompositeConvCheck(approxSpace)
 cmpConvCheckC:set_component_check("ux", p0 * 1e-14, 1e-10)
 cmpConvCheckC:set_component_check("uy", p0 * 1e-14, 1e-10)
@@ -542,7 +540,7 @@ cmpConvCheckC:set_verbose(false)
 --cmpConvCheck2:set_component_check("p", p0 * 1e-12, 1e-6)
 --cmpConvCheck2:set_maximum_steps(100)
 
-cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20,false)
+cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20, false)
 
 local dbgSolver = LinearSolver()
 dbgSolver:set_preconditioner(gmg) -- cgs, gmg, uzawa
@@ -689,16 +687,29 @@ desc_conv_control = {
     force_convergence = false
 }
 
-
-local boolskipdown =true
+local boolskipdown = true
 if XARGS.pp_skip_downcylce == "NO" then
-    boolskipdown =false
+    boolskipdown = false
+end
+
+if XARGS.p_c_factor == 75001 then
+    cfactor = { 2, 2, 2, 2, 2 }
+elseif XARGS.p_c_factor == 75002 then
+    cfactor = { 4, 2, 2, 2, 2 }
+elseif XARGS.p_c_factor == 75003 then
+    cfactor = { 4, 2, 2, 2, 2 }
+elseif XARGS.p_c_factor == 75004 then
+    cfactor = { 8, 2, 2, 2, 2 }
+elseif XARGS.p_c_factor == 75004 then
+    cfactor = { 16, 2, 2, 2, 2 }
+elseif XARGS.p_c_factor == 75005 then
+    cfactor = { 32, 2, 2, 2, 2 }
 end
 -- PARALLEL [[
 braid_desc = {
     type = "integrator",
-    time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time},--math.ceil((endTime-startTime)/dt) },
-    cfactor = {XARGS.p_c_factor,XARGS.p_c_factor,XARGS.p_c_factor,XARGS.p_c_factor},--{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
+    time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time }, --math.ceil((endTime-startTime)/dt) },
+    cfactor = cfactor, --{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
     --cfactor = 2,
     default_cfactor = XARGS.p_c_factor,
     max_level = XARGS.p_max_level,
@@ -714,7 +725,6 @@ braid_desc = {
 
     sequential = false, -- todo change for parallel
 
-
     temporal_norm = 3, -- {1,2,3}
     conv_check = {
         max_iter = XARGS.p_max_iter,
@@ -728,7 +738,7 @@ braid_desc = {
     spatial_coarsen_and_refine = false,
     min_coarsening = 2,
 
-    printfile = "000 "..XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .."_".. XARGS.p_num_time .. "_" .. XARGS.p_max_level .."_"..XARGS.p_cycle.."_"..XARGS.p_relaxation .."_"..XARGS.p_level_factor..".mgrit",
+    printfile = "000 " .. XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .. "_" .. XARGS.p_num_time .. "_" .. XARGS.p_max_level .. "_" .. XARGS.p_cycle .. "_" .. XARGS.p_relaxation .. "_" .. XARGS.p_level_factor .. ".mgrit",
     outputfile = "integrator_out",
     -- output = Scriptor or multiscriptor if table
     -- store_operator
@@ -743,7 +753,7 @@ scriptor = BraidBiotCheck()
 scriptor:set_problem(problem)
 scriptor:set_napprox(XARGS.p_napprox)
 
-vtk_scriptor = VTKScriptor(vtk,"access")
+vtk_scriptor = VTKScriptor(vtk, "access")
 -- PARALLEL ]]
 
 local newtonCheck = ConvCheck()
@@ -794,7 +804,7 @@ if (doTransient) then
 
     local charTime = problem:get_char_time()
     dt = 1e-2 * charTime
-    dtMin = 1e-2 * 1e-2*charTime
+    dtMin = 1e-2 * 1e-2 * charTime
 
     --
     local myclock = CuckooClock()
@@ -807,7 +817,7 @@ if (doTransient) then
         print("initial value calculation done. \n\n\n\n\n")
     end
 
-    if(XARGS.p_sequential_exec == "X") then
+    if (XARGS.p_sequential_exec == "X") then
         vtk_scriptor = VTKScriptor(vtk, "output")
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
@@ -816,7 +826,7 @@ if (doTransient) then
         uapprox_tstop = u_start:clone()
         local tstop = braid_desc.time.t_0
         local tstart = braid_desc.time.t_0
-        print("X\t\t", tstart," \t ", tstop ," \t ", dt)
+        print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
         integrator_factory = fine_integrator
 
         time = BraidTimer()
@@ -826,26 +836,26 @@ if (doTransient) then
         --scriptor:lua_write(outputval,0,tstop,0,0)
 
         outputval = uapprox_tstop:clone()
-        vtk_scriptor:lua_write(outputval,0,tstop,0,0)
+        vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
-        for i = 1 , braid_desc.time.n do
+        for i = 1, braid_desc.time.n do
 
             tstart = tstop
             tstop = tstop + dt
             uapprox_tstart = uapprox_tstop:clone()
             uapprox_tstop = uapprox_tstart:clone()
 
-            integrator = integrator_factory:create_level_time_integrator(dt, false,0)
+            integrator = integrator_factory:create_level_time_integrator(dt, false, 0)
             integrator:init(uapprox_tstart)
             --integrator:prepare(uapprox_tstart)
-            print("SeqStep: ", i,"\t\t from ", tstart," to ", tstop ,"  with dt=", dt)
+            print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
             integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
 
             --outputval = uapprox_tstop:clone()
             --scriptor:lua_write(outputval,i,tstop,0,0)
 
             outputval = uapprox_tstop:clone()
-            vtk_scriptor:lua_write(outputval,i,tstop,0,0)
+            vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
         end
         time:stop()
         integration_time = time:get()
@@ -866,14 +876,14 @@ if (doTransient) then
 
         proc_offset = offset + t_proc * t_rank
 
-        print(tstart,"\n",tstop,"\n",t_N,"\n\n",offset,"\n",proc_offset,"\n",dt_total,"\n",dt_fine,"\n\n",t_rank,"\n",t_proc,"\n",proc_offset,"\n\n\n")
+        print(tstart, "\n", tstop, "\n", t_N, "\n\n", offset, "\n", proc_offset, "\n", dt_total, "\n", dt_fine, "\n\n", t_rank, "\n", t_proc, "\n", proc_offset, "\n\n\n")
         time = BraidTimer()
         -- for i = proc_offset, proc_offset+t_proc-1 do
         i = 128
-            ctime = tstart + i*dt_fine
-            print(t_rank, "\t", i,"\t",  ctime)
-            outputval = u_start:clone()
-            scriptor:lua_write(outputval,i,ctime,0,0)
+        ctime = tstart + i * dt_fine
+        print(t_rank, "\t", i, "\t", ctime)
+        outputval = u_start:clone()
+        scriptor:lua_write(outputval, i, ctime, 0, 0)
         -- end
         time:stop()
         integration_time = time:get()
@@ -914,7 +924,7 @@ if (doTransient) then
         dt_total = tstop - tstart
         t_N = braid_desc.time.n
         dt = dt_total / t_N
-        dtMin = dt/2
+        dtMin = dt / 2
 
         util.SolveLinearTimeProblem(u_start, domainDiscT, lsolver, nil, "PoroElasticityTransient",
                 "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5,
@@ -940,10 +950,6 @@ if (doTransient) then
             dtmin = dtMin,
             dtmax = dtMax,
         }
-
-
-
-
 
         ARGS.useVTK = true -- todo adapt
         if (ARGS.useVTK) then
@@ -981,48 +987,7 @@ if (doTransient) then
                     vtk_scriptor,
                     fine_integrator,
                     coarse_integrator
-                    )
-
-            braid = xbraid_util.CreateExecutor(braid_desc,
-                    space_time_communicator,
-                    app,
-                    logging
-                    )
-
-        elseif  XARGS.p_driver == "Integrator" then
-            print("Create Integrator")
-            app = xbraid_util.CreateIntegrator(braid_desc,
-                    domainDiscT,
-                    vtk_scriptor
-                )
-            print("Set Integrator Methods - Default")
-            app:set_default_integrator(xbraid_util.creadFSTheta(domainDiscT,
-                lsolver, 1, 1,1e-8))
-            print("Set Integrator Methods - Leveldependend")
-            app:set_integrator(0,xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1,1e-8))
-
-            app:set_integrator(1,xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1,1e-8))
-
-            app:set_integrator(2,xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1,1e-8))
-
-            app:set_integrator(3,xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1,1e-8))
-            print("Create Braid Object")
-            braid = xbraid_util.CreateExecutor(braid_desc,
-                    space_time_communicator,
-                    app,
-                    logging
-                )
-            print("Finished")
-        elseif  XARGS.p_driver == "TimeStepper" then
-            app = xbraid_util.CreateBraidStepper(braid_desc,
-                    domainDiscT,
-                    vtk_scriptor,
-                    lsolver
-                )
+            )
 
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,
@@ -1030,7 +995,48 @@ if (doTransient) then
                     logging
             )
 
-        elseif  XARGS.p_driver == "ResidualStepper" then
+        elseif XARGS.p_driver == "Integrator" then
+            print("Create Integrator")
+            app = xbraid_util.CreateIntegrator(braid_desc,
+                    domainDiscT,
+                    vtk_scriptor
+            )
+            print("Set Integrator Methods - Default")
+            app:set_default_integrator(xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+            print("Set Integrator Methods - Leveldependend")
+            app:set_integrator(0, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(1, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(2, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(3, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+            print("Create Braid Object")
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+            )
+            print("Finished")
+        elseif XARGS.p_driver == "TimeStepper" then
+            app = xbraid_util.CreateBraidStepper(braid_desc,
+                    domainDiscT,
+                    vtk_scriptor,
+                    lsolver
+            )
+
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+            )
+
+        elseif XARGS.p_driver == "ResidualStepper" then
             app = xbraid_util.CreateBraidResidualStepper(braid_desc,
                     domainDiscT,
                     vtk_scriptor,
@@ -1060,7 +1066,7 @@ if (doTransient) then
         --bio_norm = BiotBraidSpatialNorm()
         --bio_norm:set_order(4,2)
         --bio_norm:set_parameter(1.0, 142857,35714.3)
-        bio_norm = BraidEuclidianNorm()
+        bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
         braid:set_norm_provider(bio_norm)
 
         time = BraidTimer()
@@ -1069,8 +1075,7 @@ if (doTransient) then
         --space_time_communicator:sleep(100000000)
 
 
-        braid:apply(u_start,endTime, u_start,startTime)
-
+        braid:apply(u_start, endTime, u_start, startTime)
 
         time:stop()
         braid:print_settings()
@@ -1084,9 +1089,9 @@ repl:undo()
 -- PARALLEL [[
 walltime:stop()
 
-if space_time_communicator:get_temporal_rank()  == 0 then
-    print(integration_time ..   " seconds for time integration")
-    print(walltime:get() .. " seconds wall time  (rank=" .. space_time_communicator:get_temporal_rank()..")")
+if space_time_communicator:get_temporal_rank() == 0 then
+    print(integration_time .. " seconds for time integration")
+    print(walltime:get() .. " seconds wall time  (rank=" .. space_time_communicator:get_temporal_rank() .. ")")
 end
 
 -- PARALLEL ]]
