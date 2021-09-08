@@ -746,7 +746,7 @@ braid_desc = {
     type = "integrator",
     time = { t_0 = p_startTime, t_end = p_endTime, n = 4096 }, --math.ceil((endTime-startTime)/dt) },
     cfactor = { 4096, 2, 2, 2, 2 }, -- 0 finest level,
-    --cfactor = 2,
+    cfactor = 2,
     default_cfactor = 2,
     max_level = 2, --XARGS.p_max_level,
 

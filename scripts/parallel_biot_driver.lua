@@ -691,7 +691,7 @@ local boolskipdown = true
 if XARGS.pp_skip_downcylce == "NO" then
     boolskipdown = false
 end
-
+local cfactor = { 2, 2, 2, 2, 2 }
 if XARGS.p_c_factor == 75001 then
     cfactor = { 2, 2, 2, 2, 2 }
 elseif XARGS.p_c_factor == 75002 then
