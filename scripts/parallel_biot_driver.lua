@@ -1016,6 +1016,28 @@ if (doTransient) then
 
             app:set_integrator(3, xbraid_util.creadFSTheta(domainDiscT,
                     lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(4, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(5, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(6, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(7, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(8, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(9, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
+            app:set_integrator(10, xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 2, 1e-8))
+
             print("Create Braid Object")
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,
