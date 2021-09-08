@@ -37,11 +37,11 @@ XARGS = {
 	p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 	p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
     orderOrTheta = util.GetParamNumber("--orderOrTheta", 1, "relaxation type FCF, FFCF or F-relaxation"),
-	pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
-	pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_fmax = util.GetParamNumber("--fmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_iter = util.GetParamNumber("--iter", 1, "relaxation type FCF, FFCF or F-relaxation"),
+	--pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
+	--pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    --pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    --pp_fmax = util.GetParamNumber("--fmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
+    --pp_iter = util.GetParamNumber("--iter", 1, "relaxation type FCF, FFCF or F-relaxation"),
 
     pp_scaling = util.GetParamNumber("--scaling", 1.0, "relaxation type FCF, FFCF or F-relaxation"),
     pp_adaptiter = util.GetParamNumber("--adaptiter", 0, "relaxation type FCF, FFCF or F-relaxation"),
@@ -88,8 +88,8 @@ local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction fact
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
 local numRefs = util.GetParamNumber("--num-refs", 4, "total number of refinements (incl. pre-Refinements)") --4 --
 local paraStab = util.GetParamNumber("--stab", 4, "total number of refinements (incl. pre-Refinements)") --4 --
-local paraPOrder = util.GetParamNumber("--porder", 2, "total number of refinements (incl. pre-Refinements)") --4 --
-local paraUOrder = util.GetParamNumber("--uorder", 1, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinements (incl. pre-Refinements)") --4 --
+local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinements (incl. pre-Refinements)") --4 --
 
 
 local ARGS = {
@@ -517,7 +517,7 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * 1e-22, 1e-16)
 cmpConvCheck:set_maximum_steps(100)
-
+cmpConvCheck:set_verbose(false)
 
 
 
@@ -529,7 +529,7 @@ if (dim == 3) then
 end
 cmpConvCheckC:set_component_check("p", p0 * 1e-14, 1e-10)
 cmpConvCheckC:set_maximum_steps(100)
-
+cmpConvCheckC:set_verbose(false)
 
 --cmpConvCheck:set_supress_unsuccessful(true)
 
@@ -542,7 +542,7 @@ cmpConvCheckC:set_maximum_steps(100)
 --cmpConvCheck2:set_component_check("p", p0 * 1e-12, 1e-6)
 --cmpConvCheck2:set_maximum_steps(100)
 
-cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20)
+cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20,false)
 
 local dbgSolver = LinearSolver()
 dbgSolver:set_preconditioner(gmg) -- cgs, gmg, uzawa
@@ -558,15 +558,7 @@ dbgIter:set_debug(dbgWriter)  -- print t_0 anf t_N
 
 
 
---
---
---
 
-local convCheckCoarse = ConvCheck()
-convCheckCoarse:set_maximum_steps(3)
-convCheckCoarse:set_reduction(1e-3)
-convCheckCoarse:set_minimum_defect(1e-14)
-convCheckCoarse:set_supress_unsuccessful(true)
 
 coarseSolver = LinearSolver()
 coarseSolver:set_preconditioner(gmg)
@@ -582,6 +574,7 @@ local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-8)
 convCheck:set_minimum_defect(1e-14)
+convCheck:set_verbose(false)
 -- convCheck = cmpConvCheck  -- for DEBUGGING purposes
 
 --local iluSolver = LinearSolver()
@@ -773,15 +766,14 @@ newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
 
 local nlsolver = newtonSolver
-
 print(lsolver:config_string())
 
 
-fine_integrator = xbraid_util.create_integrator(XARGS.p_fine_integrator,
-        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime,XARGS.orderOrTheta)
-
-coarse_integrator = xbraid_util.create_integrator(XARGS.p_coarse_integrator,
-        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime, XARGS.orderOrTheta)
+--fine_integrator = xbraid_util.create_integrator(XARGS.p_fine_integrator,
+--        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime,XARGS.orderOrTheta)
+--creadFSTheta
+--coarse_integrator = xbraid_util.create_integrator(XARGS.p_coarse_integrator,
+--        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime, XARGS.orderOrTheta)
 
 
 if (doTransient) then
@@ -813,7 +805,6 @@ if (doTransient) then
         print("Computing consistent initial value w/ dt0=" .. dt0)
         util.SolveNonlinearTimeProblem(u_start, domainDisc0, nlsolver, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
         print("initial value calculation done. \n\n\n\n\n")
-
     end
 
     if(XARGS.p_sequential_exec == "X") then
@@ -951,30 +942,6 @@ if (doTransient) then
         }
 
 
-        -- Call factory.
-        --local limex = util.limex.CreateIntegrator(limexDesc)
-        --limex:add_error_estimator(biotErrorEst)
-        -- limex:set_tolerance(0.001)
-        -- limex:set_time_step(dt)
-        -- limex:set_dt_min(dtMin)
-        -- limex:set_dt_max(dtMax)
-        --limex:set_stepsize_safety_factor(0.25)
-        --limex:set_increase_factor(2)
-        --limex:set_stepsize_greedy_order_factor(0.0)
-        --limex:disable_matrix_cache()        -- This problem is linear
-
-
-
-
-        --coarse_integrator = SimpleIntegratorFactory()
-        --coarse_integrator:set_time_stepper(time_stepper)
-        --coarse_integrator:set_domain_disc(domainDiscT)
-        --coarse_integrator:set_solver(nlsolver)
-        --coarse_integrator:set_dt_min(endTime/131072)
-        --coarse_integrator:set_dt_max(endTime)
-        --coarse_integrator:set_reduction_factor(0.0)
-
-
 
 
 
@@ -1007,52 +974,73 @@ if (doTransient) then
         logging:set_comm(space_time_communicator)
         logging:set_file_name("joba")
 
-
-
-
-
-
-        -- A Adaptive
-        -- C Const
-        -- D Discontinuity
-        -- L Linear
-        -- S Simple
-        -- T Theta
-        -- X Limex
-
         vtk_scriptor = VTKScriptor(vtk, "access")
-
         if XARGS.p_driver == "IntegratorFactory" then
-            braid = xbraid_util.CreateBraidIntegrator(braid_desc,
-                    space_time_communicator,
-                    logging,
+            app = xbraid_util.CreateIntegratorFactory(braid_desc,
+                    domainDiscT,
+                    vtk_scriptor,
                     fine_integrator,
-                    coarse_integrator,
-                    vtk_scriptor,
-                    domainDiscT)
+                    coarse_integrator
+                    )
+
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+                    )
+
+        elseif  XARGS.p_driver == "Integrator" then
+            print("Create Integrator")
+            app = xbraid_util.CreateIntegrator(braid_desc,
+                    domainDiscT,
+                    vtk_scriptor
+                )
+            print("Set Integrator Methods - Default")
+            app:set_default_integrator(xbraid_util.creadFSTheta(domainDiscT,
+                lsolver, 1, 1,1e-8))
+            print("Set Integrator Methods - Leveldependend")
+            app:set_integrator(0,xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 1,1e-8))
+
+            app:set_integrator(1,xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 1,1e-8))
+
+            app:set_integrator(2,xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 1,1e-8))
+
+            app:set_integrator(3,xbraid_util.creadFSTheta(domainDiscT,
+                    lsolver, 1, 1,1e-8))
+            print("Create Braid Object")
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+                )
+            print("Finished")
         elseif  XARGS.p_driver == "TimeStepper" then
-            braid = xbraid_util.CreateBraidStepper(braid_desc,
-                    space_time_communicator,
-                    logging,
-                    lsolver,
+            app = xbraid_util.CreateBraidStepper(braid_desc,
+                    domainDiscT,
                     vtk_scriptor,
-                    domainDiscT, approxSpace
-            --XARGS.pp_cmin,
-            --XARGS.pp_cmax,
-            --XARGS.pp_fmin,
-            --XARGS.pp_fmax,
-            --XARGS.pp_iter
+                    lsolver
+                )
+
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
             )
+
         elseif  XARGS.p_driver == "ResidualStepper" then
-            braid = xbraid_util.CreateBraidResidualStepper(braid_desc,
-                    space_time_communicator,
-                    logging,
-                    lsolver,
+            app = xbraid_util.CreateBraidResidualStepper(braid_desc,
+                    domainDiscT,
                     vtk_scriptor,
-                    domainDiscT, approxSpace
-            --XARGS.pp_scaling,
-            --XARGS.pp_adaptiter,
-            --XARGS.pp_fulliter
+                    lsolver
+            )
+
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
             )
         else
             print("integrator type not supported " .. XARGS.p_driver)
