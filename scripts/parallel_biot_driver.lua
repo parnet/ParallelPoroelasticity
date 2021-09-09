@@ -700,9 +700,9 @@ elseif XARGS.p_c_factor == 75003 then
     cfactor = { 4, 2, 2, 2, 2 }
 elseif XARGS.p_c_factor == 75004 then
     cfactor = { 8, 2, 2, 2, 2 }
-elseif XARGS.p_c_factor == 75004 then
-    cfactor = { 16, 2, 2, 2, 2 }
 elseif XARGS.p_c_factor == 75005 then
+    cfactor = { 16, 2, 2, 2, 2 }
+elseif XARGS.p_c_factor == 75006 then
     cfactor = { 32, 2, 2, 2, 2 }
 
 elseif XARGS.p_c_factor == 77001 then
@@ -839,16 +839,14 @@ if (doTransient) then
         local tstop = braid_desc.time.t_0
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-        integrator_factory = fine_integrator
+        integrator = xbraid_util.creadFSTheta(domainDiscT,
+                lsolver, 1, 2, 1e-8)
 
         time = BraidTimer()
         time:start()
 
-        --outputval = uapprox_tstop:clone()
-        --scriptor:lua_write(outputval,0,tstop,0,0)
-
-        outputval = uapprox_tstop:clone()
-        vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
+        -- outputval = uapprox_tstop:clone()
+        -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
         for i = 1, braid_desc.time.n do
 
@@ -857,17 +855,16 @@ if (doTransient) then
             uapprox_tstart = uapprox_tstop:clone()
             uapprox_tstop = uapprox_tstart:clone()
 
-            integrator = integrator_factory:create_level_time_integrator(dt, false, 0)
             integrator:init(uapprox_tstart)
             --integrator:prepare(uapprox_tstart)
             print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
             integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
 
-            --outputval = uapprox_tstop:clone()
-            --scriptor:lua_write(outputval,i,tstop,0,0)
+            -- outputval = uapprox_tstop:clone()
+            -- scriptor:lua_write(outputval,i,tstop,0,0)
 
-            outputval = uapprox_tstop:clone()
-            vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            -- outputval = uapprox_tstop:clone()
+            -- vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
         end
         time:stop()
         integration_time = time:get()
