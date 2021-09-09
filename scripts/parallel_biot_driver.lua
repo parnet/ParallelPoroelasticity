@@ -697,7 +697,7 @@ cfactor = { 3, 3, 3, 3, 3 ,3}
 elseif XARGS.p_c_factor == 533333 then
 cfactor = { 5, 3, 3, 3, 3 ,3}
 elseif XARGS.p_c_factor == 733333 then
-    cfactor = { 5, 3, 3, 3, 3 ,3}
+    cfactor = { 7, 3, 3, 3, 3 ,3}
 elseif XARGS.p_c_factor == 353333 then
 cfactor = { 3, 5, 3, 3, 3 ,3}
 elseif XARGS.p_c_factor == 335333 then
