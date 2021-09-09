@@ -691,8 +691,36 @@ local boolskipdown = true
 if XARGS.pp_skip_downcylce == "NO" then
     boolskipdown = false
 end
-local cfactor = { 2, 2, 2, 2, 2 }
-if XARGS.p_c_factor == 75001 then
+local cfactor = { 2, 2, 2, 2, 2 ,6}
+if XARGS.p_c_factor == 333333 then
+cfactor = { 3, 3, 3, 3, 3 ,3}
+elseif XARGS.p_c_factor == 533333 then
+cfactor = { 5, 3, 3, 3, 3 ,3}
+elseif XARGS.p_c_factor == 353333 then
+cfactor = { 3, 5, 3, 3, 3 ,3}
+elseif XARGS.p_c_factor == 335333 then
+cfactor = { 3, 3, 5, 3, 3 ,3}
+elseif XARGS.p_c_factor == 333533 then
+cfactor = { 3, 3, 3, 5, 3 ,3}
+elseif XARGS.p_c_factor == 333353 then
+cfactor = { 3, 3, 3, 3, 5 ,3}
+elseif XARGS.p_c_factor == 553333 then
+    cfactor = { 5, 5, 3, 3, 3 ,3}
+elseif XARGS.p_c_factor == 355333 then
+    cfactor = { 3, 5, 5, 3, 3 ,3}
+elseif XARGS.p_c_factor == 335533 then
+    cfactor = { 3, 3, 5, 5, 3 ,3}
+elseif XARGS.p_c_factor == 535333 then
+    cfactor = { 5, 3, 5, 3, 3 ,3}
+elseif XARGS.p_c_factor == 533533 then
+    cfactor = { 5, 3, 3, 5, 3 ,3}
+elseif XARGS.p_c_factor == 553533 then
+    cfactor = { 5, 5, 3, 5, 3 ,3}
+elseif XARGS.p_c_factor == 35005 then
+    cfactor = { 5, 5, 5, 3, 3 ,3}
+
+
+elseif XARGS.p_c_factor == 75001 then
     cfactor = { 2, 2, 2, 2, 2 }
 elseif XARGS.p_c_factor == 75002 then
     cfactor = { 4, 2, 2, 2, 2 }
@@ -868,7 +896,7 @@ if (doTransient) then
         end
         time:stop()
         integration_time = time:get()
-        print(integration_time, "finished sequential timestepping with integrator factory")
+        print(integration_time, "finished sequential timestepping with integrator")
     elseif (XARGS.p_sequential_exec == "R") then
         local tstop = braid_desc.time.t_end
         local tstart = braid_desc.time.t_0
@@ -1012,40 +1040,40 @@ if (doTransient) then
             )
             print("Set Integrator Methods - Default")
             app:set_default_integrator(xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
             print("Set Integrator Methods - Leveldependend")
             app:set_integrator(0, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(1, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(2, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(3, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(4, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(5, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(6, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1,1, 1e-8))
 
             app:set_integrator(7, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(8, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(9, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             app:set_integrator(10, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 2, 1e-8))
+                    lsolver, 1, 1, 1e-8))
 
             print("Create Braid Object")
             braid = xbraid_util.CreateExecutor(braid_desc,
