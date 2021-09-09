@@ -704,6 +704,18 @@ elseif XARGS.p_c_factor == 75004 then
     cfactor = { 16, 2, 2, 2, 2 }
 elseif XARGS.p_c_factor == 75005 then
     cfactor = { 32, 2, 2, 2, 2 }
+
+elseif XARGS.p_c_factor == 77001 then
+    cfactor = { 4, 4, 4, 4, 4 }
+
+elseif XARGS.p_c_factor == 76002 then
+    cfactor = { 2, 4, 2, 2, 2 }
+elseif XARGS.p_c_factor == 76003 then
+    cfactor = { 2, 2, 4, 2, 2 }
+elseif XARGS.p_c_factor == 76004 then
+    cfactor = { 2, 2, 2, 4, 2 }
+elseif XARGS.p_c_factor == 76005 then
+    cfactor = { 2, 2, 2, 2, 4 }
 end
 -- PARALLEL [[
 braid_desc = {
