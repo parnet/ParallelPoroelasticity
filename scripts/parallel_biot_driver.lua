@@ -766,7 +766,7 @@ if (doTransient) then
             --l2norm = BraidEuclidianNorm()
             --braid:set_norm_provider(l2norm)
             bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-            bio_norm:set_order(2,1)
+            bio_norm:set_order(4,2)
             bio_norm:set_parameter(1.0, 0,0)
 
             braid:set_norm_provider(bio_norm)
