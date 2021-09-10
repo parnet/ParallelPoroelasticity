@@ -41,8 +41,11 @@ XARGS = {
 
     p_sequential_exec = util.GetParam("--sequential", "", ""),
 
-    p_tol_reduction = util.GetParamNumber("--tol-reduction", 1e-6, " 0 use residual, 1 xbraid residual"),
-    p_tol_absolute = util.GetParamNumber("--tol-absolute", 1e-14, " 0 use residual, 1 xbraid residual"),
+    p_tol_red_p= util.GetParamNumber("--tol-red-p", 1e-6, " 0 use residual, 1 xbraid residual"),
+    p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
+
+    p_tol_red_u = util.GetParamNumber("--tol-red-u", 1e-6, " 0 use residual, 1 xbraid residual"),
+    p_tol_abs_u = util.GetParamNumber("--tol-abs-u", 1e-14, " 0 use residual, 1 xbraid residual"),
 }
 
 PARGS = {
@@ -335,16 +338,19 @@ local solver = {}
 -- GMG
 -- tol_reduction = 1e-16   1e-8
 -- tol_absolute = 1e-22    1e-14
-tol_reduction = XARGS.p_tol_reduction
-tol_absolute = XARGS.p_tol_absolute
+tol_reduction_p = XARGS.p_tol_reduction_p
+tol_absolute_p = XARGS.p_tol_absolute_p
+
+tol_reduction_u = XARGS.p_tol_reduction_u
+tol_absolute_u = XARGS.p_tol_absolute_u
 
 local cmpConvCheck = CompositeConvCheck(approxSpace)
-cmpConvCheck:set_component_check("ux", p0 * tol_absolute, tol_reduction)
-cmpConvCheck:set_component_check("uy", p0 * tol_absolute, tol_reduction)
+cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
+cmpConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
 if (dim == 3) then
-    cmpConvCheck:set_component_check("uz", p0 * tol_absolute, tol_reduction)
+    cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
 end
-cmpConvCheck:set_component_check("p", p0 * tol_absolute, tol_reduction)
+cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(100)
 cmpConvCheck:set_verbose(true)
 
