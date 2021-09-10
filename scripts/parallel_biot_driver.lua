@@ -93,25 +93,25 @@ local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinemen
 
 local ARGS = {
     solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
-    useVTK = util.HasParamOption("--with-vtk", "Plot VTK"),
-    useDebugIter = util.HasParamOption("--with-debug-iter", "Activate debug solver."),
+    -- useVTK = util.HasParamOption("--with-vtk", "Plot VTK"),
+    -- useDebugIter = util.HasParamOption("--with-debug-iter", "Activate debug solver."),
     bSteadyStateMechanics = not util.HasParamOption("--with-transient-mechanics"), -- OPTIONAL: transient mechanics
     MGCycleType = util.GetParam("--mg-cycle-type", "W", "V,F,W"),
     MGBaseLevel = util.GetParamNumber("--mg-base-level", 0, "some non-negative integer"),
     MGNumSmooth = util.GetParamNumber("--mg-num-smooth", 2, "some positive integer"),
     MGSmootherType = util.GetParam("--mg-smoother-type", "uzawa3", "uzawa,cgs"),
-    MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
-    LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
-    LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
+--    MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
+--    LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
+--    LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
 }
 
 print("MGSmootherType=" .. ARGS.MGSmootherType)
 print("MGNumSmooth=" .. ARGS.MGNumSmooth)
 print("MGCycleType=" .. ARGS.MGCycleType)
 print("MGBaseLevel=" .. ARGS.MGBaseLevel)
-print("MGDebugLevel=" .. ARGS.MGDebugLevel)
+-- print("MGDebugLevel=" .. ARGS.MGDebugLevel)
 
-GetLogAssistant():set_debug_level("LIB_DISC_MULTIGRID", ARGS.MGDebugLevel);
+-- GetLogAssistant():set_debug_level("LIB_DISC_MULTIGRID", ARGS.MGDebugLevel);
 
 
 local problem = BarryMercerProblem2dCPU1("ux,uy", "p")
@@ -362,8 +362,10 @@ solver["GMG"]:set_convergence_check(cmpConvCheck)
 -- LU
 local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
-convCheck:set_reduction(1e-8)
-convCheck:set_minimum_defect(1e-14)
+convCheck:set_reduction(1e-12)
+-- convCheck:set_reduction(1e-8)
+convCheck:set_minimum_defect(1e-20)
+-- convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(false)
 
 solver["LU"] = LinearSolver()
@@ -626,12 +628,12 @@ if (doTransient) then
             dtmax = dtMax,
         }
 
-        ARGS.useVTK = true -- todo adapt
-        if (ARGS.useVTK) then
-            local vtkFull = VTKOutput()
-            local vtkobserver = VTKOutputObserver("PoroElasticityLimex.vtk", vtkFull)
-            --limex:attach_observer(vtkobserver)
-        end
+        -- ARGS.useVTK = true -- todo adapt
+        -- if (ARGS.useVTK) then
+        --     local vtkFull = VTKOutput()
+        --    local vtkobserver = VTKOutputObserver("PoroElasticityLimex.vtk", vtkFull)
+        --    --limex:attach_observer(vtkobserver)
+        -- end
 
         local luaobserver = LuaCallbackObserver()
 
@@ -761,15 +763,15 @@ if (doTransient) then
         sv_init:set_start_vector(u_start)
         braid:set_initializer(sv_init)
 
-        if braid_desc.p_useResidual then
+        if braid_desc.use_residual then
             print("Using euclidian norm")
-            --l2norm = BraidEuclidianNorm()
-            --braid:set_norm_provider(l2norm)
-            bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-            bio_norm:set_order(4,2)
-            bio_norm:set_parameter(1.0, 0,0)
+            l2norm = BraidEuclidianNorm()
+            braid:set_norm_provider(l2norm)
+            -- bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
+            -- bio_norm:set_order(4,2)
+            -- bio_norm:set_parameter(1.0, 0,0)
 
-            braid:set_norm_provider(bio_norm)
+            -- braid:set_norm_provider(bio_norm)
         else
             print("Using biot norm")
             bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
