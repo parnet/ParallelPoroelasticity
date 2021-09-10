@@ -763,9 +763,13 @@ if (doTransient) then
 
         if braid_desc.p_useResidual then
             print("Using euclidian norm")
-            l2norm = BraidEuclidianNorm()
+            --l2norm = BraidEuclidianNorm()
+            --braid:set_norm_provider(l2norm)
+            bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
+            bio_norm:set_order(2,1)
+            bio_norm:set_parameter(1.0, 0,0)
 
-            braid:set_norm_provider(l2norm)
+            braid:set_norm_provider(bio_norm)
         else
             print("Using biot norm")
             bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
