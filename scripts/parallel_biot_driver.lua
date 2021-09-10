@@ -41,8 +41,8 @@ XARGS = {
 
     p_sequential_exec = util.GetParam("--sequential", "", ""),
 
-    p_tol_reduction = util.GetParamNumber("--tol-reduction", 1e-16, " 0 use residual, 1 xbraid residual"),
-    p_tol_absolute = util.GetParamNumber("--tol-absolute", 1e-20, " 0 use residual, 1 xbraid residual"),
+    p_tol_reduction = util.GetParamNumber("--tol-reduction", 1e-6, " 0 use residual, 1 xbraid residual"),
+    p_tol_absolute = util.GetParamNumber("--tol-absolute", 1e-14, " 0 use residual, 1 xbraid residual"),
 }
 
 PARGS = {
@@ -268,7 +268,6 @@ uzawaSchurUpdateOp:set_discretization(uzawaSchurUpdateDisc)
 -- @param aiSchur Approximate Inverse (Schur complement)
 -- @param aiBackward Approximate Inverse (backward problem)
 function createUzawaIteration(sSchurCmp, aiForward, aiSchur, aiBackward, uzawaSchurUpdateOp, uzawaSchurWeight)
-
     local uzawa = UzawaBase(sSchurCmp)
     local weight = uzawaSchurWeight or 1.0
     if (aiForward) then
@@ -280,44 +279,13 @@ function createUzawaIteration(sSchurCmp, aiForward, aiSchur, aiBackward, uzawaSc
     if (aiBackward) then
         uzawa:set_backward_iter(aiBackward)
     end
-
     uzawa:set_schur_operator_update(uzawaSchurUpdateOp, weight)
-    -- uzawa:set_debug(dbgWriter)
     return uzawa
 end
 
---local uzawaForward = {}
---local uzawaBackward = {}
-
 local uzawaWeight = 1.0
---local uzawaForward1 = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
---local uzawaBackward1 = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
-
---local uzawaForward2 = createUzawaIteration("p", SymmetricGaussSeidel(), Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
---local uzawaBackward2 = createUzawaIteration("p", nil, Jacobi(0.66), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
-
 local uzawaForward_3 = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
 local uzawaBackward_3 = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
-
---uzawaForward[0] = createUzawaIteration("p", Jacobi(0.5), Jacobi(0.5), nil, uzawaSchurUpdateOp, uzawaWeight)
---uzawaBackward[0] = createUzawaIteration("p", nil, Jacobi(0.5), Jacobi(0.5), uzawaSchurUpdateOp, uzawaWeight)
-
---uzawaForward[4] = createUzawaIteration("p", CG(Jacobi()), CG(Jacobi()), nil, uzawaSchurUpdateOp, uzawaWeight)
---uzawaBackward[4] = createUzawaIteration("p", nil, CG(Jacobi()), CG(Jacobi()), uzawaSchurUpdateOp, uzawaWeight)
---[[
-local pi=LinearIteratorProduct()
-pi:add_iterator(SymmetricGaussSeidel())
-pi:add_iterator(SymmetricGaussSeidel())
-
-local uzawaForward2 = createUzawaIteration("p", pi, SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
-local uzawaBackward2 = createUzawaIteration("p", nil, SymmetricGaussSeidel(), pi, uzawaSchurUpdateOp, uzawaWeight)
---]]
-
---local uzawaForward = createUzawaIteration("p", Jacobi(0.66), Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
---local uzawaBackward = createUzawaIteration("p", nil, Jacobi(0.66), Jacobi(0.66), uzawaSchurUpdateOp, uzawaWeight)
---local uzawaSym = createUzawaIteration("p", gs, sgs, bgs, uzawaSchurUpdateOp, uzawaWeight)
---local uzawaBackward = createUzawaIteration("p", nil, Jacobi(0.5), Jacobi(0.66), uzawaSchurOp, uzawaWeight)
---local uzawa = uzawaForward
 
 local preSmoother
 local postSmoother
@@ -325,27 +293,6 @@ local postSmoother
 if (ARGS.MGSmootherType == "uzawa3") then
     preSmoother = uzawaForward_3
     postSmoother = uzawaBackward_3
-    --elseif (ARGS.MGSmootherType == "uzawa0") then
-    --    preSmoother = uzawaForward[0]
-    --    postSmoother = uzawaBackward[0]
-    --elseif (ARGS.MGSmootherType == "uzawa2") then
-    --    preSmoother = uzawaForward2
-    --    postSmoother = uzawaBackward2
-    --elseif (ARGS.MGSmootherType == "uzawa") then
-    -- preSmoother = uzawaForward1
-    -- postSmoother = uzawaBackward1
-    --elseif (ARGS.MGSmootherType == "uzawa4") then
-    --    preSmoother = uzawaForward[4]
-    --    postSmoother = uzawaBackward[4]
-    --elseif (ARGS.MGSmootherType == "cgs") then
-    --    preSmoother = cgs
-    --    postSmoother = cgs
-    --elseif (ARGS.MGSmootherType == "vanka-ssc") then
-    --    preSmoother = ssc
-    --    postSmoother = ssc
-    --elseif (ARGS.MGSmootherType == "sgs") then
-    --    preSmoother = sgs
-    --    postSmoother = sgs
 else
     quit()
 end
@@ -360,19 +307,7 @@ baseConvCheck:set_maximum_steps(5000)
 baseConvCheck:set_reduction(1e-12)
 baseConvCheck:set_verbose(false)
 
---local base = BiCGStab()
---base:set_preconditioner(jac)
---base:set_convergence_check(baseConvCheck)
-
---local baseCG = CG()
---baseCG:set_preconditioner(jac)
---baseCG:set_convergence_check(baseConvCheck)
-
--- exact base solver
---local baseLU = LU()
 local superLU = SuperLU()
-
-
 -- Geometric Multi Grid
 local gmg = GeometricMultiGrid(approxSpace)
 gmg:set_discretization(domainDiscT)
@@ -384,74 +319,22 @@ gmg:set_cycle_type(ARGS.MGCycleType) -- 1:V, 2:W -- "F"
 gmg:set_num_presmooth(ARGS.MGNumSmooth)
 gmg:set_num_postsmooth(ARGS.MGNumSmooth)
 gmg:set_rap(true)  -- mandatory, if set_stationary
-
-
--- gmg:set_debug(dbgWriter)
--- if (problem.bRAP) then print ("gmg:bRAP=true")
---else print ("gmg:bRAP=false") end
--- gmg:set_debug(dbgWriter)
-
-
-
 local transfer = StdTransfer()
 transfer:enable_p1_lagrange_optimization(true)
---transfer:set_debug(dbgWriter)
 gmg:set_transfer(transfer)
-
---local gmgP = GeometricMultiGrid(approxSpace)
--- gmgP:set_discretization(domainDiscP)
---gmgP:set_base_level(numPreRefs)  -- was 1 in Cincyj
---gmgP:set_base_solver(baseLU)  -- was baseLU in Cincy
---gmgP:set_presmoother(sgs)
---gmgP:set_postsmoother(sgs)
----gmgP:set_cycle_type("V") -- 1:V, 2:W -- "F"
---gmgP:set_num_presmooth(3)
-----gmgP:set_num_postsmooth(3)
---gmgP:set_rap(true)  -- mandatory, if set_stationary
-
-
---local gmgU = GeometricMultiGrid(approxSpace)
--- gmgU:set_discretization(domainDiscU)
---gmgU:set_base_level(numPreRefs)  -- was 1 in Cincyj
---gmgU:set_base_solver(baseLU)  -- was baseLU in Cincy
---gmgU:set_presmoother(sgs)
---gmgU:set_postsmoother(sgs)
---gmgU:set_cycle_type("V") -- 1:V, 2:W -- "F"
---gmgU:set_num_presmooth(3)
---gmgU:set_num_postsmooth(3)
---gmgU:set_rap(true)  -- mandatory, if add_ionary
---gmgU:set_debug(dbgWriter)
-
---local uzawaTotal = createUzawaIteration("p", ILUT(1e-8), ILUT(1e-8), nil, uzawaSchurUpdateOp, 1.0)      -- ???
---local fixedStressLU = createUzawaIteration("p", nil, ILUT(1e-12), ILUT(1e-12), uzawaSchurUpdateOp, 1.0)
---local fixedStressSuperLU = createUzawaIteration("p", nil, SuperLU(), SuperLU(), uzawaSchurUpdateOp, 1.0)
--- local fixedStressLU    = createUzawaIteration("p", nil, SuperLU(), SuperLU(), uzawaSchurUpdateOp, 1.0)
--- local fixedStressMG = createUzawaIteration("p", nil, gmgU, gmgP, uzawaSchurUpdateOp, 1.0)
-
-
---local transfer = StdTransfer()
---transfer:enable_p1_lagrange_optimization(false)
---gmg:set_transfer(transfer)
 
 --------------------------------
 -- debug solver /iter
 --------------------------------
-
-
 local p0 = 1.0
-
-
-
 --------------------------------
 -- create and choose a Solver
 --------------------------------
 local solver = {}
 
-
 -- GMG
-
--- tol_reduction = 1e-16
--- tol_absolute = 1e-22
+-- tol_reduction = 1e-16   1e-8
+-- tol_absolute = 1e-22    1e-14
 tol_reduction = XARGS.p_tol_reduction
 tol_absolute = XARGS.p_tol_absolute
 
@@ -463,7 +346,7 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute, tol_reduction)
 cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(false)
+cmpConvCheck:set_verbose(true)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
