@@ -549,7 +549,7 @@ braid_desc = {
     -- output = Scriptor or multiscriptor if table
     -- store_operator
     verbose = true,
-    use_residual = toboolean(XARGS.p_useResidual),
+    use_residual = XARGS.p_useResidual == 1 ,
 
     richardson_estimation = false, --set_richardson_estimation
     richardson_extrapolation = false,
