@@ -101,8 +101,8 @@ local ARGS = {
     MGNumSmooth = util.GetParamNumber("--mg-num-smooth", 2, "some positive integer"),
     MGSmootherType = util.GetParam("--mg-smoother-type", "uzawa3", "uzawa,cgs"),
 --    MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
---    LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
---    LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
+    LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
+    LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
 }
 
 print("MGSmootherType=" .. ARGS.MGSmootherType)
