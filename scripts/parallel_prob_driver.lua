@@ -25,17 +25,19 @@ ug_load_script("cryer.lua")
 
 -- PARALLEL [[
 XARGS = {
-    p_sequential_exec = util.GetParam("--sequential", "",""),
-
     num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"),  -- numSpatialProcs * numTimeProcs = numGlobalProcs
-    p_coarseningStrategy = util.GetParamNumber("--coarsening-strategy", 1, " see list below for specific coarsening strategies"),
-    p_max_iter = util.GetParamNumber("--maxiter", 257, " maximum number of iterations"),
+
+
+
+    p_max_iter = util.GetParamNumber("--maxiter", 100, " maximum number of iterations"),
+
     p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
     p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
     p_c_factor = util.GetParam("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    p_c_factor_default = util.GetParamNumber("--cfactor-default", 2, "relaxation type FCF, FFCF or F-relaxation"),
     p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
     p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
     p_nu = util.GetParamNumber("--nu", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
@@ -59,6 +61,8 @@ XARGS = {
     -- p_solver = util.GetParamNumber("-solver", 0, "see list below; 0 for GMG(V,1,1,jac(0.66))[reduction], 1 for GMG(V,1,1, ilu)[absolute]"),
     -- p_strongfirst = util.GetParamNumber("-first", 0, " Use a high accuracy in the first iteration"),
     -- alpha = util.GetParamNumber("-alpha", 0.1, " diffusion constant (default: 0.1)"),
+
+    p_sequential_exec = util.GetParam("--sequential", "",""),
 }
 num_world_ranks = NumProcs()
 space_time_communicator = SpaceTimeCommunicator()
@@ -137,6 +141,7 @@ print("Kfluid  = " .. Kfluid)
 local problem = deleeuw2d
 --problem:set_stab(paraStab)
 -- problem:set_order(paraUOrder,paraPOrder)
+
 if (not problem) then
     print("ERROR: Problem '" .. ARGS.problemID .. "' not found")
     quit()
@@ -662,11 +667,8 @@ local vtk = VTKOutput()
 -- Init error estimator.
 local biotErrorEst
 biotErrorEst = util.biot.CreateDefaultErrorEst(dim)
-
 if (problem.error_estimator) then
     biotErrorEst = problem:error_estimator()
-else
-    biotErrorEst = util.biot.CreateDefaultErrorEst(dim)
 end
 
 --------------------------------------------------------------------------------
@@ -676,6 +678,7 @@ end
 --------------------------------------------------------------------------------
 print("initialization done.\n\n\n")
 
+-- adaptive convergence check
 desc_conv_control = {
     type = "static",
     looseTol = 5e-6,
@@ -683,30 +686,24 @@ desc_conv_control = {
     force_convergence = false
 }
 
-
 local boolskipdown =true
 if XARGS.pp_skip_downcylce == "NO" then
     boolskipdown =false
 end
 -- PARALLEL [[
 braid_desc = {
-    type = "integrator",
+
     time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time},--math.ceil((endTime-startTime)/dt) },
-    cfactor = {XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
-    --cfactor = 2,
-    default_cfactor = XARGS.p_c_factor,
+    cfactor = XARGS.p_c_factor, -- 0 finest level,
+    default_cfactor = XARGS.p_c_factor_default,
     max_level = XARGS.p_max_level,
 
-    integrator = limex, -- todo or table
-
-    coarsening_factor = XARGS.p_c_factor, -- todo delete
     mgrit_cycle_type = XARGS.p_cycle,
     mgrit_relax_type = XARGS.p_relaxation,
+
     store_values = 0,
     print_level = 3,
     access_level = 3,
-
-    sequential = false, -- todo change for parallel
 
 
     temporal_norm = 3, -- {1,2,3}
@@ -724,14 +721,19 @@ braid_desc = {
 
     printfile = "000 "..XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .."_".. XARGS.p_num_time .. "_" .. XARGS.p_max_level .."_"..XARGS.p_cycle.."_"..XARGS.p_relaxation .."_"..XARGS.p_level_factor..".mgrit",
     outputfile = "integrator_out",
-    -- output = Scriptor or multiscriptor if table
-    -- store_operator
+
     verbose = true,
     use_residual = false,
 
     richardson_estimation = false, --set_richardson_estimation
     richardson_extrapolation = false,
     richardson_local_order = 2,
+
+    sequential = false,
+
+    type = "integrator",
+    integrator = limex, -- todo or table
+
 }
 --scriptor = BraidBiotCheck()
 --scriptor:set_problem(problem)

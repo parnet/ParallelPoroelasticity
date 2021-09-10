@@ -247,8 +247,8 @@ end
 function xbraid_util.CreateIntegratorFactory(desc, domain, scriptor, fintegrator, cintegrator)
     app = BraidIntegratorFactory()
     xbraid_util.SetBaseValues(app, desc, domain, scriptor)
-    app:set_fine_time_integrator(fintegrator)
-    app:set_coarse_time_integrator(cintegrator)
+    -- app:set_fine_time_integrator(fintegrator)
+    -- app:set_coarse_time_integrator(cintegrator)
     return app
 end
 
@@ -370,3 +370,14 @@ function xbraid_util.SetFullVTKOutput(app)
 end
 
 --    app:set_approx_space(approxspace)
+
+function xbraid_util.get_cfactor(str_cfactor)
+    -- zero index is finest level
+    cfactor = {}
+    i = 1
+    for s in str_cfactor:gmatch("[^_]+") do
+        cfactor[i] = tonumber(s)
+        i = i + 1
+    end
+    return cfactor
+end

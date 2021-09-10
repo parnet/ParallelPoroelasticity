@@ -22,48 +22,45 @@ ug_load_script("xbraid_util.lua") -- load neccessary XBraid lua interfaces
 
 
 -- PARALLEL [[
+-- XBraid Arguments
 XARGS = {
-    p_sequential_exec = util.GetParam("--sequential", "", ""),
-
     num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"), -- numSpatialProcs * numTimeProcs = numGlobalProcs
-    p_coarseningStrategy = util.GetParamNumber("--coarsening-strategy", 1, " see list below for specific coarsening strategies"),
-    p_max_iter = util.GetParamNumber("--maxiter", 257, " maximum number of iterations"),
-    p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
+    p_max_iter = util.GetParamNumber("--maxiter", 100, " maximum number of iterations"),
+
+    p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
+    p_c_factor = util.GetParam("--cfactor", "2_2_2", "relaxation type FCF, FFCF or F-relaxation"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
-    p_level_factor = util.GetParam("--levelfactor", 1, "relaxation type FCF, FFCF or F-relaxation"),
-    p_c_factor = util.GetParamNumber("--cfactor", 2, "relaxation type FCF, FFCF or F-relaxation"),
-    p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
-    p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
-    orderOrTheta = util.GetParamNumber("--orderOrTheta", 1, "relaxation type FCF, FFCF or F-relaxation"),
-    --pp_cmin = util.GetParamNumber("--cmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    --pp_cmax = util.GetParamNumber("--cmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    --pp_fmin = util.GetParamNumber("--fmin", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    --pp_fmax = util.GetParamNumber("--fmax", 50, "relaxation type FCF, FFCF or F-relaxation"),
-    --pp_iter = util.GetParamNumber("--iter", 1, "relaxation type FCF, FFCF or F-relaxation"),
 
-    pp_scaling = util.GetParamNumber("--scaling", 1.0, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_adaptiter = util.GetParamNumber("--adaptiter", 0, "relaxation type FCF, FFCF or F-relaxation"),
-    pp_fulliter = util.GetParamNumber("--fulliter", 0, "relaxation type FCF, FFCF or F-relaxation"),
+    p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
 
     pp_skip_downcylce = util.GetParam("--skip", "", "relaxation type FCF, FFCF or F-relaxation"),
-    p_coarse_integrator = util.GetParam("--coarse", "L", "relaxation type FCF, FFCF or F-relaxation"),
-    p_fine_integrator = util.GetParam("--fine", "L", "relaxation type FCF, FFCF or F-relaxation"),
 
-    -- p_useResidual = util.GetParamNumber("-useResidual", 0, " 0 use residual, 1 xbraid residual"),
-    -- p_adaptiveSolver = util.GetParamNumber("-adaptiveSolver", 0, " use a tight and a loose tol for solving"),
-    -- p_solver = util.GetParamNumber("-solver", 0, "see list below; 0 for GMG(V,1,1,jac(0.66))[reduction], 1 for GMG(V,1,1, ilu)[absolute]"),
-    -- p_strongfirst = util.GetParamNumber("-first", 0, " Use a high accuracy in the first iteration"),
-    -- alpha = util.GetParamNumber("-alpha", 0.1, " diffusion constant (default: 0.1)"),
+    p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual"),
+
+    p_sequential_exec = util.GetParam("--sequential", "", ""),
+
+    p_tol_reduction = util.GetParamNumber("--tol-reduction", 1e-16, " 0 use residual, 1 xbraid residual"),
+    p_tol_absolute = util.GetParamNumber("--tol-absolute", 1e-20, " 0 use residual, 1 xbraid residual"),
 }
+
+PARGS = {
+    p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
+}
+
+IARGS = {
+    orderOrTheta = util.GetParamNumber("--orderOrTheta", 1, "relaxation type FCF, FFCF or F-relaxation"),
+}
+
 num_world_ranks = NumProcs()
 space_time_communicator = SpaceTimeCommunicator()
 
 if num_world_ranks % XARGS.num_spatial_procs == 0 then
     space_time_communicator:split(XARGS.num_spatial_procs)
     num_temporal_procs = num_world_ranks / XARGS.num_spatial_procs;
-    print("Using: " .. num_temporal_procs .. " of " .. num_world_ranks .. " for spatial")
+    num_spatial_procs = XARGS.num_spatial_procs
+    print("Using: " .. num_spatial_procs .. " of " .. num_world_ranks .. " for spatial")
 else
     space_time_communicator:split(1)
     print("Using: " .. 1 .. " of " .. num_world_ranks .. " for spatial") -- todo exit?
@@ -78,36 +75,29 @@ repl:apply()
 util.biot.CheckAssertions()
 
 -- TIMES AND TIME-STEPPING
-local startTime = util.GetParamNumber("--start", 0.0, "end time")
---local endTime = util.GetParamNumber("--end", 1e+5, "end time") - override by characteristic time
+-- local startTime = util.GetParamNumber("--start", 0.0, "end time")
+-- local endTime = util.GetParamNumber("--end", 1e+5, "end time") - override by characteristic time
 local dtFrac = util.GetParamNumber("--dtFrac", 1e-5, "time step size")
 local dtMinFrac = util.GetParamNumber("--dtminFrac", 1e-2, "minimal admissible time step size")
 -- local dtMaxFrac = util.GetParamNumber("--dtmaxFrac", 0.1, "minimal admissible time step size (as fraction of tend)")
 local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction factor on divergence")
 -- REFINEMENT
 -- local numPreRefs = util.GetParamNumber("--numPreRefs", 0, "number of pre-Refinements (before distributing grid)")
-local numRefs = util.GetParamNumber("--num-refs", 4, "total number of refinements (incl. pre-Refinements)") --4 --
+local numRefs = util.GetParamNumber("--num-refs", 3, "total number of refinements (incl. pre-Refinements)") --4 --
 local paraStab = util.GetParamNumber("--stab", 4, "total number of refinements (incl. pre-Refinements)") --4 --
 local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinements (incl. pre-Refinements)") --4 --
 local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinements (incl. pre-Refinements)") --4 --
 
-
 local ARGS = {
-    problemID = util.GetParam("--problem-id", "bm2D_new"), -- cryer3d‚
     solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
-
     useVTK = util.HasParamOption("--with-vtk", "Plot VTK"),
     useDebugIter = util.HasParamOption("--with-debug-iter", "Activate debug solver."),
-    -- doCheck =  util.HasParamOption("--with-check", ""),
-
     bSteadyStateMechanics = not util.HasParamOption("--with-transient-mechanics"), -- OPTIONAL: transient mechanics
-
     MGCycleType = util.GetParam("--mg-cycle-type", "W", "V,F,W"),
     MGBaseLevel = util.GetParamNumber("--mg-base-level", 0, "some non-negative integer"),
     MGNumSmooth = util.GetParamNumber("--mg-num-smooth", 2, "some positive integer"),
     MGSmootherType = util.GetParam("--mg-smoother-type", "uzawa3", "uzawa,cgs"),
     MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
-    -- LIMEX
     LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
     LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
 }
@@ -119,35 +109,9 @@ print("MGBaseLevel=" .. ARGS.MGBaseLevel)
 print("MGDebugLevel=" .. ARGS.MGDebugLevel)
 
 GetLogAssistant():set_debug_level("LIB_DISC_MULTIGRID", ARGS.MGDebugLevel);
---SetDebugLevel("LIB_DISC_MULTIGRID", 0)
--- Set parameters
---local kperm = 1e-0 -- m/s 1e-3
---local poro = 0.2
---local nu = 0.25
---local EYoung = 2.0 * 1e+2                  -- kPa 2.0 * 1e+4
---local Kmedium = EYoung / (3.0 * (1.0 - 2.0 * nu))
---local Kfluid = 2.2 * 1e+6                  -- kPa -- 2.2 * 1e+6 --
---print("Kmedium = " .. Kmedium)
---print("Kfluid  = " .. Kfluid)
 
---deleeuw2d--deleeuw2d -- cryer3d --cryer2d -- mandel3d --, mandel--, cryer3d
-local problemList = {
-    -- legacy style
-    --    ["deleeuw2d"] = deleeuw2d,
-    --    ["deleeuw3d"] = deleeuw3d,
-    --    ["deleeuw3dTet"] = deleeuw3dTet,
-    --    ["cryer3d"] = cryer3d,
-    --    ["cryer3dTet"] = cryer3dTet,
-    --    ["footing2D"] = footing2D,
-    --    ["footing2D_tri"] = footing2D_tri,
-    --    ["footing3D"] = footing3D,
 
-    --    ["bm2D_tri"] = barrymercer2D_tri,
-    -- new style
-    ["bm2D_new"] = BarryMercerProblem2dCPU1("ux,uy", "p"),
-}
-
-local problem = problemList[ARGS.problemID]
+local problem = BarryMercerProblem2dCPU1("ux,uy", "p")
 problem:set_stab(paraStab)
 problem:set_order(paraUOrder, paraPOrder)
 if (not problem) then
@@ -155,44 +119,22 @@ if (not problem) then
     quit()
 end
 
---if (problem.parse_cmd_args) then
---  problem:parse_cmd_args()
---end
-
---problem:init(kperm, poro, nu, 1.0/Kmedium, 1.0/Kfluid, 0.0)
---if(problem.init) then
---  problem:init(kperm, poro, nu, 1.0/Kmedium, 0.0, 0.0)
---end
-
 local charTime = problem:get_char_time()  -- implemented by C++ object
 print("characteristic time is " .. charTime)
 
 startTime = 0.0
-endTime = 2.0 * charTime * math_pi -- todo check 2.0 mul
+endTime = 2.0 * charTime * math_pi
+
 print("Integrate from " .. startTime .. " to " .. endTime)
 
 local dt = dtFrac * charTime
 local dtMin = dtMinFrac
 local dtMax = endTime
-
---if (problem == mandel) then
---    local time = 1e-4
---    while (time <= 10.0) do
---        problem:create_test_data(time * charTime)
---        time = time * 10.0;
---    end
---end
-
 --local doSteadyState = false
 local doTransient = true
 
-
-
-
-----------------------------------
 ----------------------------------
 --  Settings
-----------------------------------
 ----------------------------------
 
 local dim = 2
@@ -207,23 +149,12 @@ print("uorder is " .. uorder)
 
 InitUG(dim, AlgebraType("CPU", cpu));
 
--- OUTPUT-ASSISTANT FOR SEVERAL PROCESSES
---GetLogAssistant():enable_file_output(true, "output_p_" .. ProcRank() .. "_Lev" .. numRefs .. ".txt")
---GetLogAssistant():set_debug_level("SchurDebug", 7);
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Domain / ApproximationSpace setup
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 local balancerDesc = {
     hierarchy = {
-        --type = "standard",
-        -- maxRedistProcs = ARGS.redistProcs,
-
-        -- minElemsPerProcPerLevel = ARGS.minElemsPerProcPerLevel,
-        -- qualityRedistLevelOffset = ARGS.qualityRedistLevelOffset,
-        -- intermediateRedistributions = ARGS.intermediateRedistributions,
         type = "standard",
         minElemsPerProcPerLevel = 32,
         maxRedistProcs = 120,
@@ -242,8 +173,8 @@ local balancerDesc = {
 repl:undo()
 repl:apply() -- reapply
 -- Create, Load, Refine and Distribute Domain
+
 local gridName = problem:get_gridname()
--- local dom = problem:create_domain(numRefs, numPreRefs)
 local mandatorySubsets = nil
 local dom = util.CreateDomain(gridName, 0, mandatorySubsets)
 util.refinement.CreateRegularHierarchy(dom, numRefs, true, balancerDesc)
@@ -275,7 +206,6 @@ problem:add_uzawa_discs(uzawaSchurUpdateDisc, bSteadyStateMechanics)  -- impleme
 print("Discretization done!")
 
 
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --  Algebra
 --------------------------------------------------------------------------------
@@ -509,159 +439,50 @@ gmg:set_transfer(transfer)
 
 
 local p0 = 1.0
-local cmpConvCheck = CompositeConvCheck(approxSpace)
-cmpConvCheck:set_component_check("ux", p0 * 1e-22, 1e-16)
-cmpConvCheck:set_component_check("uy", p0 * 1e-22, 1e-16)
-if (dim == 3) then
-    cmpConvCheck:set_component_check("uz", p0 * 1e-22, 1e-16)
-end
-cmpConvCheck:set_component_check("p", p0 * 1e-22, 1e-16)
-cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(false)
-
-local cmpConvCheckC = CompositeConvCheck(approxSpace)
-cmpConvCheckC:set_component_check("ux", p0 * 1e-14, 1e-10)
-cmpConvCheckC:set_component_check("uy", p0 * 1e-14, 1e-10)
-if (dim == 3) then
-    cmpConvCheckC:set_component_check("uz", p0 * 1e-14, 1e-10)
-end
-cmpConvCheckC:set_component_check("p", p0 * 1e-14, 1e-10)
-cmpConvCheckC:set_maximum_steps(100)
-cmpConvCheckC:set_verbose(false)
-
---cmpConvCheck:set_supress_unsuccessful(true)
-
---local cmpConvCheck2 = CompositeConvCheck(approxSpace)
---cmpConvCheck2:set_component_check("ux", p0 * 1e-12, 1e-6)
---cmpConvCheck2:set_component_check("uy", p0 * 1e-12, 1e-6)
---if (dim == 3) then
---    cmpConvCheck2:set_component_check("uz", p0 * 1e-12, 1e-6)
---end
---cmpConvCheck2:set_component_check("p", p0 * 1e-12, 1e-6)
---cmpConvCheck2:set_maximum_steps(100)
-
-cmpConvCheck2 = ConvCheck(200, 1e-25, 1e-20, false)
-
-local dbgSolver = LinearSolver()
-dbgSolver:set_preconditioner(gmg) -- cgs, gmg, uzawa
--- dbgSolver:set_convergence_check(cmpConvCheck2) todo check
-dbgSolver:set_convergence_check(cmpConvCheck)
-
-local dbgIter = DebugIterator()
-dbgIter:set_preconditioner(gmg)  -- gmg is the 'real' preconditioner
-dbgIter:set_solver(dbgSolver)
-dbgIter:set_solution(dbgVector)
-dbgIter:set_random_bounds(-5e-6, 5e-6)
-dbgIter:set_debug(dbgWriter)  -- print t_0 anf t_N
 
 
-
-
-
-coarseSolver = LinearSolver()
-coarseSolver:set_preconditioner(gmg)
-coarseSolver:set_convergence_check(cmpConvCheckC)
 
 --------------------------------
 -- create and choose a Solver
 --------------------------------
-
 local solver = {}
 
+
+-- GMG
+
+-- tol_reduction = 1e-16
+-- tol_absolute = 1e-22
+tol_reduction = XARGS.p_tol_reduction
+tol_absolute = XARGS.p_tol_absolute
+
+local cmpConvCheck = CompositeConvCheck(approxSpace)
+cmpConvCheck:set_component_check("ux", p0 * tol_absolute, tol_reduction)
+cmpConvCheck:set_component_check("uy", p0 * tol_absolute, tol_reduction)
+if (dim == 3) then
+    cmpConvCheck:set_component_check("uz", p0 * tol_absolute, tol_reduction)
+end
+cmpConvCheck:set_component_check("p", p0 * tol_absolute, tol_reduction)
+cmpConvCheck:set_maximum_steps(100)
+cmpConvCheck:set_verbose(false)
+
+solver["GMG"] = LinearSolver()
+solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
+solver["GMG"]:set_convergence_check(cmpConvCheck)
+
+
+-- LU
 local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-8)
 convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(false)
--- convCheck = cmpConvCheck  -- for DEBUGGING purposes
-
---local iluSolver = LinearSolver()
---iluSolver:set_preconditioner(ilut)
---iluSolver:set_convergence_check(convCheck)
-
---local jacSolver = LinearSolver()
---jacSolver:set_preconditioner(jac)
---jacSolver:set_convergence_check(convCheck)
-
---solver["UzawaSmoother"] = LinearSolver()
---solver["UzawaSmoother"]:set_preconditioner(uzawaForward2)
---solver["UzawaSmoother"]:set_convergence_check(convCheck)
-
-solver["GMG"] = LinearSolver()
-solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMG"]:set_convergence_check(cmpConvCheck) -- cmpConvCheck
---solver["GMG"]:set_convergence_check(convCheck) -- cmpConvCheck
---solver["GMGKrylov"] = BiCGStab()
---solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
---solver["GMGKrylov"]:set_convergence_check(convCheck) -- cmpConvCheck
-
-
---solver["FixedStressEX"] = LinearSolver()
---solver["FixedStressEX"]:set_preconditioner(fixedStressSuperLU)
---solver["FixedStressEX"]:set_convergence_check(convCheck)
-
---solver["FixedStressEXKrylov"] = BiCGStab()
---solver["FixedStressEXKrylov"]:set_preconditioner(fixedStressSuperLU)
---solver["FixedStressEXKrylov"]:set_convergence_check(convCheck)
-
---solver["FixedStressMG"] = LinearSolver() -- BiCGStab()
---solver["FixedStressMG"]:set_preconditioner(fixedStressMG)
---solver["FixedStressMG"]:set_convergence_check(convCheck)
-
---solver["SuperLU"] = SuperLU() -- SuperLU
 
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
 
-local myIter = gmg
-ARGS.useDebugIter = false
-if (ARGS.useDebugIter) then
-    myIter = dbgIter
-end
-
---local bicgstabSolver = BiCGStab()
---bicgstabSolver:set_preconditioner(myIter) --(gmg)
---bicgstabSolver:set_convergence_check(convCheck)
-
---local cgSolver = CG()
---cgSolver:set_preconditioner(myIter) --(gmg)
---cgSolver:set_convergence_check(convCheck)
-
---local gmresSolver = GMRES(3)
---gmresSolver:set_preconditioner(myIter) -- gmg, dbgIter
---gmresSolver:set_convergence_check(convCheck)
-
--- local sluSolver = SuperLU()
-
--- local luSolver = LinearSolver()
--- luSolver:set_preconditioner(LU())
--- luSolver:set_convergence_check(convCheck)
-
--- Select solver.
 local lsolver = solver[ARGS.solverID]
---solver = jacSolver
---lsolver = iluSolver
---lsolver = gmgSolver
---lsolver = cgSolver
--- lsolver = bicgstabSolver
---lsolver = gmresSolver
---lsolver:set_compute_fresh_defect_when_finished(true)
--- lsolver = sluSolver
-
 local vtk = VTKOutput()
---vtk:select_nodal("p", "PNodal")
---if (dim == 2) then
---    vtk:select({ "ux", "uy" }, "uNodal")
---end
---if (dim == 3) then
---    vtk:select({ "ux", "uy", "uz" }, "uNodal")
---end
-
---vtk:select_element( displacementEqDisc:displacement(), "DispElem")
---vtk:select_element( displacementEqDisc:divergence(), "DivElem")
---vtk:select_element( flowEqDisc:gradient()dbgSolver, "GradP")
---vtk:select(massLinker, "Mass")
 
 -- Init error estimator.
 local biotErrorEst
@@ -674,12 +495,11 @@ else
 end
 
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 --  Solve transient (linear) problem
---------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 print("initialization done.\n\n\n")
 
+-- adaptive convergence
 desc_conv_control = {
     type = "static",
     looseTol = 5e-6,
@@ -691,74 +511,18 @@ local boolskipdown = true
 if XARGS.pp_skip_downcylce == "NO" then
     boolskipdown = false
 end
-local cfactor = { 2, 2, 2, 2, 2 ,6}
-if XARGS.p_c_factor == 333333 then
-cfactor = { 3, 3, 3, 3, 3 ,3}
-elseif XARGS.p_c_factor == 533333 then
-cfactor = { 5, 3, 3, 3, 3 ,3}
-elseif XARGS.p_c_factor == 733333 then
-    cfactor = { 7, 3, 3, 3, 3 ,3}
-elseif XARGS.p_c_factor == 353333 then
-cfactor = { 3, 5, 3, 3, 3 ,3}
-elseif XARGS.p_c_factor == 335333 then
-cfactor = { 3, 3, 5, 3, 3 ,3}
-elseif XARGS.p_c_factor == 333533 then
-cfactor = { 3, 3, 3, 5, 3 ,3}
-elseif XARGS.p_c_factor == 333353 then
-cfactor = { 3, 3, 3, 3, 5 ,3}
-elseif XARGS.p_c_factor == 553333 then
-    cfactor = { 5, 5, 3, 3, 3 ,3}
-elseif XARGS.p_c_factor == 355333 then
-    cfactor = { 3, 5, 5, 3, 3 ,3}
-elseif XARGS.p_c_factor == 335533 then
-    cfactor = { 3, 3, 5, 5, 3 ,3}
-elseif XARGS.p_c_factor == 535333 then
-    cfactor = { 5, 3, 5, 3, 3 ,3}
-elseif XARGS.p_c_factor == 533533 then
-    cfactor = { 5, 3, 3, 5, 3 ,3}
-elseif XARGS.p_c_factor == 553533 then
-    cfactor = { 5, 5, 3, 5, 3 ,3}
-elseif XARGS.p_c_factor == 555333 then
-    cfactor = { 5, 5, 5, 3, 3 ,3}
 
-
-elseif XARGS.p_c_factor == 75001 then
-    cfactor = { 2, 2, 2, 2, 2 }
-elseif XARGS.p_c_factor == 75002 then
-    cfactor = { 4, 2, 2, 2, 2 }
-elseif XARGS.p_c_factor == 75003 then
-    cfactor = { 4, 2, 2, 2, 2 }
-elseif XARGS.p_c_factor == 75004 then
-    cfactor = { 8, 2, 2, 2, 2 }
-elseif XARGS.p_c_factor == 75005 then
-    cfactor = { 16, 2, 2, 2, 2 }
-elseif XARGS.p_c_factor == 75006 then
-    cfactor = { 32, 2, 2, 2, 2 }
-
-elseif XARGS.p_c_factor == 77001 then
-    cfactor = { 4, 4, 4, 4, 4 }
-
-elseif XARGS.p_c_factor == 76002 then
-    cfactor = { 2, 4, 2, 2, 2 }
-elseif XARGS.p_c_factor == 76003 then
-    cfactor = { 2, 2, 4, 2, 2 }
-elseif XARGS.p_c_factor == 76004 then
-    cfactor = { 2, 2, 2, 4, 2 }
-elseif XARGS.p_c_factor == 76005 then
-    cfactor = { 2, 2, 2, 2, 4 }
-end
 -- PARALLEL [[
 braid_desc = {
     type = "integrator",
     time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time }, --math.ceil((endTime-startTime)/dt) },
-    cfactor = cfactor, --{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
+    cfactor = xbraid_util.get_cfactor(XARGS.p_c_factor), --{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
     --cfactor = 2,
-    default_cfactor = XARGS.p_c_factor,
+    default_cfactor = XARGS.p_c_factor_default,
     max_level = XARGS.p_max_level,
 
     integrator = limex, -- todo or table
 
-    coarsening_factor = XARGS.p_c_factor, -- todo delete
     mgrit_cycle_type = XARGS.p_cycle,
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
@@ -780,7 +544,7 @@ braid_desc = {
     spatial_coarsen_and_refine = false,
     min_coarsening = 2,
 
-    printfile = "000 " .. XARGS.p_coarse_integrator .. XARGS.p_fine_integrator .. "_" .. XARGS.p_num_time .. "_" .. XARGS.p_max_level .. "_" .. XARGS.p_cycle .. "_" .. XARGS.p_relaxation .. "_" .. XARGS.p_level_factor .. ".mgrit",
+    printfile = "000 " .. XARGS.p_driver .. "_" .. XARGS.p_num_time .. "_" .. XARGS.p_max_level .. "_" .. XARGS.p_cycle .. "_" .. XARGS.p_relaxation .. ".mgrit",
     outputfile = "integrator_out",
     -- output = Scriptor or multiscriptor if table
     -- store_operator
@@ -791,9 +555,7 @@ braid_desc = {
     richardson_extrapolation = false,
     richardson_local_order = 2,
 }
-scriptor = BraidBiotCheck()
-scriptor:set_problem(problem)
-scriptor:set_napprox(XARGS.p_napprox)
+
 
 vtk_scriptor = VTKScriptor(vtk, "access")
 -- PARALLEL ]]
@@ -820,29 +582,11 @@ newtonSolver:set_convergence_check(newtonCheck)
 local nlsolver = newtonSolver
 print(lsolver:config_string())
 
-
---fine_integrator = xbraid_util.create_integrator(XARGS.p_fine_integrator,
---        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime,XARGS.orderOrTheta)
---creadFSTheta
---coarse_integrator = xbraid_util.create_integrator(XARGS.p_coarse_integrator,
---        domainDiscT, lsolver, nlsolver, biotErrorEst,endTime, XARGS.orderOrTheta)
-
-
 if (doTransient) then
-
-
     print("Interpolation start values")
     problem:interpolate_start_values(u_start, startTime)
 
-    -- Create callback.
-    function myStepCallback0(u, step, time)
-        --problem:post_processing(u, step, time)
-        --vtk:print("PoroElasticityInitial.vtu", u, step, time)
-    end
-
     print("Integrating from 0.0 to " .. endTime)
-
-    --dt =dt*1e-4*problem:get_char_time() -- smaller => more complicated
 
     local charTime = problem:get_char_time()
     dt = 1e-2 * charTime
@@ -879,14 +623,12 @@ if (doTransient) then
         -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
         for i = 1, braid_desc.time.n do
-
             tstart = tstop
             tstop = tstop + dt
             uapprox_tstart = uapprox_tstop:clone()
             uapprox_tstop = uapprox_tstart:clone()
-
             integrator:init(uapprox_tstart)
-            --integrator:prepare(uapprox_tstart)
+            integrator:prepare(uapprox_tstart)
             print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
             integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
 
@@ -900,6 +642,11 @@ if (doTransient) then
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
     elseif (XARGS.p_sequential_exec == "R") then
+
+        scriptor = BraidBiotCheck()
+        scriptor:set_problem(problem)
+        scriptor:set_napprox(PARGS.p_napprox)
+
         local tstop = braid_desc.time.t_end
         local tstart = braid_desc.time.t_0
         offset = 1
@@ -1085,7 +832,7 @@ if (doTransient) then
             )
             print("Finished")
         elseif XARGS.p_driver == "TimeStepper" then
-            app = xbraid_util.CreateBraidStepper(braid_desc,
+            app = xbraid_util.CreateTimeStepper(braid_desc,
                     domainDiscT,
                     vtk_scriptor,
                     lsolver
@@ -1118,17 +865,29 @@ if (doTransient) then
         script_logging:set_file_name("script")
         script_logging:init()
         braid:set_paralog_script(script_logging)
+
         v = u_start:clone()
 
-        sv_init = StartValueInitializer() -- todo move to desc
+        sv_init = StartValueInitializer()
         sv_init:set_start_vector(u_start)
         braid:set_initializer(sv_init)
 
-        --bio_norm = BiotBraidSpatialNorm()
-        --bio_norm:set_order(4,2)
-        --bio_norm:set_parameter(1.0, 142857,35714.3)
-        bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-        braid:set_norm_provider(bio_norm)
+        if braid_desc.p_useResidual then
+            print("Using euclidian norm")
+            l2norm = BraidEuclidianNorm()
+
+            braid:set_norm_provider(l2norm)
+        else
+            print("Using biot norm")
+            bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
+            bio_norm:set_order(4,2)
+            bio_norm:set_parameter(1.0, 142857,35714.3)
+
+            braid:set_norm_provider(bio_norm)
+        end
+
+
+
 
         time = BraidTimer()
         time:start()
