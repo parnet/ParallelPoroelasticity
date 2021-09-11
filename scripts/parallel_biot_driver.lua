@@ -338,11 +338,11 @@ local solver = {}
 -- GMG
 -- tol_reduction = 1e-16   1e-8
 -- tol_absolute = 1e-22    1e-14
-tol_reduction_p = 1e-10-- XARGS.p_tol_red_p
-tol_absolute_p = 1e-14-- XARGS.p_tol_abs_p
+tol_reduction_p = XARGS.p_tol_red_p
+tol_absolute_p = XARGS.p_tol_abs_p
 
-tol_reduction_u = 1e-10-- XARGS.p_tol_red_u
-tol_absolute_u =  1e-14-- XARGS.p_tol_abs_u
+tol_reduction_u =  XARGS.p_tol_red_u
+tol_absolute_u =   XARGS.p_tol_abs_u
 
 local cmpConvCheck = CompositeConvCheck(approxSpace)
 cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
