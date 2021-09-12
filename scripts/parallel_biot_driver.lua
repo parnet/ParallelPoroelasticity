@@ -677,7 +677,7 @@ if (doTransient) then
                     domainDiscT,
                     vtk_scriptor
             )
-            integrator_type = "BDF"
+            integrator_type = "FS"
             print("Set Integrator Methods - Default")
             if integrator_type == "FS" then
                 app:set_default_integrator(xbraid_util.createFSTheta(domainDiscT,
