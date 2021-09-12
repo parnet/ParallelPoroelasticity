@@ -723,34 +723,34 @@ if (doTransient) then
                         lsolver, 4, 1e-8))
 
                 app:set_integrator(1, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(2, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(3, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(4, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(5, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(6, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(7, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(8, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(9, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
 
                 app:set_integrator(10, xbraid_util.createBDF(domainDiscT,
-                        lsolver, 4, 1e-8))
+                        lsolver, 2, 1e-8))
             end
             print("Create Braid Object")
             braid = xbraid_util.CreateExecutor(braid_desc,
