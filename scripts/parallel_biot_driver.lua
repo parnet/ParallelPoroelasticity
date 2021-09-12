@@ -504,7 +504,7 @@ if (doTransient) then
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
         integrator = xbraid_util.createFSTheta(domainDiscT,
-                lsolver, 1, 2, 1e-8)
+                lsolver, 1, 4, 1e-8)
 
         time = BraidTimer()
         time:start()
@@ -525,8 +525,8 @@ if (doTransient) then
             -- outputval = uapprox_tstop:clone()
             -- scriptor:lua_write(outputval,i,tstop,0,0)
 
-            -- outputval = uapprox_tstop:clone()
-            -- vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            outputval = uapprox_tstop:clone()
+            vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
         end
         time:stop()
         integration_time = time:get()
