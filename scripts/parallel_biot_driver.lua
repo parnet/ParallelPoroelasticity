@@ -503,8 +503,8 @@ if (doTransient) then
         local tstop = braid_desc.time.t_0
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-        integrator = xbraid_util.createFSTheta(domainDiscT,
-                lsolver, 1, 4, 1e-8)
+        integrator = xbraid_util.createBDF(domainDiscT,
+                lsolver, 4,  1e-8)
 
         time = BraidTimer()
         time:start()
