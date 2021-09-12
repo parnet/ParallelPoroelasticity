@@ -41,7 +41,7 @@ XARGS = {
 
     p_sequential_exec = util.GetParam("--sequential", "", ""),
 
-    p_tol_red_p= util.GetParamNumber("--tol-red-p", 1e-6, " 0 use residual, 1 xbraid residual"),
+    p_tol_red_p = util.GetParamNumber("--tol-red-p", 1e-6, " 0 use residual, 1 xbraid residual"),
     p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
 
     p_tol_red_u = util.GetParamNumber("--tol-red-u", 1e-6, " 0 use residual, 1 xbraid residual"),
@@ -100,7 +100,7 @@ local ARGS = {
     MGBaseLevel = util.GetParamNumber("--mg-base-level", 0, "some non-negative integer"),
     MGNumSmooth = util.GetParamNumber("--mg-num-smooth", 2, "some positive integer"),
     MGSmootherType = util.GetParam("--mg-smoother-type", "uzawa3", "uzawa,cgs"),
---    MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
+    --    MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
     LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
     LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
 }
@@ -341,8 +341,8 @@ local solver = {}
 tol_reduction_p = XARGS.p_tol_red_p
 tol_absolute_p = XARGS.p_tol_abs_p
 
-tol_reduction_u =  XARGS.p_tol_red_u
-tol_absolute_u =   XARGS.p_tol_abs_u
+tol_reduction_u = XARGS.p_tol_red_u
+tol_absolute_u = XARGS.p_tol_abs_u
 
 local cmpConvCheck = CompositeConvCheck(approxSpace)
 cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
@@ -440,13 +440,12 @@ braid_desc = {
     -- output = Scriptor or multiscriptor if table
     -- store_operator
     verbose = true,
-    use_residual = XARGS.p_useResidual == 1 ,
+    use_residual = XARGS.p_useResidual == 1,
 
     richardson_estimation = false, --set_richardson_estimation
     richardson_extrapolation = false,
     richardson_local_order = 2,
 }
-
 
 vtk_scriptor = VTKScriptor(vtk, "access")
 -- PARALLEL ]]
@@ -504,7 +503,7 @@ if (doTransient) then
         local tstop = braid_desc.time.t_0
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-        integrator = xbraid_util.creadFSTheta(domainDiscT,
+        integrator = xbraid_util.createFSTheta(domainDiscT,
                 lsolver, 1, 2, 1e-8)
 
         time = BraidTimer()
@@ -678,43 +677,81 @@ if (doTransient) then
                     domainDiscT,
                     vtk_scriptor
             )
+            integrator_type = "BDF"
             print("Set Integrator Methods - Default")
-            app:set_default_integrator(xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
-            print("Set Integrator Methods - Leveldependend")
-            app:set_integrator(0, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+            if integrator_type == "FS" then
+                app:set_default_integrator(xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
+                print("Set Integrator Methods - Leveldependend")
+                app:set_integrator(0, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(1, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(1, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(2, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(2, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(3, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(3, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(4, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(4, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(5, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(5, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(6, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1,1, 1e-8))
+                app:set_integrator(6, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(7, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(7, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(8, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(8, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(9, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(9, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
 
-            app:set_integrator(10, xbraid_util.creadFSTheta(domainDiscT,
-                    lsolver, 1, 1, 1e-8))
+                app:set_integrator(10, xbraid_util.createFSTheta(domainDiscT,
+                        lsolver, 1, 1, 1e-8))
+            elseif integrator_type == "BDF" then
+                app:set_default_integrator(xbraid_util.createBDF(domainDiscT,
+                        lsolver, 1, 1e-8))
+                print("Set Integrator Methods - Leveldependend")
+                app:set_integrator(0, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
 
+                app:set_integrator(1, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(2, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(3, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(4, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(5, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(6, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(7, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(8, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(9, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+
+                app:set_integrator(10, xbraid_util.createBDF(domainDiscT,
+                        lsolver, 4, 1e-8))
+            end
             print("Create Braid Object")
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,
@@ -768,21 +805,18 @@ if (doTransient) then
             --l2norm = BraidEuclidianNorm()
             -- braid:set_norm_provider(l2norm)
             bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-            bio_norm:set_order(4,2)
-            bio_norm:set_parameter(1.0, 142857,35714.3)
+            bio_norm:set_order(4, 2)
+            bio_norm:set_parameter(1.0, 142857, 35714.3)
 
             braid:set_norm_provider(bio_norm)
         else
             print("Using biot norm")
             bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-            bio_norm:set_order(4,2)
-            bio_norm:set_parameter(1.0, 142857,35714.3)
+            bio_norm:set_order(4, 2)
+            bio_norm:set_parameter(1.0, 142857, 35714.3)
 
             braid:set_norm_provider(bio_norm)
         end
-
-
-
 
         time = BraidTimer()
         time:start()

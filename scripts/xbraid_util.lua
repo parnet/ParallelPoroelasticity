@@ -141,10 +141,21 @@ function xbraid_util.create_integratorFactory(name, domainDiscT, lsolver, nlsolv
     return integrator
 end
 
-function xbraid_util.creadFSTheta(domain,lsolver, theta, num_steps, treshold)
+function xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, treshold)
     integrator = FixedStepThetaIntegrator()
     integrator:set_theta(theta)
     integrator:set_num_steps(num_steps)
+    integrator:set_reassemble_treshold(treshold)
+    integrator:set_domain(domain)
+    integrator:set_solver(lsolver)
+    return integrator
+end
+
+function xbraid_util.createBDF(domain,lsolver, order, treshold)
+    integrator = BDF_Integrator()
+    integrator:set_order(order)
+    -- integrator:set_theta(theta)
+    -- integrator:set_num_steps(num_steps)
     integrator:set_reassemble_treshold(treshold)
     integrator:set_domain(domain)
     integrator:set_solver(lsolver)
