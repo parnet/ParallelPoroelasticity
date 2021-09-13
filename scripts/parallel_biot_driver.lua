@@ -418,7 +418,7 @@ braid_desc = {
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 1,
+    access_level = 3,
 
     sequential = false, -- todo change for parallel
 
@@ -684,37 +684,37 @@ if (doTransient) then
                         lsolver, 1, 1, 1e-8))
                 print("Set Integrator Methods - Leveldependend")
                 app:set_integrator(0, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(1, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(2, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(3, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(4, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(5, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(6, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(7, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(8, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(9, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
 
                 app:set_integrator(10, xbraid_util.createFSTheta(domainDiscT,
-                        lsolver, 1, 4, 1e-8))
+                        lsolver, 1, 2, 1e-8))
             elseif integrator_type == "BDF" then
                 app:set_default_integrator(xbraid_util.createBDF(domainDiscT,
                         lsolver, 1, 1e-8))
