@@ -418,7 +418,7 @@ braid_desc = {
     mgrit_relax_type = XARGS.p_relaxation,
     store_values = 0,
     print_level = 3,
-    access_level = 3,
+    access_level = 1,
 
     sequential = false, -- todo change for parallel
 
