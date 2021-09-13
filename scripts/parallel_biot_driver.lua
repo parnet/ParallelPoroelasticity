@@ -680,7 +680,7 @@ if (doTransient) then
             integrator_type = "FS"
             print("Set Integrator Methods - Default")
             if integrator_type == "FS" then
-                base = 4
+                base = 2
                 app:set_default_integrator(xbraid_util.createFSTheta(domainDiscT,
                         lsolver, 1, base, 1e-8))
                 print("Set Integrator Methods - Leveldependend")
