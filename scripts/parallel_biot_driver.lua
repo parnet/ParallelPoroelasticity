@@ -359,28 +359,6 @@ solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
 
 
-tol_reduction_p = 1e-15
-tol_absolute_p = XARGS.p_tol_abs_p
-
-tol_reduction_u = 1e-15
-tol_absolute_u = XARGS.p_tol_abs_u
-
-local coarseConvCheck = CompositeConvCheck(approxSpace)
-coarseConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
-coarseConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
-if (dim == 3) then
-    coarseConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
-end
-coarseConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-coarseConvCheck:set_maximum_steps(7)
-coarseConvCheck:set_verbose(true)
-coarseConvCheck:set_supress_unsuccessful(true)
-
-coarseGMGsolver = LinearSolver()
-coarseGMGsolver:set_preconditioner(gmg) -- gmg, dbgIter
-coarseGMGsolver:set_convergence_check(coarseConvCheck)
-
-
 -- LU
 local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
@@ -792,34 +770,34 @@ if (doTransient) then
                     lsolver, 1, 1e-8))
 
             app:set_integrator(1, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(2, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(3, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(4, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(5, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(6, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(7, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(8, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(9, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             app:set_integrator(10, xbraid_util.createThetaStepper(domainDiscT,
-                    coarseGMGsolver, 1, 1e-8))
+                    lsolver, 1, 1e-8))
 
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,
