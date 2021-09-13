@@ -151,9 +151,19 @@ function xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, treshold)
     return integrator
 end
 
+function xbraid_util.createThetaStepper(domain, lsolver, theta,  treshold)
+    integrator = ThetaStepper()
+    integrator:set_theta(theta)
+    -- integrator:set_num_steps(num_steps)
+    integrator:set_reassemble_treshold(treshold)
+    integrator:set_domain(domain)
+    integrator:set_solver(lsolver)
+    return integrator
+end
+
 function xbraid_util.createBDF(domain,lsolver, order, treshold)
     integrator = BDF_Integrator()
-    integrator:set_order(order)
+    -- integrator:set_order(order)
     -- integrator:set_theta(theta)
     -- integrator:set_num_steps(num_steps)
     integrator:set_reassemble_treshold(treshold)
@@ -275,7 +285,6 @@ end
 function xbraid_util.CreateTimeStepper(desc, domain, scriptor, solver)
     app = BraidTimeStepper()
     xbraid_util.SetBaseValues(app, desc, domain, scriptor)
-    app:set_solver(solver)
     return app
 end
 
