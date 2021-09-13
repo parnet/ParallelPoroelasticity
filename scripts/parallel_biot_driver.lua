@@ -359,10 +359,10 @@ solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
 
 
-tol_reduction_p = 1e-3
+tol_reduction_p = 1e-15
 tol_absolute_p = XARGS.p_tol_abs_p
 
-tol_reduction_u = 1e-3
+tol_reduction_u = 1e-15
 tol_absolute_u = XARGS.p_tol_abs_u
 
 local coarseConvCheck = CompositeConvCheck(approxSpace)
@@ -372,7 +372,7 @@ if (dim == 3) then
     coarseConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
 end
 coarseConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-coarseConvCheck:set_maximum_steps(3)
+coarseConvCheck:set_maximum_steps(7)
 coarseConvCheck:set_verbose(true)
 coarseConvCheck:set_supress_unsuccessful(true)
 
