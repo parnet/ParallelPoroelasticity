@@ -448,7 +448,7 @@ braid_desc = {
     conv_check = {
         max_iter = XARGS.p_max_iter,
         -- reduction = 1e-9
-        absolute = 5e-7
+        absolute = 1e-5
     },
 
     skip_downcycle_work = boolskipdown,
