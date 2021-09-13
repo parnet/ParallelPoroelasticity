@@ -352,7 +352,7 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(true)
+cmpConvCheck:set_verbose(false)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
@@ -454,7 +454,7 @@ local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(10)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_reduction(5e-6)
-newtonCheck:set_verbose(true)
+newtonCheck:set_verbose(false)
 
 local newtonCheck2 = CompositeConvCheck(approxSpace)
 newtonCheck2:set_component_check("ux", p0 * 1e-7, 5e-8)
