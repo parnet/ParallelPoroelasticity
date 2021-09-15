@@ -677,7 +677,7 @@ if (doTransient) then
                     domainDiscT,
                     vtk_scriptor
             )
-            integrator_type = "FS"
+            integrator_type = "BDF"
             print("Set Integrator Methods - Default")
             if integrator_type == "FS" then
                 base = 2
