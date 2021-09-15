@@ -430,9 +430,9 @@ braid_desc = {
     },
 
     skip_downcycle_work = boolskipdown,
-    time_refinement = false,
+    time_refinement = true,
     max_refinement = 10,
-    spatial_coarsen_and_refine = false,
+    spatial_coarsen_and_refine = false ,
     min_coarsening = 2,
 
     printfile = "000 " .. XARGS.p_driver .. "_" .. XARGS.p_num_time .. "_" .. XARGS.p_max_level .. "_" .. XARGS.p_cycle .. "_" .. XARGS.p_relaxation .. ".mgrit",
@@ -442,7 +442,7 @@ braid_desc = {
     verbose = true,
     use_residual = XARGS.p_useResidual == 1,
 
-    richardson_estimation = false, --set_richardson_estimation
+    richardson_estimation = true, --set_richardson_estimation
     richardson_extrapolation = false,
     richardson_local_order = 2,
 }

@@ -204,33 +204,6 @@ braid_adaptive_conv = {
     strongfirst = p_strongfirst,
 }
 
-braid_integration_desc = {
-    time = { t_0 = 0, t_end = 1, n = 100 },
-    max_level = 15,
-    integrator = limex, -- or table
-
-    coarsening_factor = 2,
-    mgrit_cycle_type = "V",
-    mgrit_relax_type = "FCF",
-    store_values = 0,
-    print_level = 3,
-    access_level = 1,
-    verbose = true,
-
-    richardson_estimation = true, --set_richardson_estimation
-    richardson_extrapolation = true,
-    richardson_local_order = 4,
-
-    richardson_order = 4,
-
-    temporalNorm = 3, -- {1,2,3}
-    conv_check = {
-        iterations = 10,
-        -- reduction = 1e-9
-        absolute = 5e-7
-    }
-}
-
 function xbraid_util.SetConvCheck(braid, desc)
     braid:set_max_iterations(desc.conv_check.max_iter)
     if (desc.conv_check.absolute ~= nil) then
@@ -359,7 +332,7 @@ function xbraid_util.CreateExecutor(desc,communicator, app, logging)
     --braid:set_norm_provider()
     --braid:set_paralog()
     --braid:set_paralog_script()
-    --braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
+    braid:set_richardson_estimation(desc.richardson_estimation, desc.richardson_extrapolation, desc.richardson_local_order)
 
     app:init()
     braid:print_settings()
