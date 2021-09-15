@@ -443,7 +443,7 @@ braid_desc = {
     use_residual = XARGS.p_useResidual == 1,
 
     richardson_estimation = true, --set_richardson_estimation
-    richardson_extrapolation = true,
+    richardson_extrapolation = false,
     richardson_local_order = 2,
 }
 
