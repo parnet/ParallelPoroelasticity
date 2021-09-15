@@ -755,7 +755,7 @@ if (doTransient) then
             end
 
             app:set_ref_factor(2)
-            app:set_threshold(0.1)
+            app:set_threshold(1.1)
 
             print("Create Braid Object")
             braid = xbraid_util.CreateExecutor(braid_desc,
