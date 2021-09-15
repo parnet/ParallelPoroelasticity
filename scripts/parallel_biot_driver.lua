@@ -753,6 +753,10 @@ if (doTransient) then
                 app:set_integrator(10, xbraid_util.createBDF(domainDiscT,
                         lsolver, 4, 1e-8))
             end
+
+            app:set_ref_factor(2)
+            app:set_threshold(0.5)
+
             print("Create Braid Object")
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,
