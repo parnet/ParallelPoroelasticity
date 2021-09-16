@@ -151,6 +151,7 @@ function xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, treshold)
     return integrator
 end
 
+
 function xbraid_util.createThetaStepper(domain, lsolver, theta,  treshold)
     integrator = ThetaStepper()
     integrator:set_theta(theta)
@@ -161,15 +162,92 @@ function xbraid_util.createThetaStepper(domain, lsolver, theta,  treshold)
     return integrator
 end
 
-function xbraid_util.createBDF(domain,lsolver, order, treshold)
+
+
+function xbraid_util.CreateFSLevel(app, domain, lsolver, theta, num_steps, treshold)
+    app:set_default_integrator(xbraid_util.createFSTheta(domain,
+            lsolver, theta,   num_steps  , treshold))
+    print("Set Integrator Methods - Leveldependend")
+    app:set_integrator(0, xbraid_util.createFSTheta(domain,
+            lsolver, theta,   num_steps  , treshold))
+
+    app:set_integrator(1, xbraid_util.createFSTheta(domain,
+            lsolver, theta,  num_steps   , treshold))
+
+    app:set_integrator(2, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(3, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(4, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(5, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(6, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(7, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(8, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(9, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+
+    app:set_integrator(10, xbraid_util.createFSTheta(domain,
+            lsolver, theta, num_steps, treshold))
+end
+
+
+function xbraid_util.createBDF(domain,lsolver, order, threshold)
     integrator = BDF_Integrator()
-    -- integrator:set_order(order)
-    -- integrator:set_theta(theta)
-    -- integrator:set_num_steps(num_steps)
-    integrator:set_reassemble_treshold(treshold)
+    integrator:set_order(order)
+    integrator:set_reassemble_treshold(threshold)
     integrator:set_domain(domain)
     integrator:set_solver(lsolver)
     return integrator
+end
+
+function xbraid_util.createBDFLevel(app,domain,lsolver,order,threshold)
+    app:set_default_integrator(xbraid_util.createBDF(domain,
+            lsolver, 4, threshold))
+    print("Set Integrator Methods - Leveldependend")
+    app:set_integrator(0, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(1, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(2, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(3, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(4, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(5, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(6, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(7, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(8, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(9, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
+
+    app:set_integrator(10, xbraid_util.createBDF(domain,
+            lsolver, order, threshold))
 end
 
 function xbraid_util.set_relax_type(braid, p_mgrit_relax_type)
