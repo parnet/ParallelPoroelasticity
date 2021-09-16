@@ -707,38 +707,10 @@ if (doTransient) then
             )
 
             print("Set Stepper Methods - Leveldependend")
-            app:set_integrator(0, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(1, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(2, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(3, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(4, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(5, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(6, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(7, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(8, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(9, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
-
-            app:set_integrator(10, xbraid_util.createThetaStepper(domainDiscT,
-                    lsolver, 1, 1e-8))
+            xbraid_util.CreateStepperLevel(app,
+                    domainDiscT,
+                    lsolver,
+                    IARGS.theta,1e-8)
 
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,

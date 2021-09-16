@@ -316,7 +316,7 @@ function xbraid_util.SetBaseValues(app, desc, domain, scriptor)
     app:set_scriptor(scriptor)
 end
 
-function xbraid_util.CreateIntegratorFactory(desc, domain, scriptor, fintegrator, cintegrator)
+function xbraid_util.CreateIntegratorFactory(desc, domain, scriptor)
     app = BraidIntegratorFactory()
     xbraid_util.SetBaseValues(app, desc, domain, scriptor)
     -- app:set_fine_time_integrator(fintegrator)
@@ -337,6 +337,42 @@ function xbraid_util.CreateTimeStepper(desc, domain, scriptor, solver)
     app = BraidTimeStepper()
     xbraid_util.SetBaseValues(app, desc, domain, scriptor)
     return app
+end
+
+function xbraid_util.CreateStepperLevel(app,domainDiscT,lsolver,theta,threashold)
+    app:set_integrator(0, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(1, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(2, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(3, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(4, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(5, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(6, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(7, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(8, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(9, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
+    app:set_integrator(10, xbraid_util.createThetaStepper(domainDiscT,
+            lsolver, theta, threashold))
+
 end
 
 function xbraid_util.CreateResidualStepper(desc, domain, scriptor, solver)
