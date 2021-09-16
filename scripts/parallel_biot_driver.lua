@@ -409,7 +409,8 @@ desc_conv_control = {
 
 -- PARALLEL [[
 braid_desc = {
-    type = "integrator",
+    driver = XARGS.p_driver,    -- XARGS.p_driver == "IntegratorFactory"
+    integrator = "FS",
     time = { t_0 = startTime,
              t_end = endTime,
              n = XARGS.p_num_time }, --math.ceil((endTime-startTime)/dt) },
@@ -625,14 +626,6 @@ if (doTransient) then
             dtmin = dtMin,
             dtmax = dtMax,
         }
-
-        -- ARGS.useVTK = true -- todo adapt
-        -- if (ARGS.useVTK) then
-        --     local vtkFull = VTKOutput()
-        --    local vtkobserver = VTKOutputObserver("PoroElasticityLimex.vtk", vtkFull)
-        --    --limex:attach_observer(vtkobserver)
-        -- end
-
         local luaobserver = LuaCallbackObserver()
 
         function myLuaLimexPostProcess(step, time, currdt)
@@ -644,11 +637,6 @@ if (doTransient) then
         end
 
         luaobserver:set_callback("myLuaLimexPostProcess")
-        --limex:attach_observer(luaobserver)
-        -- Solve problem using LIMEX.
-        -- myclock:tic()
-        -- limex:apply(u, endTime, u, startTime)
-        -- print("CDELTA=" .. myclock:toc())
         print("Residual ", braid_desc.use_residual)
 
         logging = Paralog() -- todo move to desc
@@ -656,7 +644,7 @@ if (doTransient) then
         logging:set_file_name("joba")
 
         vtk_scriptor = VTKScriptor(vtk, "access")
-        if XARGS.p_driver == "IntegratorFactory" then
+        if braid_desc.driver == "IntegratorFactory" then
             app = xbraid_util.CreateIntegratorFactory(braid_desc,
                     domainDiscT,
                     vtk_scriptor,
@@ -670,11 +658,12 @@ if (doTransient) then
                     logging
             )
 
-        elseif XARGS.p_driver == "Integrator" then
+        elseif braid_desc.driver == "Integrator" then
             app = xbraid_util.CreateIntegrator(braid_desc,
                     domainDiscT,
                     vtk_scriptor
             )
+
             if IARGS.method == "FS" then
                 xbraid_util.CreateFSLevel(app,
                         domainDiscT,
@@ -698,7 +687,7 @@ if (doTransient) then
                     app,
                     logging
             )
-        elseif XARGS.p_driver == "TimeStepper" then
+        elseif braid_desc.driver == "TimeStepper" then
             app = xbraid_util.CreateTimeStepper(braid_desc,
                     domainDiscT,
                     vtk_scriptor
