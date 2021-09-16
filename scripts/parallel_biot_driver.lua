@@ -33,18 +33,17 @@ XARGS = {
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 
-    p_driver = util.GetParam("--driver", "IntegratorFactory", "relaxation type FCF, FFCF or F-relaxation"),
-
-    pp_skip_downcylce = util.GetParam("--skip", "", "relaxation type FCF, FFCF or F-relaxation"),
-
-    p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual"),
-
-    p_sequential_exec = util.GetParam("--sequential", "", ""),
+    p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
+    pp_skip_downcylce = util.GetParamNumber("--skip", 1, "relaxation type FCF, FFCF or F-relaxation")==1,
+    p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
+    p_sequential_exec = util.GetParamNumber("--sequential", 0, "") == 1 ,
+    p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
+    p_printlevel = util.GetParamNumber("--printlevel", 1, ""),
+    p_store_values = util.GetParamNumber("--store-level", 0, ""),
 
     p_tol_red_p = util.GetParamNumber("--tol-red-p", 1e-6, " 0 use residual, 1 xbraid residual"),
-    p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
-
     p_tol_red_u = util.GetParamNumber("--tol-red-u", 1e-6, " 0 use residual, 1 xbraid residual"),
+    p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
     p_tol_abs_u = util.GetParamNumber("--tol-abs-u", 1e-14, " 0 use residual, 1 xbraid residual"),
 }
 
@@ -53,7 +52,17 @@ PARGS = {
 }
 
 IARGS = {
-    orderOrTheta = util.GetParamNumber("--orderOrTheta", 1, "relaxation type FCF, FFCF or F-relaxation"),
+    method = util.GetParam("--integrator", 1, "relaxation type FCF, FFCF or F-relaxation"),
+    theta = util.GetParamNumber("--theta", 1, "relaxation type FCF, FFCF or F-relaxation"),
+    order = util.GetParamNumber("--order", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    num_step = util.GetParamNumber("--gridstep", 2, "relaxation type FCF, FFCF or F-relaxation"),
+}
+
+RARGS {
+    rich_est = util.GetParamNumber("--rich-est", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
+    rich_ext = util.GetParamNumber("--rich-ext", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
+    rich_order = util.GetParamNumber("--rich-order", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    time_refine = util.GetParamNumber("--trefine", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
 }
 
 num_world_ranks = NumProcs()
@@ -303,13 +312,6 @@ end
 -------------------------
 -- create GMG
 -------------------------
-
--- Base Solver
-local baseConvCheck = ConvCheck()
-baseConvCheck:set_maximum_steps(5000)
-baseConvCheck:set_reduction(1e-12)
-baseConvCheck:set_verbose(false)
-
 local superLU = SuperLU()
 -- Geometric Multi Grid
 local gmg = GeometricMultiGrid(approxSpace)
@@ -398,29 +400,23 @@ desc_conv_control = {
     force_convergence = false
 }
 
-local boolskipdown = true
-if XARGS.pp_skip_downcylce == "NO" then
-    boolskipdown = false
-end
+
 
 -- PARALLEL [[
 braid_desc = {
     type = "integrator",
     time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time }, --math.ceil((endTime-startTime)/dt) },
     cfactor = xbraid_util.get_cfactor(XARGS.p_c_factor), --{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
-    --cfactor = 2,
     default_cfactor = XARGS.p_c_factor_default,
     max_level = XARGS.p_max_level,
 
-    integrator = limex, -- todo or table
-
     mgrit_cycle_type = XARGS.p_cycle,
     mgrit_relax_type = XARGS.p_relaxation,
-    store_values = 0,
-    print_level = 3,
-    access_level = 1,
+    store_values = XARGS.p_store_values,
+    print_level = XARGS.p_printlevel,
+    access_level = XARGS.p_accesslevel,
 
-    sequential = false, -- todo change for parallel
+    sequential = XARGS.p_sequential_exec,
 
     temporal_norm = 3, -- {1,2,3}
     conv_check = {
@@ -430,7 +426,7 @@ braid_desc = {
     },
 
     skip_downcycle_work = boolskipdown,
-    time_refinement = true,
+
     max_refinement = 10,
     spatial_coarsen_and_refine = false ,
     min_coarsening = 2,
@@ -440,11 +436,13 @@ braid_desc = {
     -- output = Scriptor or multiscriptor if table
     -- store_operator
     verbose = true,
-    use_residual = XARGS.p_useResidual == 1,
+    use_residual = XARGS.p_useResidual,
 
-    richardson_estimation = true, --set_richardson_estimation
-    richardson_extrapolation = false,
-    richardson_local_order = 2,
+    sync = RARGS.time_refine and RARGS.rich_est ,
+    time_refinement = RARGS.time_refine,
+    richardson_estimation = RARGS.rich_est, --set_richardson_estimation
+    richardson_extrapolation = RARGS.rich_ext,
+    richardson_local_order = RARGS.rich_order,
 }
 
 vtk_scriptor = VTKScriptor(vtk, "access")
@@ -677,14 +675,21 @@ if (doTransient) then
                     domainDiscT,
                     vtk_scriptor
             )
-            integrator_type = "BDF"
             print("Set Integrator Methods - Default")
-            if integrator_type == "FS" then
-                xbraid_util.CreateFSLevel(app, domainDiscT,lsolver,1, 2,1e-8)
-            elseif integrator_type == "BDF" then
-                xbraid_util.createBDFLevel(app,domainDiscT,lsolver,2,1e-8)
+            if IARGS.method == "FS" then
+                xbraid_util.CreateFSLevel(app,
+                        domainDiscT,
+                        lsolver,
+                        IARGS.theta,
+                        IARGS.num_step,
+                        1e-8)
+            elseif IARGS.method == "BDF" then
+                xbraid_util.createBDFLevel(app,
+                        domainDiscT,
+                        lsolver,
+                        IARGS.order,
+                        1e-8)
             end
-
             app:set_ref_factor(2)
             app:set_threshold(1.1)
 

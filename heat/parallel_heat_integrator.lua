@@ -746,18 +746,16 @@ braid_desc = {
     type = "integrator",
     time = { t_0 = p_startTime, t_end = p_endTime, n = 4096 }, --math.ceil((endTime-startTime)/dt) },
     cfactor = { 4096, 2, 2, 2, 2 }, -- 0 finest level,
-    cfactor = 2,
     default_cfactor = 2,
-    max_level = 2, --XARGS.p_max_level,
+    max_level = XARGS.p_max_level,
 
     integrator = limex, -- todo or table
 
-    coarsening_factor = 2,
     mgrit_cycle_type = XARGS.p_cycle,
     mgrit_relax_type = XARGS.p_relaxation,
-    store_values = 0,
-    print_level = 3,
-    access_level = 3,
+    store_values = XARGS.p_storevalue,
+    print_level = XARGS.p_printlevel,
+    access_level = XARGS.p_accesslevel,
 
     sequential = false, -- todo change for parallel
 

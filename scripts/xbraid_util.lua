@@ -375,7 +375,10 @@ function xbraid_util.CreateExecutor(desc,communicator, app, logging)
     -- braid:set_output()
     braid:set_filename(desc.outputfile)
     braid:set_paralog(logging)
-    braid:set_sync()
+
+    if braid_desc.sync then
+        braid:set_sync()
+    end
     --braid:set_increase_max_levels()
     --braid:set_relax_only_cg()
     --braid:set_agg_c_factor()
