@@ -32,6 +32,7 @@ XARGS = {
     p_c_factor = util.GetParam("--cfactor", "2_2_2", "relaxation type FCF, FFCF or F-relaxation"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
+    p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
 
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
     pp_skip_downcylce = util.GetParamNumber("--skip", 1, "relaxation type FCF, FFCF or F-relaxation")==1,
@@ -64,6 +65,9 @@ RARGS {
     rich_ext = util.GetParamNumber("--rich-ext", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
     rich_order = util.GetParamNumber("--rich-order", 2, "relaxation type FCF, FFCF or F-relaxation"),
     time_refine = util.GetParamNumber("--trefine", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
+
+    rich_refine = util.GetParamNumber("--rich-refine", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    rich_bound = util.GetParamNumber("--rich-bound", 1.1, "relaxation type FCF, FFCF or F-relaxation"),
 }
 
 num_world_ranks = NumProcs()
@@ -406,8 +410,11 @@ desc_conv_control = {
 -- PARALLEL [[
 braid_desc = {
     type = "integrator",
-    time = { t_0 = startTime, t_end = endTime, n = XARGS.p_num_time }, --math.ceil((endTime-startTime)/dt) },
-    cfactor = xbraid_util.get_cfactor(XARGS.p_c_factor), --{XARGS.p_c_factor,2,2,2,2}, -- 0 finest level,
+    time = { t_0 = startTime,
+             t_end = endTime,
+             n = XARGS.p_num_time }, --math.ceil((endTime-startTime)/dt) },
+
+    cfactor = xbraid_util.get_cfactor(XARGS.p_c_factor),
     default_cfactor = XARGS.p_c_factor_default,
     max_level = XARGS.p_max_level,
 
@@ -426,7 +433,7 @@ braid_desc = {
         absolute = 1e-5
     },
 
-    skip_downcycle_work = boolskipdown,
+    skip_downcycle_work = XARGS.p_boolskipdown,
 
     max_refinement = 10,
     spatial_coarsen_and_refine = false ,
@@ -436,7 +443,7 @@ braid_desc = {
     outputfile = "integrator_out",
     -- output = Scriptor or multiscriptor if table
     -- store_operator
-    verbose = true,
+
     use_residual = XARGS.p_useResidual,
 
     sync = RARGS.time_refine and RARGS.rich_est ,
@@ -444,6 +451,8 @@ braid_desc = {
     richardson_estimation = RARGS.rich_est, --set_richardson_estimation
     richardson_extrapolation = RARGS.rich_ext,
     richardson_local_order = RARGS.rich_order,
+
+    verbose = true,
 }
 
 vtk_scriptor = VTKScriptor(vtk, "access")
@@ -454,15 +463,6 @@ newtonCheck:set_maximum_steps(10)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_reduction(5e-6)
 newtonCheck:set_verbose(false)
-
-local newtonCheck2 = CompositeConvCheck(approxSpace)
-newtonCheck2:set_component_check("ux", p0 * 1e-7, 5e-8)
-newtonCheck2:set_component_check("uy", p0 * 1e-7, 5e-8)
-if (dim == 3) then
-    newtonCheck2:set_component_check("uz", p0 * 1e-7, 5e-8)
-end
-newtonCheck2:set_component_check("p", p0 * 1e-9, 5e-8)
-newtonCheck2:set_maximum_steps(2)
 
 local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
@@ -671,12 +671,10 @@ if (doTransient) then
             )
 
         elseif XARGS.p_driver == "Integrator" then
-            print("Create Integrator")
             app = xbraid_util.CreateIntegrator(braid_desc,
                     domainDiscT,
                     vtk_scriptor
             )
-            print("Set Integrator Methods - Default")
             if IARGS.method == "FS" then
                 xbraid_util.CreateFSLevel(app,
                         domainDiscT,
@@ -691,16 +689,15 @@ if (doTransient) then
                         IARGS.order,
                         1e-8)
             end
-            app:set_ref_factor(2)
-            app:set_threshold(1.1)
 
-            print("Create Braid Object")
+            app:set_ref_factor(RARGS.rich_refine)
+            app:set_threshold(RARGS.rich_bound)
+
             braid = xbraid_util.CreateExecutor(braid_desc,
                     space_time_communicator,
                     app,
                     logging
             )
-            print("Finished")
         elseif XARGS.p_driver == "TimeStepper" then
             app = xbraid_util.CreateTimeStepper(braid_desc,
                     domainDiscT,
