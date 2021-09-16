@@ -36,7 +36,8 @@ XARGS = {
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
     pp_skip_downcylce = util.GetParamNumber("--skip", 1, "relaxation type FCF, FFCF or F-relaxation")==1,
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
-    p_sequential_exec = util.GetParamNumber("--sequential", 0, "") == 1 ,
+    p_sequential_exec = util.GetParamNumber("--sequential", 0, "") == 1,
+
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
     p_printlevel = util.GetParamNumber("--printlevel", 1, ""),
     p_store_values = util.GetParamNumber("--store-level", 0, ""),
