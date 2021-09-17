@@ -37,7 +37,7 @@ XARGS = {
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
     pp_skip_downcylce = util.GetParamNumber("--skip", 1, "relaxation type FCF, FFCF or F-relaxation")==1,
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
-    p_sequential_exec = util.GetParamNumber("--sequential", 0, "") == 1,
+    p_sequential_exec = util.GetParam("--sequential", "", ""),
 
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
     p_printlevel = util.GetParamNumber("--printlevel", 1, ""),
@@ -554,13 +554,12 @@ if (doTransient) then
 
         print(tstart, "\n", tstop, "\n", t_N, "\n\n", offset, "\n", proc_offset, "\n", dt_total, "\n", dt_fine, "\n\n", t_rank, "\n", t_proc, "\n", proc_offset, "\n\n\n")
         time = BraidTimer()
-        -- for i = proc_offset, proc_offset+t_proc-1 do
-        i = 128
-        ctime = tstart + i * dt_fine
-        print(t_rank, "\t", i, "\t", ctime)
-        outputval = u_start:clone()
-        scriptor:lua_write(outputval, i, ctime, 0, 0)
-        -- end
+        for i = proc_offset, proc_offset+t_proc-1 do
+            ctime = tstart + i * dt_fine
+            print(t_rank, "\t", i, "\t", ctime)
+            outputval = u_start:clone()
+            scriptor:lua_write(outputval, i, ctime, 0, 0)
+        end
         time:stop()
         integration_time = time:get()
         print("timer " .. integration_time)
