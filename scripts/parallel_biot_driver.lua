@@ -425,7 +425,7 @@ braid_desc = {
     print_level = XARGS.p_printlevel,
     access_level = XARGS.p_accesslevel,
 
-    sequential = XARGS.p_sequential_exec,
+    sequential = XARGS.p_sequential_exec == "",
 
     temporal_norm = 3, -- {1,2,3}
     conv_check = {
