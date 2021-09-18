@@ -504,7 +504,7 @@ if (doTransient) then
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
         integrator = xbraid_util.createFS(domainDiscT,
-                lsolver, IARGS.num_step,  1e-8)
+                lsolver, 1.0,IARGS.num_step,  1e-8)
 
         time = BraidTimer()
         time:start()
