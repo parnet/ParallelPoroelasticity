@@ -508,6 +508,7 @@ if (doTransient) then
 
         time = BraidTimer()
         time:start()
+        iowrite = GridFunctionIO()
 
         -- outputval = uapprox_tstop:clone()
         -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
@@ -527,6 +528,8 @@ if (doTransient) then
 
             outputval = uapprox_tstop:clone()
             vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            iowrite:write(outputval, "vector_"..i ..".gf")
+
         end
         time:stop()
         integration_time = time:get()
