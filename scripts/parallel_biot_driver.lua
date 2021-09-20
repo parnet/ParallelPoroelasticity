@@ -508,7 +508,7 @@ if (doTransient) then
 
         time = BraidTimer()
         time:start()
-        iowrite = GridFunctionIO()
+        -- iowrite = GridFunctionIO()
 
         -- outputval = uapprox_tstop:clone()
         -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
@@ -528,8 +528,34 @@ if (doTransient) then
 
             outputval = uapprox_tstop:clone()
             vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-            iowrite:write(outputval, "vector_"..i ..".gf")
+            -- iowrite:write(outputval, "vector_"..i ..".gf")
 
+        end
+        time:stop()
+        integration_time = time:get()
+        print(integration_time, "finished sequential timestepping with integrator")
+    elseif(XARGS.p_sequential_exec == "IO") then
+        vtk_scriptor = VTKScriptor(vtk, "output")
+        iowrite = GridFunctionIO()
+
+        uapprox_tstart = u_start:clone()
+        uapprox_tstop = u_start:clone()
+        local tstop = braid_desc.time.t_0
+        local tstart = braid_desc.time.t_0
+        print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
+        time = BraidTimer()
+        time:start()
+
+
+        -- outputval = uapprox_tstop:clone()
+        -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
+
+        for i = 1, braid_desc.time.n do
+            tstart = tstop
+            tstop = tstop + dt
+            outputval = uapprox_tstop:clone()
+            iowrite:read(outputval, "/home/mparnet/sources/vector_"..i ..".gf")
+            vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
         end
         time:stop()
         integration_time = time:get()
