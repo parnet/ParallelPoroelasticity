@@ -507,8 +507,7 @@ logging:init()
         cmpscr:set_num_ref(numRefs)
         cmpscr:set_max_index(512,braid_desc.time.n)
         cmpscr:set_log(logging)
-        print("planned exit")
-        exit()
+
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
 
@@ -541,7 +540,8 @@ logging:init()
             -- scriptor:lua_write(outputval,i,tstop,0,0)
 
             outputval = uapprox_tstop:clone()
-            vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            -- vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            cmpscr:write(outputval, i, tstop, 0,0)
             -- iowrite:write(outputval, "vector_"..i ..".gf")
 
         end
