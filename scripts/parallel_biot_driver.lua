@@ -541,7 +541,7 @@ logging:init()
 
             outputval = uapprox_tstop:clone()
             -- vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-            cmpscr:write(outputval, i, tstop, 0,0)
+            cmpscr:lua_write(outputval, i, tstop)
             -- iowrite:write(outputval, "vector_"..i ..".gf")
 
         end
