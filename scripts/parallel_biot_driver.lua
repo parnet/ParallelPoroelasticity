@@ -493,8 +493,22 @@ if (doTransient) then
         print("initial value calculation done. \n\n\n\n\n")
     end
 
+logging = Paralog() -- todo move to desc
+logging:set_comm(space_time_communicator)
+logging:set_file_name("joba")
+logging:init()
+
     if (XARGS.p_sequential_exec == "X") then
+
         vtk_scriptor = VTKScriptor(vtk, "output")
+        cmpscr = BraidBiotCheckPrecomputed()
+        cmpscr:set_vtk_solution(vtk, "solution")
+        cmpscr:set_vtk_diff(vtk,"error")
+        cmpscr:set_num_ref(numRefs)
+        cmpscr:set_max_index(512,braid_desc.time.n)
+        cmpscr:set_log(logging)
+        print("planned exit")
+        exit()
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
 
@@ -667,9 +681,7 @@ if (doTransient) then
         luaobserver:set_callback("myLuaLimexPostProcess")
         print("Residual ", braid_desc.use_residual)
 
-        logging = Paralog() -- todo move to desc
-        logging:set_comm(space_time_communicator)
-        logging:set_file_name("joba")
+
 
         vtk_scriptor = VTKScriptor(vtk, "access")
         if braid_desc.driver == "IntegratorFactory" then
