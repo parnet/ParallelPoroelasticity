@@ -39,7 +39,7 @@ XARGS = {
     p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1, --- todo
 
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
-    p_sequential_exec = util.GetParam("--sequential", "", ""),
+    p_sequential_exec = util.GetParam("--sequential", "NO", ""),
 
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
     p_printlevel = util.GetParamNumber("--printlevel", 1, ""),
@@ -427,7 +427,7 @@ braid_desc = {
     print_level = XARGS.p_printlevel,
     access_level = XARGS.p_accesslevel,
 
-    sequential = XARGS.p_sequential_exec == "",
+    sequential = XARGS.p_sequential_exec == "YES",
 
     temporal_norm = 3, -- {1,2,3}
     conv_check = {
