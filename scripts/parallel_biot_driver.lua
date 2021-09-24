@@ -701,7 +701,7 @@ logging:init()
         end
         precom_scriptor:set_num_ref(numRefs)
         for i = 1, #braid_desc.cfactor do
-            precom_scriptor:set_c_factor(level -1 , braid_desc.cfactor[i])
+            precom_scriptor:set_c_factor(i -1 , braid_desc.cfactor[i])
         end
         bscriptor = precom_scriptor
 
