@@ -35,8 +35,7 @@ XARGS = {
 
 
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
-    pp_skip_downcylce = util.GetParamNumber("--skip", 1, "relaxation type FCF, FFCF or F-relaxation")==1,
-    p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1, --- todo
+    p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
 
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
     p_sequential_exec = util.GetParam("--sequential", "NO", ""),
@@ -77,12 +76,14 @@ space_time_communicator = SpaceTimeCommunicator()
 
 if num_world_ranks % XARGS.num_spatial_procs == 0 then
     space_time_communicator:split(XARGS.num_spatial_procs)
-    num_temporal_procs = num_world_ranks / XARGS.num_spatial_procs;
-    num_spatial_procs = XARGS.num_spatial_procs
+    local num_temporal_procs = num_world_ranks / XARGS.num_spatial_procs;
+    local num_spatial_procs = XARGS.num_spatial_procs
     print("Using: " .. num_spatial_procs .. " of " .. num_world_ranks .. " for spatial")
+    print("Using: " .. num_spatial_procs .. " of " .. num_world_ranks .. " for temporal")
 else
     space_time_communicator:split(1)
-    print("Using: " .. 1 .. " of " .. num_world_ranks .. " for spatial") -- todo exit?
+    print("Using: " .. 1 .. " of " .. num_world_ranks .. " for spatial")
+    print("Using: " .. num_world_ranks .. " of " .. num_world_ranks .. " for spatial")
 end
 
 repl = ReplaceStandardStream()
@@ -433,7 +434,7 @@ braid_desc = {
     conv_check = {
         max_iter = XARGS.p_max_iter,
         -- reduction = 1e-9
-        absolute = 1e-5
+        absolute = 1
     },
 
     skip_downcycle_work = XARGS.p_boolskipdown,
