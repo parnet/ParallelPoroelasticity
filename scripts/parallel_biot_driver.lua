@@ -505,15 +505,15 @@ if (doTransient) then
 
         -- vxtk_scriptor = VTKScriptor(vtk, "output")
         cmpscr = BraidBiotCheckPrecomputed()
-        cmpscr:set_vtk_solution(vtk, "solution")
+        cmpscr:set_log(logging)
+        cmpscr:set_vtk_solution(vtk, "sequential")
         cmpscr:set_vtk_diff(vtk, "error")
-        cmpscr:set_num_ref(numRefs)
         if (numRefs == 6) then
             cmpscr:set_max_index(128, braid_desc.time.n)
         else
             cmpscr:set_max_index(512, braid_desc.time.n)
         end
-        cmpscr:set_log(logging)
+        cmpscr:set_num_ref(numRefs)
 
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
