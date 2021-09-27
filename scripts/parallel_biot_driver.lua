@@ -412,7 +412,7 @@ desc_conv_control = {
 
 -- PARALLEL [[
 braid_desc = {
-    driver = XARGS.p_driver,    -- XARGS.p_driver == "IntegratorFactory"
+    driver = XARGS.p_driver, -- XARGS.p_driver == "IntegratorFactory"
     integrator = "FS",
     time = { t_0 = startTime,
              t_end = endTime,
@@ -434,13 +434,13 @@ braid_desc = {
     conv_check = {
         max_iter = XARGS.p_max_iter,
         -- reduction = 1e-9
-        absolute = 1
+        absolute = 1e-7
     },
 
     skip_downcycle_work = XARGS.p_boolskipdown,
 
     max_refinement = 10,
-    spatial_coarsen_and_refine = false ,
+    spatial_coarsen_and_refine = false,
     min_coarsening = 2,
 
     printfile = "000 " .. XARGS.p_driver .. "_" .. XARGS.p_num_time .. "_" .. XARGS.p_max_level .. "_" .. XARGS.p_cycle .. "_" .. XARGS.p_relaxation .. ".mgrit",
@@ -450,7 +450,7 @@ braid_desc = {
 
     use_residual = XARGS.p_useResidual,
 
-    sync = RARGS.time_refine and RARGS.rich_est ,
+    sync = RARGS.time_refine and RARGS.rich_est,
     time_refinement = RARGS.time_refine,
     richardson_estimation = RARGS.rich_est, --set_richardson_estimation
     richardson_extrapolation = RARGS.rich_ext,
@@ -496,22 +496,22 @@ if (doTransient) then
         print("initial value calculation done. \n\n\n\n\n")
     end
 
-logging = Paralog() -- todo move to desc
-logging:set_comm(space_time_communicator)
-logging:set_file_name("joba")
-logging:init()
+    logging = Paralog() -- todo move to desc
+    logging:set_comm(space_time_communicator)
+    logging:set_file_name("joba")
+    logging:init()
 
     if (XARGS.p_sequential_exec == "X") then
 
         -- vxtk_scriptor = VTKScriptor(vtk, "output")
         cmpscr = BraidBiotCheckPrecomputed()
         cmpscr:set_vtk_solution(vtk, "solution")
-        cmpscr:set_vtk_diff(vtk,"error")
+        cmpscr:set_vtk_diff(vtk, "error")
         cmpscr:set_num_ref(numRefs)
-        if(numRefs == 6) then
-            cmpscr:set_max_index(128,braid_desc.time.n)
+        if (numRefs == 6) then
+            cmpscr:set_max_index(128, braid_desc.time.n)
         else
-            cmpscr:set_max_index(512,braid_desc.time.n)
+            cmpscr:set_max_index(512, braid_desc.time.n)
         end
         cmpscr:set_log(logging)
 
@@ -524,7 +524,7 @@ logging:init()
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
         integrator = xbraid_util.createFSTheta(domainDiscT,
-                lsolver, 1.0,IARGS.num_step,  1e-8)
+                lsolver, 1.0, IARGS.num_step, 1e-8)
 
         time = BraidTimer()
         time:start()
@@ -555,7 +555,7 @@ logging:init()
         time:stop()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
-    elseif(XARGS.p_sequential_exec == "IO") then
+    elseif (XARGS.p_sequential_exec == "IO") then
         -- vxtk_scriptor = VTKScriptor(vtk, "output")
         iowrite = GridFunctionIO()
 
@@ -575,7 +575,7 @@ logging:init()
             tstart = tstop
             tstop = tstop + dt
             outputval = uapprox_tstop:clone()
-            iowrite:read(outputval, "/home/mparnet/sources/vector_"..i ..".gf")
+            iowrite:read(outputval, "/home/mparnet/sources/vector_" .. i .. ".gf")
             vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
         end
         time:stop()
@@ -604,7 +604,7 @@ logging:init()
 
         print(tstart, "\n", tstop, "\n", t_N, "\n\n", offset, "\n", proc_offset, "\n", dt_total, "\n", dt_fine, "\n\n", t_rank, "\n", t_proc, "\n", proc_offset, "\n\n\n")
         time = BraidTimer()
-        for i = proc_offset, proc_offset+t_proc-1 do
+        for i = proc_offset, proc_offset + t_proc - 1 do
             ctime = tstart + i * dt_fine
             print(t_rank, "\t", i, "\t", ctime)
             outputval = u_start:clone()
@@ -695,139 +695,138 @@ logging:init()
         precom_scriptor:set_log(logging)
         precom_scriptor:set_vtk_solution(vtk, "method")
         precom_scriptor:set_vtk_diff(vtk, "error")
-        if(numRefs == 6) then
-            precom_scriptor:set_max_index(128,braid_desc.time.n)
+        if (numRefs == 6) then
+            precom_scriptor:set_max_index(128, braid_desc.time.n)
         else
-            precom_scriptor:set_max_index(512,braid_desc.time.n)
+            precom_scriptor:set_max_index(512, braid_desc.time.n)
         end
         precom_scriptor:set_num_ref(numRefs)
         for i = 1, #braid_desc.cfactor do
-            precom_scriptor:set_c_factor(i -1 , braid_desc.cfactor[i])
+            precom_scriptor:set_c_factor(i - 1, braid_desc.cfactor[i])
         end
         bscriptor = precom_scriptor
 
         if braid_desc.driver == "IntegratorFactory" then
-        app = xbraid_util.CreateIntegratorFactory(braid_desc,
-            domainDiscT,
-            bscriptor,
-            fine_integrator,
-            coarse_integrator
+            app = xbraid_util.CreateIntegratorFactory(braid_desc,
+                    domainDiscT,
+                    bscriptor,
+                    fine_integrator,
+                    coarse_integrator
             )
 
-        braid = xbraid_util.CreateExecutor(braid_desc,
-        space_time_communicator,
-        app,
-        logging
-        )
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+            )
 
         elseif braid_desc.driver == "Integrator" then
-        app = xbraid_util.CreateIntegrator(braid_desc,
-    domainDiscT,
-    bscriptor
-    )
+            app = xbraid_util.CreateIntegrator(braid_desc,
+                    domainDiscT,
+                    bscriptor
+            )
 
-    if IARGS.method == "FS" then
-    xbraid_util.CreateFSLevel(app,
-    domainDiscT,
-    lsolver,
-    IARGS.theta,
-    IARGS.num_step,
-    1e-8)
-    elseif IARGS.method == "BDF" then
-    xbraid_util.createBDFLevel(app,
-    domainDiscT,
-    lsolver,
-    IARGS.order,
-    1e-8)
-    end
+            if IARGS.method == "FS" then
+                xbraid_util.CreateFSLevel(app,
+                        domainDiscT,
+                        lsolver,
+                        IARGS.theta,
+                        IARGS.num_step,
+                        1e-8)
+            elseif IARGS.method == "BDF" then
+                xbraid_util.createBDFLevel(app,
+                        domainDiscT,
+                        lsolver,
+                        IARGS.order,
+                        1e-8)
+            end
 
-    app:set_ref_factor(RARGS.rich_refine)
-    app:set_threshold(RARGS.rich_bound)
+            app:set_ref_factor(RARGS.rich_refine)
+            app:set_threshold(RARGS.rich_bound)
 
-    braid = xbraid_util.CreateExecutor(braid_desc,
-    space_time_communicator,
-    app,
-    logging
-    )
-    elseif braid_desc.driver == "TimeStepper" then
-    app = xbraid_util.CreateTimeStepper(braid_desc,
-    domainDiscT,
-    bscriptor
-    )
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+            )
+        elseif braid_desc.driver == "TimeStepper" then
+            app = xbraid_util.CreateTimeStepper(braid_desc,
+                    domainDiscT,
+                    bscriptor
+            )
 
-    print("Set Stepper Methods - Leveldependend")
-    xbraid_util.CreateStepperLevel(app,
-    domainDiscT,
-    lsolver,
-    IARGS.theta,1e-8)
+            print("Set Stepper Methods - Leveldependend")
+            xbraid_util.CreateStepperLevel(app,
+                    domainDiscT,
+                    lsolver,
+                    IARGS.theta, 1e-8)
 
-    braid = xbraid_util.CreateExecutor(braid_desc,
-    space_time_communicator,
-    app,
-    logging
-    )
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+            )
 
-    elseif XARGS.p_driver == "ResidualStepper" then
-    app = xbraid_util.CreateBraidResidualStepper(braid_desc,
-    domainDiscT,
-    bscriptor,
-    lsolver
-    )
+        elseif XARGS.p_driver == "ResidualStepper" then
+            app = xbraid_util.CreateBraidResidualStepper(braid_desc,
+                    domainDiscT,
+                    bscriptor,
+                    lsolver
+            )
 
-    braid = xbraid_util.CreateExecutor(braid_desc,
-    space_time_communicator,
-    app,
-    logging
-    )
-    else
-    print("integrator type not supported " .. XARGS.p_driver)
-    end
+            braid = xbraid_util.CreateExecutor(braid_desc,
+                    space_time_communicator,
+                    app,
+                    logging
+            )
+        else
+            print("integrator type not supported " .. XARGS.p_driver)
+        end
 
-    script_logging = Paralog() -- todo move to desc
-    script_logging:set_comm(space_time_communicator)
-    script_logging:set_file_name("script")
-    script_logging:init()
-    braid:set_paralog_script(script_logging)
+        script_logging = Paralog() -- todo move to desc
+        script_logging:set_comm(space_time_communicator)
+        script_logging:set_file_name("script")
+        script_logging:init()
+        braid:set_paralog_script(script_logging)
 
-    v = u_start:clone()
+        v = u_start:clone()
 
-    sv_init = StartValueInitializer()
-    sv_init:set_start_vector(u_start)
-    braid:set_initializer(sv_init)
+        sv_init = StartValueInitializer()
+        sv_init:set_start_vector(u_start)
+        braid:set_initializer(sv_init)
 
-    if braid_desc.use_residual then
-    print("Using euclidian norm")
-    --l2norm = BraidEuclidianNorm()
-    -- braid:set_norm_provider(l2norm)
-    bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-    bio_norm:set_order(4, 2)
-    bio_norm:set_parameter(1.0, 142857, 35714.3)
+        if braid_desc.use_residual then
+            print("Using euclidian norm")
+            --l2norm = BraidEuclidianNorm()
+            -- braid:set_norm_provider(l2norm)
+            bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
+            bio_norm:set_order(4, 2)
+            bio_norm:set_parameter(1.0, 142857, 35714.3)
 
-    braid:set_norm_provider(bio_norm)
-    else
-    print("Using biot norm")
-    bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-    bio_norm:set_order(4, 2)
-    bio_norm:set_parameter(1.0, 142857, 35714.3)
+            braid:set_norm_provider(bio_norm)
+        else
+            print("Using biot norm")
+            bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
+            bio_norm:set_order(4, 2)
+            bio_norm:set_parameter(1.0, 142857, 35714.3)
 
-    braid:set_norm_provider(bio_norm)
-    end
+            braid:set_norm_provider(bio_norm)
+        end
 
-    time = BraidTimer()
-    time:start()
-    --print("starttttt ")
-    --space_time_communicator:sleep(100000000)
+        time = BraidTimer()
+        time:start()
+        --print("starttttt ")
+        --space_time_communicator:sleep(100000000)
 
 
-    braid:apply(u_start, endTime, u_start, startTime)
+        braid:apply(u_start, endTime, u_start, startTime)
 
-    time:stop()
+        time:stop()
         braid:print_settings()
         braid:print_summary()
         logging:release()
-
         integration_time = time:get()
-        end
+    end
 end -- doTransient
 repl:undo()
 -- PARALLEL [[
