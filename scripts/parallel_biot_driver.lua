@@ -458,7 +458,7 @@ braid_desc = {
     verbose = true,
 }
 
-vtk_scriptor = VTKScriptor(vtk, "access")
+vxtk_scriptor = VTKScriptor(vtk, "access")
 -- PARALLEL ]]
 
 local newtonCheck = ConvCheck()
@@ -502,7 +502,7 @@ logging:init()
 
     if (XARGS.p_sequential_exec == "X") then
 
-        vtk_scriptor = VTKScriptor(vtk, "output")
+        -- vxtk_scriptor = VTKScriptor(vtk, "output")
         cmpscr = BraidBiotCheckPrecomputed()
         cmpscr:set_vtk_solution(vtk, "solution")
         cmpscr:set_vtk_diff(vtk,"error")
@@ -530,7 +530,7 @@ logging:init()
         -- iowrite = GridFunctionIO()
 
         -- outputval = uapprox_tstop:clone()
-        -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
+        -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
         for i = 1, braid_desc.time.n do
             tstart = tstop
@@ -546,7 +546,7 @@ logging:init()
             -- scriptor:lua_write(outputval,i,tstop,0,0)
 
             outputval = uapprox_tstop:clone()
-            -- vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
             cmpscr:lua_write(outputval, i, tstop)
             -- iowrite:write(outputval, "vector_"..i ..".gf")
 
@@ -555,7 +555,7 @@ logging:init()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
     elseif(XARGS.p_sequential_exec == "IO") then
-        vtk_scriptor = VTKScriptor(vtk, "output")
+        -- vxtk_scriptor = VTKScriptor(vtk, "output")
         iowrite = GridFunctionIO()
 
         uapprox_tstart = u_start:clone()
@@ -568,14 +568,14 @@ logging:init()
 
 
         -- outputval = uapprox_tstop:clone()
-        -- vtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
+        -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
         for i = 1, braid_desc.time.n do
             tstart = tstop
             tstop = tstop + dt
             outputval = uapprox_tstop:clone()
             iowrite:read(outputval, "/home/mparnet/sources/vector_"..i ..".gf")
-            vtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
         end
         time:stop()
         integration_time = time:get()
@@ -689,7 +689,7 @@ logging:init()
 
 
 
-        vtk_scriptor = VTKScriptor(vtk, "access")
+        -- vxtk_scriptor = VTKScriptor(vtk, "access")
         precom_scriptor = BraidBiotCheckPrecomputed()
         precom_scriptor:set_log(logging)
         precom_scriptor:set_vtk_solution(vtk, "method")
