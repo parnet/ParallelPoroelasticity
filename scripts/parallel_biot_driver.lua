@@ -362,7 +362,7 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(false)
+cmpConvCheck:set_verbose(true)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
@@ -523,8 +523,8 @@ if (doTransient) then
         local tstop = braid_desc.time.t_0
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-        integrator = xbraid_util.createFSTheta(domainDiscT,
-                lsolver, 1.0, IARGS.num_step, 1e-8)
+        --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
+        integrator = xbraid_util.createFSTheta(domainDiscT, lsolver, 1.0, IARGS.num_step, 1e-8)
 
         time = BraidTimer()
         time:start()
@@ -548,7 +548,10 @@ if (doTransient) then
 
             outputval = uapprox_tstop:clone()
             -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-            cmpscr:lua_write(outputval, i, tstop)
+            nidx = i
+            if 0<= nidx and nidx <= 512 then
+                cmpscr:lua_write(outputval, nidx, tstop)
+            end
             -- iowrite:write(outputval, "vector_"..i ..".gf")
 
         end
