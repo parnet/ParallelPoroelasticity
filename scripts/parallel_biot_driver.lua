@@ -33,6 +33,7 @@ XARGS = {
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 
+    scale = util.GetParamNumber("--scale", 1.0, "relaxation type FCF, F-FCF or F-relaxation"),
 
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
     p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
@@ -503,17 +504,17 @@ if (doTransient) then
 
     if (XARGS.p_sequential_exec == "X") then
 
-        -- vxtk_scriptor = VTKScriptor(vtk, "output")
+        vxtk_scriptor = VTKScriptor(vtk, "output")
         cmpscr = BraidBiotCheckPrecomputed()
-        cmpscr:set_log(logging)
-        cmpscr:set_vtk_solution(vtk, "sequential")
-        cmpscr:set_vtk_diff(vtk, "error")
-        if (numRefs == 6) then
-            cmpscr:set_max_index(128, braid_desc.time.n)
-        else
-            cmpscr:set_max_index(512, braid_desc.time.n)
-        end
         cmpscr:set_num_ref(numRefs)
+        cmpscr:set_max_index(8, braid_desc.time.n)
+        cmpscr:set_log(logging)
+        cmpscr:set_solution_name(vtk, "sequential")
+        cmpscr:set_diff_name(vtk, "error")
+        cmpscr:set_vtk_write_mode(true,true)
+        cmpscr:set_io_write_mode(true,true)
+
+
 
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
@@ -548,13 +549,10 @@ if (doTransient) then
 
             outputval = uapprox_tstop:clone()
             -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-            nidx = i
-            if 0<= nidx and nidx <= 512 then
-                cmpscr:lua_write(outputval, nidx, tstop)
+            -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
+            -- VecScaleAssign(outputval,XARGS.scale,outputval)
+            cmpscr:lua_write(outputval, i, tstop)
             end
-            -- iowrite:write(outputval, "vector_"..i ..".gf")
-
-        end
         time:stop()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
@@ -699,9 +697,9 @@ if (doTransient) then
         precom_scriptor:set_vtk_solution(vtk, "method")
         precom_scriptor:set_vtk_diff(vtk, "error")
         if (numRefs == 6) then
-            precom_scriptor:set_max_index(128, braid_desc.time.n)
+            precom_scriptor:set_max_index(8, braid_desc.time.n)
         else
-            precom_scriptor:set_max_index(512, braid_desc.time.n)
+            precom_scriptor:set_max_index(8, braid_desc.time.n)
         end
         precom_scriptor:set_num_ref(numRefs)
         for i = 1, #braid_desc.cfactor do
