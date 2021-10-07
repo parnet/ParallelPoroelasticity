@@ -321,7 +321,8 @@ end
 -------------------------
 -- create GMG
 -------------------------
-local superLU = SuperLU()
+--local superLU = SuperLU()
+local superLU = LU()
 -- Geometric Multi Grid
 local gmg = GeometricMultiGrid(approxSpace)
 gmg:set_discretization(domainDiscT)
