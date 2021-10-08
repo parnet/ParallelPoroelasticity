@@ -498,13 +498,13 @@ if (doTransient) then
         print("initial value calculation done. \n\n\n\n\n")
     end
 
-    logging = Paralog() -- todo move to desc
-    logging:set_comm(space_time_communicator)
-    logging:set_file_name("joba")
-    logging:init()
+
 
     if (XARGS.p_sequential_exec == "X") then
-
+        logging = Paralog() -- todo move to desc
+        logging:set_comm(space_time_communicator)
+        logging:set_file_name("joba")
+        logging:init()
         vxtk_scriptor = VTKScriptor(vtk, "output")
         cmpscr = BraidBiotCheckPrecomputed()
         cmpscr:set_num_ref(numRefs)
@@ -691,7 +691,10 @@ if (doTransient) then
         print("Residual ", braid_desc.use_residual)
 
 
-
+        logging = Paralog() -- todo move to desc
+        logging:set_comm(space_time_communicator)
+        logging:set_file_name("joba")
+        logging:init()
         -- vxtk_scriptor = VTKScriptor(vtk, "access")
         precom_scriptor = BraidBiotCheckPrecomputed()
         precom_scriptor:set_log(logging)
