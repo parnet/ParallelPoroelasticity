@@ -20,16 +20,20 @@ ug_load_script("plugins/Limex/limex_util.lua")
 -- load lua scripts - local
 ug_load_script("xbraid_util.lua") -- load neccessary XBraid lua interfaces
 
+environment = util.GetParam("--env", "hawk", "local, hawk, gcsc")
 
 -- PARALLEL [[
 -- XBraid Arguments
 XARGS = {
+
+
     num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)"), -- numSpatialProcs * numTimeProcs = numGlobalProcs
     p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
     p_max_iter = util.GetParamNumber("--maxiter", 100, " maximum number of iterations"),
 
     p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_c_factor = util.GetParam("--cfactor", "2_2_2", "relaxation type FCF, FFCF or F-relaxation"),
+
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 
@@ -506,14 +510,32 @@ if (doTransient) then
         logging:set_file_name("joba")
         logging:init()
         vxtk_scriptor = VTKScriptor(vtk, "output")
+
         cmpscr = BraidBiotCheckPrecomputed()
-        cmpscr:set_num_ref(numRefs)
-        cmpscr:set_max_index(8, braid_desc.time.n)
         cmpscr:set_log(logging)
         cmpscr:set_solution_name(vtk, "sequential")
         cmpscr:set_diff_name(vtk, "error")
         cmpscr:set_vtk_write_mode(true,true)
         cmpscr:set_io_write_mode(true,true)
+
+        if environment == "hawk" then
+            cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
+            cmpscr:set_max_index(128, braid_desc.time.n)
+            cmpscr:set_num_ref(numRefs)
+
+        elseif environment == "gcsc" then
+            cmpscr:set_base_path("/home/mparnet/analyticsolution")
+            cmpscr:set_max_index(128, braid_desc.time.n)
+            cmpscr:set_num_ref(numRefs)
+
+        elseif environment == "local" then
+            cmpscr:set_base_path("/pro/exec/analyticsolution")
+            cmpscr:set_max_index(8, braid_desc.time.n)
+            cmpscr:set_num_ref(numRefs)
+        end
+
+
+
 
 
 
@@ -523,37 +545,37 @@ if (doTransient) then
         uapprox_tstart = u_start:clone()
         uapprox_tstop = u_start:clone()
         local tstop = braid_desc.time.t_0
-        local tstart = braid_desc.time.t_0
-        print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-        --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
-        integrator = xbraid_util.createFSTheta(domainDiscT, lsolver, 1.0, IARGS.num_step, 1e-8)
+    local tstart = braid_desc.time.t_0
+    print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
+    --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
+    integrator = xbraid_util.createFSTheta(domainDiscT, lsolver, 1.0, IARGS.num_step, 1e-8)
 
-        time = BraidTimer()
-        time:start()
-        -- iowrite = GridFunctionIO()
+    time = BraidTimer()
+    time:start()
+    -- iowrite = GridFunctionIO()
 
-        -- outputval = uapprox_tstop:clone()
-        -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
+    -- outputval = uapprox_tstop:clone()
+    -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
-        for i = 1, braid_desc.time.n do
-            tstart = tstop
-            tstop = tstop + dt
-            uapprox_tstart = uapprox_tstop:clone()
-            uapprox_tstop = uapprox_tstart:clone()
-            integrator:init(uapprox_tstart)
-            integrator:prepare(uapprox_tstart)
-            print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
-            integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
+    for i = 1, braid_desc.time.n do
+    tstart = tstop
+    tstop = tstop + dt
+    uapprox_tstart = uapprox_tstop:clone()
+    uapprox_tstop = uapprox_tstart:clone()
+    integrator:init(uapprox_tstart)
+    integrator:prepare(uapprox_tstart)
+    print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
+        integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
 
-            -- outputval = uapprox_tstop:clone()
-            -- scriptor:lua_write(outputval,i,tstop,0,0)
+    -- outputval = uapprox_tstop:clone()
+    -- scriptor:lua_write(outputval,i,tstop,0,0)
 
-            outputval = uapprox_tstop:clone()
-            -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-            -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
-            -- VecScaleAssign(outputval,XARGS.scale,outputval)
-            cmpscr:lua_write(outputval, i, tstop)
-            end
+    outputval = uapprox_tstop:clone()
+    -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+    -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
+    -- VecScaleAssign(outputval,XARGS.scale,outputval)
+    cmpscr:lua_write(outputval, i, tstop)
+    end
         time:stop()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
@@ -831,7 +853,7 @@ if (doTransient) then
         braid:print_summary()
         logging:release()
         integration_time = time:get()
-    end
+        end
 end -- doTransient
 repl:undo()
 -- PARALLEL [[
