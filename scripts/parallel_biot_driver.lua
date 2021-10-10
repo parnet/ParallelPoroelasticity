@@ -515,8 +515,8 @@ if (doTransient) then
         cmpscr:set_log(logging)
         cmpscr:set_solution_name(vtk, "sequential")
         cmpscr:set_diff_name(vtk, "error")
-        cmpscr:set_vtk_write_mode(true,true)
-        cmpscr:set_io_write_mode(true,true)
+        cmpscr:set_vtk_write_mode(false,true)
+        cmpscr:set_io_write_mode(true,false)
 
         if environment == "hawk" then
             cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
