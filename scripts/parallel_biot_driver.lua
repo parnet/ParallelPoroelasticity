@@ -558,24 +558,24 @@ if (doTransient) then
     -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
     for i = 1, braid_desc.time.n do
-    tstart = tstop
-    tstop = tstop + dt
-    uapprox_tstart = uapprox_tstop:clone()
-    uapprox_tstop = uapprox_tstart:clone()
-    integrator:init(uapprox_tstart)
-    integrator:prepare(uapprox_tstart)
-    print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
-        integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
+        tstart = tstop
+        tstop = tstop + dt
+        uapprox_tstart = uapprox_tstop:clone()
+        uapprox_tstop = uapprox_tstart:clone()
+        integrator:init(uapprox_tstart)
+        integrator:prepare(uapprox_tstart)
+        print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
+            integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
 
-    -- outputval = uapprox_tstop:clone()
-    -- scriptor:lua_write(outputval,i,tstop,0,0)
+        -- outputval = uapprox_tstop:clone()
+        -- scriptor:lua_write(outputval,i,tstop,0,0)
 
-    outputval = uapprox_tstop:clone()
-    -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-    -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
-    -- VecScaleAssign(outputval,XARGS.scale,outputval)
-    cmpscr:lua_write(outputval, i, tstop)
-    end
+        outputval = uapprox_tstop:clone()
+        -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+        -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
+        -- VecScaleAssign(outputval,XARGS.scale,outputval)
+        cmpscr:lua_write(outputval, i, tstop)
+        end
         time:stop()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
