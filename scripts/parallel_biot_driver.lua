@@ -529,12 +529,14 @@ if (doTransient) then
             cmpscr:set_num_ref(numRefs)
 
         elseif environment == "local" then
-            cmpscr:set_base_path("/pro/exec/analyticsolution")
-            cmpscr:set_max_index(8, braid_desc.time.n)
+            cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
+            cmpscr:set_max_index(128, braid_desc.time.n)
             cmpscr:set_num_ref(numRefs)
         end
 
-
+        --cmpscr = BraidBiotCheck()
+        --cmpscr:set_problem(problem)
+        --cmpscr:set_napprox(PARGS.p_napprox)
 
 
 
@@ -545,36 +547,46 @@ if (doTransient) then
         uapprox_tstart = u_start:clone()
         uapprox_tstop = u_start:clone()
         local tstop = braid_desc.time.t_0
-    local tstart = braid_desc.time.t_0
-    print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-    --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
-    integrator = xbraid_util.createFSTheta(domainDiscT, lsolver, 1.0, IARGS.num_step, 1e-8)
+        local tstart = braid_desc.time.t_0
+        print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
+        --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
+        integrator = NLFixedStepThetaIntegrator()
+        integrator:set_domain(domainDiscT)
+        integrator:set_solver(nlsolver)
+        integrator:set_theta(1)
+        integrator:set_num_steps(2)
 
-    time = BraidTimer()
-    time:start()
-    -- iowrite = GridFunctionIO()
-
-    -- outputval = uapprox_tstop:clone()
-    -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
-
-    for i = 1, braid_desc.time.n do
-        tstart = tstop
-        tstop = tstop + dt
-        uapprox_tstart = uapprox_tstop:clone()
-        uapprox_tstop = uapprox_tstart:clone()
-        integrator:init(uapprox_tstart)
-        integrator:prepare(uapprox_tstart)
-        print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
-            integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
+        print("setup done ")
+        time = BraidTimer()
+        time:start()
+        -- iowrite = GridFunctionIO()
 
         -- outputval = uapprox_tstop:clone()
-        -- scriptor:lua_write(outputval,i,tstop,0,0)
+        -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
-        outputval = uapprox_tstop:clone()
-        -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-        -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
-        -- VecScaleAssign(outputval,XARGS.scale,outputval)
-        cmpscr:lua_write(outputval, i, tstop)
+        for i = 1, braid_desc.time.n do
+            tstart = tstop
+            tstop = tstop + dt
+            uapprox_tstart = uapprox_tstop:clone()
+            uapprox_tstop = uapprox_tstart:clone()
+            print("create ")
+            -- integrator = integrator_fac:create_time_integrator(dt,true) -- xbraid_util.createFSTheta(domainDiscT, lsolver, 1.0, IARGS.num_step, 1e-8)
+            print("created ")
+            integrator:init(uapprox_tstart)
+            -- integrator:prepare_step(uapprox_tstart)
+            print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
+            integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
+
+            -- outputval = uapprox_tstop:clone()
+            -- scriptor:lua_write(outputval,i,tstop,0,0)
+
+            outputval = uapprox_tstop:clone()
+            -- vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
+            -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
+            -- VecScaleAssign(outputval,XARGS.scale,outputval)
+            --if math.mod(i,16) == 0 then
+             cmpscr:lua_write(outputval, i, tstop)
+            --end
         end
         time:stop()
         integration_time = time:get()
