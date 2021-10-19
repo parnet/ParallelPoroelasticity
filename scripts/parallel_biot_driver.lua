@@ -477,6 +477,10 @@ local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
 
+local secondNewtonSolver = NewtonSolver()
+secondNewtonSolver:set_linear_solver(lsolver)
+secondNewtonSolver:set_convergence_check(newtonCheck)
+
 local nlsolver = newtonSolver
 print(lsolver:config_string())
 
@@ -496,7 +500,7 @@ if (doTransient) then
     if ((ARGS.LimexNStages > 0)) then
         local dt0 = charTime * 1e-50
         print("Computing consistent initial value w/ dt0=" .. dt0)
-        util.SolveNonlinearTimeProblem(u_start, domainDisc0, nlsolver, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
+        util.SolveNonlinearTimeProblem(u_start, domainDisc0, secondNewtonSolver, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
         print("initial value calculation done. \n\n\n\n\n")
     end
 
