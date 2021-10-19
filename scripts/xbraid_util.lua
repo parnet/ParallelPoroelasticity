@@ -168,7 +168,7 @@ function xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold
     integrator:set_solver(nlsolver)
     integrator:set_theta(theta)
     integrator:set_num_steps(num_steps)
-    integrator:set_reassemble_threshold(threshold)
+    -- integrator:set_reassemble_threshold(threshold)
     return integrator
 end
 
