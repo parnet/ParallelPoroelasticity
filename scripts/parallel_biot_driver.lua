@@ -115,14 +115,11 @@ local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinemen
 
 local ARGS = {
     solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
-    -- useVTK = util.HasParamOption("--with-vtk", "Plot VTK"),
-    -- useDebugIter = util.HasParamOption("--with-debug-iter", "Activate debug solver."),
     bSteadyStateMechanics = not util.HasParamOption("--with-transient-mechanics"), -- OPTIONAL: transient mechanics
     MGCycleType = util.GetParam("--mg-cycle-type", "W", "V,F,W"),
     MGBaseLevel = util.GetParamNumber("--mg-base-level", 0, "some non-negative integer"),
     MGNumSmooth = util.GetParamNumber("--mg-num-smooth", 2, "some positive integer"),
     MGSmootherType = util.GetParam("--mg-smoother-type", "uzawa3", "uzawa,cgs"),
-    --    MGDebugLevel = util.GetParam("--mg-debug-level", 0, "some non-negative integer"),
     LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
     LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
 }
@@ -473,6 +470,8 @@ newtonCheck:set_maximum_steps(10)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_reduction(5e-6)
 newtonCheck:set_verbose(false)
+newtonCheck:set_maximum_steps(1)
+newtonCheck:set_supress_unsuccessful(true)
 
 local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
@@ -487,7 +486,6 @@ if (doTransient) then
 
     print("Integrating from 0.0 to " .. endTime)
 
-    local charTime = problem:get_char_time()
     dt = 1e-2 * charTime
     dtMin = 1e-2 * 1e-2 * charTime
 
@@ -502,8 +500,6 @@ if (doTransient) then
         print("initial value calculation done. \n\n\n\n\n")
     end
 
-
-
     if (XARGS.p_sequential_exec == "X") then
         logging = Paralog() -- todo move to desc
         logging:set_comm(space_time_communicator)
@@ -515,31 +511,22 @@ if (doTransient) then
         cmpscr:set_log(logging)
         cmpscr:set_solution_name(vtk, "sequential")
         cmpscr:set_diff_name(vtk, "error")
-        cmpscr:set_vtk_write_mode(false,true)
-        cmpscr:set_io_write_mode(true,false)
+        cmpscr:set_vtk_write_mode(false,false)
+        cmpscr:set_io_write_mode(false,false)
+        cmpscr:set_num_ref(numRefs)
+        cmpscr:set_max_index(128, braid_desc.time.n)
 
         if environment == "hawk" then
             cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
-            cmpscr:set_max_index(128, braid_desc.time.n)
-            cmpscr:set_num_ref(numRefs)
-
         elseif environment == "gcsc" then
             cmpscr:set_base_path("/home/mparnet/analyticsolution")
-            cmpscr:set_max_index(128, braid_desc.time.n)
-            cmpscr:set_num_ref(numRefs)
-
         elseif environment == "local" then
             cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
-            cmpscr:set_max_index(128, braid_desc.time.n)
-            cmpscr:set_num_ref(numRefs)
         end
 
-        --cmpscr = BraidBiotCheck()
-        --cmpscr:set_problem(problem)
-        --cmpscr:set_napprox(PARGS.p_napprox)
-
-
-
+        -- cmpscr = BraidBiotCheck()
+        -- cmpscr:set_problem(problem)
+        -- cmpscr:set_napprox(PARGS.p_napprox)
 
         timespan = braid_desc.time.t_end - braid_desc.time.t_0
         dt = timespan / braid_desc.time.n
@@ -549,6 +536,7 @@ if (doTransient) then
         local tstop = braid_desc.time.t_0
         local tstart = braid_desc.time.t_0
         print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
+
         --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
         integrator = NLFixedStepThetaIntegrator()
         integrator:set_domain(domainDiscT)
@@ -591,32 +579,6 @@ if (doTransient) then
         time:stop()
         integration_time = time:get()
         print(integration_time, "finished sequential timestepping with integrator")
-    elseif (XARGS.p_sequential_exec == "IO") then
-        -- vxtk_scriptor = VTKScriptor(vtk, "output")
-        iowrite = GridFunctionIO()
-
-        uapprox_tstart = u_start:clone()
-        uapprox_tstop = u_start:clone()
-        local tstop = braid_desc.time.t_0
-        local tstart = braid_desc.time.t_0
-        print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
-        time = BraidTimer()
-        time:start()
-
-
-        -- outputval = uapprox_tstop:clone()
-        -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
-
-        for i = 1, braid_desc.time.n do
-            tstart = tstop
-            tstop = tstop + dt
-            outputval = uapprox_tstop:clone()
-            iowrite:read(outputval, "/home/mparnet/sources/vector_" .. i .. ".gf")
-            vxtk_scriptor:lua_write(outputval, i, tstop, 0, 0)
-        end
-        time:stop()
-        integration_time = time:get()
-        print(integration_time, "finished sequential timestepping with integrator")
     elseif (XARGS.p_sequential_exec == "R") then
 
         scriptor = BraidBiotCheck()
@@ -649,101 +611,37 @@ if (doTransient) then
         time:stop()
         integration_time = time:get()
         print("timer " .. integration_time)
-    elseif (ARGS.LimexNStages == 0) then
-        print("Solving predefined step sizes (TESTING) ")
-        -- Execute linear solver test suite.
-        convCheck:set_reduction(1e-10)
-        convCheck:set_maximum_steps(100)
+    else -- p_sequential_exec == MGRIT
 
-        local dtTestSet = { 1.0, 0.1, 0.01, 1e-3, 1e-4, 1e-6, 1e-8, 0.0 }
-        for index, dtvalue in ipairs(dtTestSet) do
-            dt = dtvalue * charTime
-            endTime = dt
-            print("%DTFACTOR=\t" .. dtvalue .. "\tindex=\t" .. index)
-            problem:interpolate_start_values(u_start, startTime)
-            myclock:tic()
-            util.SolveNonlinearTimeProblem(u_start, domainDiscT, nlsolver, myStepCallback0, "SolverTest" .. index,
-                    "ImplEuler", 1, startTime, endTime, dt, dt, dtRed);
-            print("MYCLOCK=" .. myclock:cuckoo() .. "; " .. myclock:toc())
-        end
-
-
-    elseif (ARGS.LimexNStages == 1) then
-        print("Linear time Stepping")
-        function myStepCallback0(u, step, time)
-            -- problem:post_processing(u, step, time)
-            vtk:print("PoroElasticity.vtu", u, step, time)
-        end
-        time = BraidTimer()
-        time:start()
-        time:stop()
-        -- STANDARD (implicit Euler) time-stepping.
-        local bCheckpointing = false
-
-        local tstop = braid_desc.time.t_end
-        local tstart = braid_desc.time.t_0
-        dt_total = tstop - tstart
-        t_N = braid_desc.time.n
-        dt = dt_total / t_N
-        dtMin = dt / 2
-
-        util.SolveLinearTimeProblem(u_start, domainDiscT, lsolver, nil, "PoroElasticityTransient",
-                "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5,
-                bCheckpointing, myStepCallback0);
-
-        --util.SolveNonlinearTimeProblem(u, domainDiscT, nlsolver, myStepCallback0, "PoroElasticityTransient",
-        --             "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5);
-        integration_time = time:get()
-    else
-        print("Using Limex for Time Stepping")
-        newtonCheck:set_maximum_steps(1)
-        newtonCheck:set_supress_unsuccessful(true)
         -- Create & configure LIMEX descriptor.
-        local limexDesc = {
-            nstages = ARGS.LimexNStages,
-            steps = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
-
-            domainDisc = domainDiscT,
-            nonlinSolver = nlsolver,
-
-            tol = ARGS.LimexTOL,
-            dt = dt,
-            dtmin = dtMin,
-            dtmax = dtMax,
-        }
-        local luaobserver = LuaCallbackObserver()
-
-        function myLuaLimexPostProcess(step, time, currdt)
-            print("Time per step :" .. stepClock:toc()) -- get time for last step
-            local usol = luaobserver:get_current_solution()
-            problem:post_processing(usol, step, time) -- todo uncommment to use
-            stepClock:tic() -- reset timing
-            return 0;
-        end
-
-        luaobserver:set_callback("myLuaLimexPostProcess")
         print("Residual ", braid_desc.use_residual)
-
 
         logging = Paralog() -- todo move to desc
         logging:set_comm(space_time_communicator)
         logging:set_file_name("joba")
         logging:init()
         -- vxtk_scriptor = VTKScriptor(vtk, "access")
-        precom_scriptor = BraidBiotCheckPrecomputed()
-        precom_scriptor:set_log(logging)
-        precom_scriptor:set_vtk_solution(vtk, "method")
-        precom_scriptor:set_vtk_diff(vtk, "error")
-        if (numRefs == 6) then
-            precom_scriptor:set_max_index(8, braid_desc.time.n)
-        else
-            precom_scriptor:set_max_index(8, braid_desc.time.n)
+        cmpscr = BraidBiotCheckPrecomputed()
+        cmpscr:set_log(logging)
+        cmpscr:set_solution_name(vtk, "mgrit")
+        cmpscr:set_diff_name(vtk, "error")
+        cmpscr:set_vtk_write_mode(false,false)
+        cmpscr:set_io_write_mode(false,false)
+        cmpscr:set_num_ref(numRefs)
+        cmpscr:set_max_index(128, braid_desc.time.n)
+
+        if environment == "hawk" then
+            cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
+        elseif environment == "gcsc" then
+            cmpscr:set_base_path("/home/mparnet/hawk/analyticsolution")
+        elseif environment == "local" then
+            cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
         end
-        precom_scriptor:set_num_ref(numRefs)
+
         for i = 1, #braid_desc.cfactor do
-            precom_scriptor:set_c_factor(i - 1, braid_desc.cfactor[i])
+            cmpscr:set_c_factor(i - 1, braid_desc.cfactor[i])
         end
-        bscriptor = precom_scriptor
+        bscriptor = cmpscr
 
         if braid_desc.driver == "IntegratorFactory" then
             app = xbraid_util.CreateIntegratorFactory(braid_desc,
@@ -765,20 +663,14 @@ if (doTransient) then
                     bscriptor
             )
 
-            if IARGS.method == "FS" then
-                xbraid_util.CreateFSLevel(app,
+
+            xbraid_util.CreateNLLevel(app,
                         domainDiscT,
-                        lsolver,
+                        nlsolver,
                         IARGS.theta,
                         IARGS.num_step,
                         1e-8)
-            elseif IARGS.method == "BDF" then
-                xbraid_util.createBDFLevel(app,
-                        domainDiscT,
-                        lsolver,
-                        IARGS.order,
-                        1e-8)
-            end
+
 
             app:set_ref_factor(RARGS.rich_refine)
             app:set_threshold(RARGS.rich_bound)
@@ -836,38 +728,28 @@ if (doTransient) then
 
         if braid_desc.use_residual then
             print("Using euclidian norm")
-            --l2norm = BraidEuclidianNorm()
-            -- braid:set_norm_provider(l2norm)
-            bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-            bio_norm:set_order(4, 2)
-            bio_norm:set_parameter(1.0, 142857, 35714.3)
-
-            braid:set_norm_provider(bio_norm)
+            l2norm = BraidEuclidianNorm()
+            braid:set_norm_provider(l2norm)
         else
             print("Using biot norm")
             bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
             bio_norm:set_order(4, 2)
-            bio_norm:set_parameter(1.0, 142857, 35714.3)
-
+            bio_norm:set_parameter(1.0, 1000000/7, 250000/7)
             braid:set_norm_provider(bio_norm)
         end
 
         time = BraidTimer()
         time:start()
-        --print("starttttt ")
-        --space_time_communicator:sleep(100000000)
-
-
         braid:apply(u_start, endTime, u_start, startTime)
-
         time:stop()
+
         braid:print_settings()
         braid:print_summary()
         logging:release()
         integration_time = time:get()
         end
 end -- doTransient
-repl:undo()
+repl:undo() -- give back the std::cout to terminal
 -- PARALLEL [[
 walltime:stop()
 
