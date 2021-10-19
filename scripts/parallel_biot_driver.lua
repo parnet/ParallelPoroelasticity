@@ -642,7 +642,6 @@ if (doTransient) then
             cmpscr:set_c_factor(i - 1, braid_desc.cfactor[i])
         end
         bscriptor = cmpscr
-
         if braid_desc.driver == "IntegratorFactory" then
             app = xbraid_util.CreateIntegratorFactory(braid_desc,
                     domainDiscT,
