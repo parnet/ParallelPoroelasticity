@@ -84,7 +84,7 @@ if num_world_ranks % XARGS.num_spatial_procs == 0 then
     local num_temporal_procs = num_world_ranks / XARGS.num_spatial_procs;
     local num_spatial_procs = XARGS.num_spatial_procs
     print("Using: " .. num_spatial_procs .. " of " .. num_world_ranks .. " for spatial")
-    print("Using: " .. num_spatial_procs .. " of " .. num_world_ranks .. " for temporal")
+    print("Using: " .. num_temporal_procs .. " of " .. num_world_ranks .. " for temporal")
 else
     space_time_communicator:split(1)
     print("Using: " .. 1 .. " of " .. num_world_ranks .. " for spatial")
@@ -577,8 +577,53 @@ if (doTransient) then
             -- cl = VecScaleAddClass(1/4,outputval,0,outputval)
             -- VecScaleAssign(outputval,XARGS.scale,outputval)
             --if math.mod(i,16) == 0 then
-             cmpscr:lua_write(outputval, i, tstop)
+            cmpscr:lua_write(outputval, i, tstop)
             --end
+        end
+        time:stop()
+        integration_time = time:get()
+        print(integration_time, "finished sequential timestepping with integrator")
+    elseif (XARGS.p_sequential_exec == "CHK") then
+
+        logging = Paralog() -- todo move to desc
+        logging:set_comm(space_time_communicator)
+        logging:set_file_name("joba")
+        logging:init()
+        vxtk_scriptor = VTKScriptor(vtk, "output")
+
+        cmpscr = BraidBiotCheckPrecomputed()
+        cmpscr:set_log(logging)
+        cmpscr:set_solution_name(vtk, "sequential")
+        cmpscr:set_diff_name(vtk, "error")
+        cmpscr:set_vtk_write_mode(true,true)
+        cmpscr:set_io_write_mode(true,true)
+        cmpscr:set_num_ref(numRefs)
+        cmpscr:set_max_index(128, braid_desc.time.n)
+
+        if environment == "hawk" then
+            cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
+        elseif environment == "gcsc" then
+            cmpscr:set_base_path("/home/mparnet/analyticsolution")
+        elseif environment == "local" then
+            cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
+        end
+
+        base_path_1024 = "/home/maro/hawk/analyticsolution/num_ref_4/BarryMercer2D_"
+        base_path_1448 = "/home/maro/hawk/analyticsolution_check/num_ref_4/BarryMercer2D_"
+
+        time = BraidTimer()
+        time:start()
+        iogf = IOGridFunction()
+
+        for i = 1, 128 do
+            print("================" .. i .."================")
+            u = u_start:clone()
+            v = u_start:clone()
+            print(base_path_1024 ..i ..".gridfunction")
+            iogf:read(u, base_path_1024 ..i ..".gridfunction")
+            print(base_path_1448 ..i ..".gridfunction")
+            iogf:read(v, base_path_1448 ..i ..".gridfunction")
+            cmpscr:lua_compare(u,v,i,i/128*charTime*2*math_pi,0,0)
         end
         time:stop()
         integration_time = time:get()
