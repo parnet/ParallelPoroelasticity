@@ -355,7 +355,7 @@ if (XARGS.p_method == "SEQ") then
     integrator:set_domain(domainDiscT)
     integrator:set_solver(nlsolver)
     integrator:set_theta(1)
-    integrator:set_num_steps(1)
+    integrator:set_num_steps(2)
 
     print("setup done ")
     time = BraidTimer()
