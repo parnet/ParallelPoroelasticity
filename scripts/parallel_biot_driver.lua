@@ -405,7 +405,7 @@ elseif (XARGS.p_method == "NL") then
     time = BraidTimer()
     time:start()
     test.SolveNonlinearTimeProblem(u_start, domainDiscT, nlsolver, myStepCallback0, "PoroElasticityTransient",
-            "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5, false, myStepCallback0);
+            "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5);
     time:stop()
     integration_time = time:get()
     print(integration_time, "finished sequential timestepping with integrator")
