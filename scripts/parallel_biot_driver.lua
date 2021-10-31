@@ -296,7 +296,11 @@ secondNewtonSolver:set_convergence_check(newtonCheck)
 local nlsolver = secondNewtonSolver
 print(lsolver:config_string())
 function myStepCallback0(u, step, time)
+
     -- problem:post_processing(u, step, time)
+    io = PIOGridFunction()
+    io:write(u,"solution_t"..step)
+
     vtk:print("PoroElasticityInitial.vtu", u, step, time)
 end
 print("Interpolation start values")
