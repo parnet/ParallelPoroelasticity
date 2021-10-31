@@ -93,11 +93,9 @@ local ARGS = {
     MGCycleType = util.GetParam("--mg-cycle-type", "W", "V,F,W"),
     MGBaseLevel = util.GetParamNumber("--mg-base-level", 0, "some non-negative integer"),
     MGNumSmooth = util.GetParamNumber("--mg-num-smooth", 2, "some positive integer"),
-    MGSmootherType = util.GetParam("--mg-smoother-type", "uzawa3", "uzawa,cgs"),
     LimexTOL = util.GetParamNumber("--limex-tol", 1e-3, "TOL"),
     LimexNStages = util.GetParamNumber("--limex-num-stages", 4, "number of LIMEX stages q"),
 }
-print("MGSmootherType=" .. ARGS.MGSmootherType)
 print("MGNumSmooth=" .. ARGS.MGNumSmooth)
 print("MGCycleType=" .. ARGS.MGCycleType)
 print("MGBaseLevel=" .. ARGS.MGBaseLevel)
@@ -228,8 +226,10 @@ convCheck:set_verbose(false)
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
+
 local lsolver = solver[ARGS.solverID]
 local vtk = VTKOutput()
+
 local biotErrorEst
 biotErrorEst = util.biot.CreateDefaultErrorEst(dim)
 if (problem.error_estimator) then
@@ -312,34 +312,45 @@ if ((ARGS.LimexNStages ~= 0)) then
     util.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolver, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
     print("initial value calculation done. \n\n\n\n\n")
 end
+
+log_job = Paralog() -- todo move to desc
+log_job:set_comm(space_time_communicator)
+log_job:set_file_name("joba")
+log_job:init()
+
+paralog_script = Paralog() -- todo move to desc
+paralog_script:set_comm(space_time_communicator)
+paralog_script:set_file_name("script")
+paralog_script:init()
+
+scr_cmp = BraidBiotCheckPrecomputed()
+scr_cmp:set_log(log_job)
+scr_cmp:set_solution_name(vtk, "sequential")
+scr_cmp:set_diff_name(vtk, "error")
+scr_cmp:set_vtk_write_mode(false,false)
+scr_cmp:set_io_write_mode(false,false)
+scr_cmp:set_num_ref(numRefs)
+scr_cmp:set_max_index(128, braid_desc.time.n)
+
+if environment == "hawk" then
+    scr_cmp:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
+elseif environment == "gcsc" then
+    scr_cmp:set_base_path("/home/mparnet/analyticsolution")
+elseif environment == "local" then
+    scr_cmp:set_base_path("/home/maro/hawk/analytic_ref3_proc4")
+    --scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
+end
+
+
+-- scr_biot = BraidBiotCheck()
+-- scr_biot:set_problem(problem)
+-- scr_biot:set_napprox(PARGS.p_napprox)
+
+-- scr_vtk = VTKScriptor(vtk, "output")
+
 if (XARGS.p_method == "SEQ") then
-    logging = Paralog() -- todo move to desc
-    logging:set_comm(space_time_communicator)
-    logging:set_file_name("joba")
-    logging:init()
-    vxtk_scriptor = VTKScriptor(vtk, "output")
 
-    cmpscr = BraidBiotCheckPrecomputed()
-    cmpscr:set_log(logging)
-    cmpscr:set_solution_name(vtk, "sequential")
-    cmpscr:set_diff_name(vtk, "error")
-    cmpscr:set_vtk_write_mode(false,false)
-    cmpscr:set_io_write_mode(false,false)
-    cmpscr:set_num_ref(numRefs)
-    cmpscr:set_max_index(128, braid_desc.time.n)
 
-    if environment == "hawk" then
-        cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
-    elseif environment == "gcsc" then
-        cmpscr:set_base_path("/home/mparnet/analyticsolution")
-    elseif environment == "local" then
-        cmpscr:set_base_path("/home/maro/small_test")
-        --cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
-    end
-
-    -- cmpscr = BraidBiotCheck()
-    -- cmpscr:set_problem(problem)
-    -- cmpscr:set_napprox(PARGS.p_napprox)
 
     timespan = braid_desc.time.t_end - braid_desc.time.t_0
     dt = timespan / braid_desc.time.n
@@ -373,10 +384,8 @@ if (XARGS.p_method == "SEQ") then
         integrator:init(uapprox_tstart)
         print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
         integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
-
         outputval = uapprox_tstop:clone()
-        -- vtk:print("output", uapprox_tstop,i,tstop)
-        cmpscr:lua_write(outputval, i, tstop)
+        scr_cmp:lua_write(outputval, i, tstop)
 
     end
     time:stop()
@@ -398,29 +407,10 @@ elseif (XARGS.p_method == "NL") then
     print(integration_time, "finished sequential timestepping with integrator")
 
 elseif (XARGS.p_method == "CHK") then
-    logging = Paralog() -- todo move to desc
-    logging:set_comm(space_time_communicator)
-    logging:set_file_name("joba")
-    logging:init()
+
     vxtk_scriptor = VTKScriptor(vtk, "output")
 
-    cmpscr = BraidBiotCheckPrecomputed()
-    cmpscr:set_log(logging)
-    cmpscr:set_solution_name(vtk, "sequential")
-    cmpscr:set_diff_name(vtk, "error")
-    cmpscr:set_vtk_write_mode(true,true)
-    cmpscr:set_io_write_mode(true,true)
-    cmpscr:set_num_ref(numRefs)
-    cmpscr:set_max_index(128, braid_desc.time.n)
 
-    if environment == "hawk" then
-        cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
-    elseif environment == "gcsc" then
-        cmpscr:set_base_path("/home/mparnet/analyticsolution")
-    elseif environment == "local" then
-        cmpscr:set_base_path("/home/maro/small_test")
-        --cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
-    end
 
     base_path_1024 = "/home/maro/hawk/analyticsolution/num_ref_4/BarryMercer2D_"
     base_path_1448 = "/home/maro/hawk/analyticsolution_check/num_ref_4/BarryMercer2D_"
@@ -437,7 +427,7 @@ elseif (XARGS.p_method == "CHK") then
         iogf:read(u, base_path_1024 ..i ..".gridfunction")
         print(base_path_1448 ..i ..".gridfunction")
         iogf:read(v, base_path_1448 ..i ..".gridfunction")
-        cmpscr:lua_compare(u,v,i,i/128*charTime*2*math_pi,0,0)
+        scr_cmp:lua_compare(u,v,i,i/128*charTime*2*math_pi,0,0)
     end
     time:stop()
     integration_time = time:get()
@@ -454,8 +444,6 @@ elseif (XARGS.p_method == "R") then
     dt_total = tstop - tstart
     t_N = braid_desc.time.n
     dt_fine = dt_total / t_N
-
-    print(space_time_communicator:get_temporal_rank())
 
     t_rank = space_time_communicator:get_temporal_rank()
     t_rank_total = space_time_communicator:get_temporal_size()
@@ -476,31 +464,12 @@ elseif (XARGS.p_method == "R") then
     print("timer " .. integration_time)
 else
     print("Residual ", braid_desc.use_residual)
-    logging = Paralog() -- todo move to desc
-    logging:set_comm(space_time_communicator)
-    logging:set_file_name("joba")
-    logging:init()
-    -- vxtk_scriptor = VTKScriptor(vtk, "access")
-    cmpscr = BraidBiotCheckPrecomputed()
-    cmpscr:set_log(logging)
-    cmpscr:set_solution_name(vtk, "mgrit")
-    cmpscr:set_diff_name(vtk, "error")
-    cmpscr:set_vtk_write_mode(false,false)
-    cmpscr:set_io_write_mode(false,false)
-    cmpscr:set_num_ref(numRefs)
-    cmpscr:set_max_index(128, braid_desc.time.n)
-    if environment == "hawk" then
-        cmpscr:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
-    elseif environment == "gcsc" then
-        cmpscr:set_base_path("/home/mparnet/hawk/analyticsolution")
-    elseif environment == "local" then
-        cmpscr:set_base_path("/home/maro/small_test")
-        -- cmpscr:set_base_path("/home/maro/hawk/analyticsolution")
-    end
+
+
     for i = 1, #braid_desc.cfactor do
-        cmpscr:set_c_factor(i - 1, braid_desc.cfactor[i])
+        scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = cmpscr
+    bscriptor = scr_cmp
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
@@ -512,7 +481,7 @@ else
         braid = xbraid_util.CreateExecutor(braid_desc,
                 space_time_communicator,
                 app,
-                logging
+                log_job
         )
     elseif braid_desc.driver == "Integrator" then
         app = xbraid_util.CreateIntegrator(braid_desc,
@@ -530,7 +499,7 @@ else
         braid = xbraid_util.CreateExecutor(braid_desc,
                 space_time_communicator,
                 app,
-                logging
+                log_job
         )
     elseif braid_desc.driver == "TimeStepper" then
         app = xbraid_util.CreateTimeStepper(braid_desc,
@@ -547,7 +516,7 @@ else
         braid = xbraid_util.CreateExecutor(braid_desc,
                 space_time_communicator,
                 app,
-                logging
+                log_job
         )
 
     elseif XARGS.p_driver == "ResidualStepper" then
@@ -560,16 +529,13 @@ else
         braid = xbraid_util.CreateExecutor(braid_desc,
                 space_time_communicator,
                 app,
-                logging
+                log_job
         )
     else
         print("integrator type not supported " .. XARGS.p_driver)
     end
-    script_logging = Paralog() -- todo move to desc
-    script_logging:set_comm(space_time_communicator)
-    script_logging:set_file_name("script")
-    script_logging:init()
-    braid:set_paralog_script(script_logging)
+
+    braid:set_paralog_script(paralog_script)
     v = u_start:clone()
     sv_init = StartValueInitializer()
     sv_init:set_start_vector(u_start)
@@ -592,7 +558,7 @@ else
 
     braid:print_settings()
     braid:print_summary()
-    logging:release()
+    log_job:release()
     integration_time = time:get()
     end
 if XARGS.p_redirect then
