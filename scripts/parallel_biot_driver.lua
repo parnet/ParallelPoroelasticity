@@ -100,6 +100,14 @@ print("MGNumSmooth=" .. ARGS.MGNumSmooth)
 print("MGCycleType=" .. ARGS.MGCycleType)
 print("MGBaseLevel=" .. ARGS.MGBaseLevel)
 local problem = BarryMercerProblem2dCPU1("ux,uy", "p")
+if num_spatial_procs < 8 then -- todo eliminate this quick fix when point source is fixed
+    problem:set_source_scaling(2.0)
+elseif num_spatial_procs == 8 then
+    problem:set_source_scaling(1.0)
+else
+    problem:set_source_scaling(0.5)
+end
+
 problem:set_stab(paraStab)
 problem:set_order(paraUOrder, paraPOrder)
 local charTime = problem:get_char_time()  -- implemented by C++ object
@@ -138,8 +146,7 @@ local balancerDesc = {
     }
 }
 if XARGS.p_redirect then
-    repl:undo()
-    repl:apply()
+    repl:undo()    repl:apply()
 end
 local gridName = problem:get_gridname()
 local mandatorySubsets = nil
@@ -386,7 +393,7 @@ if (XARGS.p_method == "SEQ") then
         uapprox_tstart = uapprox_tstop:clone()
         uapprox_tstop = uapprox_tstart:clone()
         integrator:init(uapprox_tstart)
-        print("SeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
+        print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
         integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
         outputval = uapprox_tstop:clone()
         scr_cmp:lua_write(outputval, i, tstop)
@@ -394,7 +401,7 @@ if (XARGS.p_method == "SEQ") then
     end
     time:stop()
     integration_time = time:get()
-    print(integration_time, "finished sequential timestepping with integrator")
+    print("\n"..integration_time, "finished sequential timestepping with integrator")
 elseif (XARGS.p_method == "NL") then
 
     dt = endTime / XARGS.p_num_time
@@ -408,7 +415,7 @@ elseif (XARGS.p_method == "NL") then
             "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5);
     time:stop()
     integration_time = time:get()
-    print(integration_time, "finished sequential timestepping with integrator")
+    print("\n"..integration_time, "finished sequential timestepping with integrator")
 
 elseif (XARGS.p_method == "CHK") then
 
@@ -435,7 +442,7 @@ elseif (XARGS.p_method == "CHK") then
     end
     time:stop()
     integration_time = time:get()
-    print(integration_time, "finished sequential timestepping with integrator")
+    print("\n"..integration_time, "finished sequential timestepping with integrator")
 elseif (XARGS.p_method == "R") then
 
     scriptor = BraidBiotCheck()
@@ -465,7 +472,7 @@ elseif (XARGS.p_method == "R") then
     end
     time:stop()
     integration_time = time:get()
-    print("timer " .. integration_time)
+    print("\ntimer " .. integration_time)
 else
     print("Residual ", braid_desc.use_residual)
 
@@ -572,7 +579,7 @@ end
 walltime:stop()
 
 if space_time_communicator:get_temporal_rank() == 0 then
-    print(integration_time .. " seconds for time integration")
-    print(walltime:get() .. " seconds wall time  (rank=" .. space_time_communicator:get_temporal_rank() .. ")")
+    print("\n" .. integration_time .. " seconds for time integration")
+    print("\n" .. walltime:get() .. " seconds wall time  (rank=" .. space_time_communicator:get_temporal_rank() .. ")")
 end
 
