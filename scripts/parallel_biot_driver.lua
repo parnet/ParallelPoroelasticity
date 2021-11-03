@@ -361,8 +361,6 @@ end
 
 if (XARGS.p_method == "SEQ") then
 
-
-
     timespan = braid_desc.time.t_end - braid_desc.time.t_0
     dt = timespan / braid_desc.time.n
 
@@ -388,6 +386,9 @@ if (XARGS.p_method == "SEQ") then
     -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
     for i = 1, braid_desc.time.n do
+        print("Memory this proc " .. get_physical_memory_consumed())
+        print("Memory world " .. get_world_memory_consumed())
+        print()
         tstart = tstop
         tstop = tstop + dt
         uapprox_tstart = uapprox_tstop:clone()
