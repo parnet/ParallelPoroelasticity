@@ -2,11 +2,12 @@ walltime = BraidTimer() -- get Time of whole execution
 walltime:start()
 
 local math_pi = 3.14159265359
-
 ug_load_script("ug_util.lua")
+
+num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)") -- numSpatialProcs * numTimeProcs = numGlobalProcs
 num_world_ranks = NumProcs()
 space_time_communicator = SpaceTimeCommunicator()
-num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)") -- numSpatialProcs * numTimeProcs = numGlobalProcs
+
 if num_world_ranks % num_spatial_procs == 0 then
     space_time_communicator:split(num_spatial_procs)
     local num_temporal_procs = num_world_ranks / num_spatial_procs;
@@ -112,9 +113,12 @@ problem:set_stab(paraStab)
 problem:set_order(paraUOrder, paraPOrder)
 local charTime = problem:get_char_time()  -- implemented by C++ object
 print("characteristic time is " .. charTime)
-startTime = 0.0
-endTime = 2.0 * charTime * math_pi
-print("Integrate from " .. startTime .. " to " .. endTime)
+
+startTime = 0.0 * charTime * math_pi
+endTime =   2.0 * charTime * math_pi
+
+
+print("@Integrate from " .. startTime .. " to " .. endTime)
 local dt = dtFrac * charTime
 local dtMin = dtMinFrac
 local dtMax = endTime
@@ -146,7 +150,8 @@ local balancerDesc = {
     }
 }
 if XARGS.p_redirect then
-    repl:undo()    repl:apply()
+    repl:undo()
+    repl:apply()
 end
 local gridName = problem:get_gridname()
 local mandatorySubsets = nil
@@ -171,6 +176,7 @@ bgs:enable_overlap(true)
 gs:enable_overlap(true)
 local uzawaSchurUpdateOp = AssembledLinearOperator()
 uzawaSchurUpdateOp:set_discretization(uzawaSchurUpdateDisc)
+
 function createUzawaIteration(sSchurCmp, aiForward, aiSchur, aiBackward, uzawaSchurUpdateOp, uzawaSchurWeight)
     local uzawa = UzawaBase(sSchurCmp)
     local weight = uzawaSchurWeight or 1.0
@@ -186,10 +192,12 @@ function createUzawaIteration(sSchurCmp, aiForward, aiSchur, aiBackward, uzawaSc
     uzawa:set_schur_operator_update(uzawaSchurUpdateOp, weight)
     return uzawa
 end
+
 local uzawaWeight = 1.0
+
 -- uzawa3
---local preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
---local postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
+-- local preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
+-- local postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
 
 local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
 local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
@@ -221,7 +229,8 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(true)
+cmpConvCheck:set_verbose(false)
+
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
@@ -230,6 +239,7 @@ convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-12)
 convCheck:set_minimum_defect(1e-20)
 convCheck:set_verbose(false)
+
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
@@ -237,13 +247,6 @@ solver["LU"]:set_convergence_check(convCheck)
 local lsolver = solver[ARGS.solverID]
 local vtk = VTKOutput()
 
-local biotErrorEst
-biotErrorEst = util.biot.CreateDefaultErrorEst(dim)
-if (problem.error_estimator) then
-    biotErrorEst = problem:error_estimator()
-else
-    biotErrorEst = util.biot.CreateDefaultErrorEst(dim)
-end
 print("initialization done.\n\n\n")
 desc_conv_control = {
     type = "static",
@@ -270,7 +273,7 @@ braid_desc = {
     conv_check = {
         max_iter = XARGS.p_max_iter,
         -- reduction = 1e-9
-        absolute = 5e-2
+        absolute = 5e-50
     },
     skip_downcycle_work = XARGS.p_boolskipdown,
     max_refinement = 10,
@@ -286,7 +289,6 @@ braid_desc = {
     richardson_local_order = RARGS.rich_order,
     verbose = true,
 }
-vxtk_scriptor = VTKScriptor(vtk, "access")
 local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(10)
 newtonCheck:set_minimum_defect(1e-14)
@@ -294,29 +296,29 @@ newtonCheck:set_reduction(5e-6)
 newtonCheck:set_verbose(false)
 newtonCheck:set_maximum_steps(1)
 newtonCheck:set_supress_unsuccessful(true)
+
 local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
+
 local secondNewtonSolver = NewtonSolver()
 secondNewtonSolver:set_linear_solver(lsolver)
 secondNewtonSolver:set_convergence_check(newtonCheck)
 local nlsolver = secondNewtonSolver
+
 print(lsolver:config_string())
+
 function myStepCallback0(u, step, time)
-
     -- problem:post_processing(u, step, time)
-    io = PIOGridFunction()
-    io:write(u,"solution_t"..step)
-
+    -- io = PIOGridFunction()
+    -- io:write(u,"solution_t"..step)
     vtk:print("PoroElasticityInitial.vtu", u, step, time)
 end
 print("Interpolation start values")
 problem:interpolate_start_values(u_start, startTime)
-print("Integrating from 0.0 to " .. endTime)
+print("Integrating from "..startTime.." to " .. endTime)
 
 
-local myclock = CuckooClock()
-local stepClock = CuckooClock()
 if ((ARGS.LimexNStages ~= 0)) then
     local dt0 = charTime * 1e-50
     print("Computing consistent initial value w/ dt0=" .. dt0)
@@ -338,7 +340,7 @@ scr_cmp = BraidBiotCheckPrecomputed()
 scr_cmp:set_log(log_job)
 scr_cmp:set_solution_name(vtk, "sequential")
 scr_cmp:set_diff_name(vtk, "error")
-scr_cmp:set_vtk_write_mode(true,true)
+scr_cmp:set_vtk_write_mode(false,true)
 scr_cmp:set_io_write_mode(false,false)
 scr_cmp:set_num_ref(numRefs)
 scr_cmp:set_max_index(128, braid_desc.time.n)
@@ -348,7 +350,7 @@ if environment == "hawk" then
 elseif environment == "gcsc" then
     scr_cmp:set_base_path("/home/mparnet/analyticsolution")
 elseif environment == "local" then
-    scr_cmp:set_base_path("/home/maro/hawk/analytic_ref3_proc4")
+    scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
     --scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
 end
 
@@ -357,10 +359,9 @@ end
 -- scr_biot:set_problem(problem)
 -- scr_biot:set_napprox(PARGS.p_napprox)
 
--- scr_vtk = VTKScriptor(vtk, "output")
+scr_vtk = VTKScriptor(vtk, "sequential")
 
 if (XARGS.p_method == "SEQ") then
-
     timespan = braid_desc.time.t_end - braid_desc.time.t_0
     dt = timespan / braid_desc.time.n
 
@@ -380,15 +381,9 @@ if (XARGS.p_method == "SEQ") then
     print("setup done ")
     time = BraidTimer()
     time:start()
-    -- iowrite = GridFunctionIO()
 
-    -- outputval = uapprox_tstop:clone()
-    -- vxtk_scriptor:lua_write(outputval, 0, tstop, 0, 0)
 
     for i = 1, braid_desc.time.n do
-        print("Memory this proc " .. get_physical_memory_consumed())
-        print("Memory world " .. get_world_memory_consumed())
-        print()
         tstart = tstop
         tstop = tstop + dt
         uapprox_tstart = uapprox_tstop:clone()
@@ -397,8 +392,9 @@ if (XARGS.p_method == "SEQ") then
         print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
         integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
         outputval = uapprox_tstop:clone()
-        scr_cmp:lua_write(outputval, i, tstop)
 
+        --scr_cmp:lua_write(outputval, i, tstop)
+        scr_vtk:lua_write(outputval,i,tstop,0,1)
     end
     time:stop()
     integration_time = time:get()
@@ -419,10 +415,7 @@ elseif (XARGS.p_method == "NL") then
     print("\n"..integration_time, "finished sequential timestepping with integrator")
 
 elseif (XARGS.p_method == "CHK") then
-
-    vxtk_scriptor = VTKScriptor(vtk, "output")
-
-
+    vtk_scriptor = VTKScriptor(vtk, "output")
 
     base_path_1024 = "/home/maro/hawk/analyticsolution/num_ref_4/BarryMercer2D_"
     base_path_1448 = "/home/maro/hawk/analyticsolution_check/num_ref_4/BarryMercer2D_"
@@ -440,6 +433,7 @@ elseif (XARGS.p_method == "CHK") then
         print(base_path_1448 ..i ..".gridfunction")
         iogf:read(v, base_path_1448 ..i ..".gridfunction")
         scr_cmp:lua_compare(u,v,i,i/128*charTime*2*math_pi,0,0)
+        --scr_vtk:lua_write(outputval,i,tstop,0,1)
     end
     time:stop()
     integration_time = time:get()
@@ -466,6 +460,8 @@ elseif (XARGS.p_method == "R") then
     print(tstart, "\n", tstop, "\n", t_N, "\n\n", offset, "\n", proc_offset, "\n", dt_total, "\n", dt_fine, "\n\n", t_rank, "\n", t_proc, "\n", proc_offset, "\n\n\n")
     time = BraidTimer()
     for i = proc_offset, proc_offset + t_proc - 1 do
+        -- print("get_physical_memory_consumed " .. get_physical_memory_consumed())
+        -- print("get_world_memory_consumed " .. get_world_memory_consumed())
         ctime = tstart + i * dt_fine
         print(t_rank, "\t", i, "\t", ctime)
         outputval = u_start:clone()
@@ -552,17 +548,20 @@ else
     sv_init = StartValueInitializer()
     sv_init:set_start_vector(u_start)
     braid:set_initializer(sv_init)
-    if braid_desc.use_residual then
-        print("Using euclidian norm")
-        l2norm = BraidEuclidianNorm()
-        braid:set_norm_provider(l2norm)
-    else
-        print("Using biot norm")
-        bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
-        bio_norm:set_order(4, 2)
-        bio_norm:set_parameter(1.0, 1000000/7, 250000/7)
-        braid:set_norm_provider(bio_norm)
-    end
+    -- if braid_desc.use_residual then
+    --    print("Using euclidian norm")
+    --    l2norm = BraidEuclidianNorm()
+    --    braid:set_norm_provider(l2norm)
+    -- else
+    --    print("Using biot norm")
+    --    bio_norm = BiotBraidSpatialNorm() --BraidEuclidianNorm()
+    --    bio_norm:set_order(4, 2)
+    --    bio_norm:set_parameter(1.0, 1000000/7, 250000/7)
+    --    braid:set_norm_provider(bio_norm)
+    -- end
+    norm_displ  = BiotBraidDisplacementNorm()
+    norm_displ:set_log(log_job)
+    braid:set_norm_provider(norm_displ)
     time = BraidTimer()
     time:start()
     braid:apply(u_start, endTime, u_start, startTime)
