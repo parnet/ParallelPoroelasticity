@@ -214,7 +214,7 @@ local uzawaWeight = 1.0
 
 local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
 local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
-local superLU = LU()
+local superLU = SuperLU() --LU()
 local gmg = GeometricMultiGrid(approxSpace)
 gmg:set_discretization(domainDiscT)
 gmg:set_base_level(ARGS.MGBaseLevel)  -- was 1 in Cincy
