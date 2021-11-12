@@ -151,8 +151,7 @@ function xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold)
     return integrator
 end
 
-
-function xbraid_util.createThetaStepper(domain, lsolver, theta,  threshold)
+function xbraid_util.createThetaStepper(domain, lsolver, theta, threshold)
     integrator = ThetaStepper()
     integrator:set_theta(theta)
     -- integrator:set_num_steps(num_steps)
@@ -163,96 +162,106 @@ function xbraid_util.createThetaStepper(domain, lsolver, theta,  threshold)
 end
 
 function xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold)
-    integrator = NLFixedStepThetaIntegrator()
-    integrator:set_domain(domain)
-    integrator:set_solver(nlsolver)
-    integrator:set_theta(theta)
-    integrator:set_num_steps(num_steps)
-    -- integrator:set_reassemble_threshold(threshold)
-    return integrator
+    if num_steps == 1 then
+        integrator = NLThetaIntegrator()
+        integrator:set_domain(domain)
+        integrator:set_solver(nlsolver)
+        integrator:set_theta(theta)
+       -- integrator:set_reassemble_threshold(threshold)
+        return integrator
+    else
+        integrator = NLFixedStepThetaIntegrator()
+        integrator:set_domain(domain)
+        integrator:set_solver(nlsolver)
+        integrator:set_theta(theta)
+        integrator:set_num_steps(num_steps)
+        -- integrator:set_reassemble_threshold(threshold)
+        return integrator
+    end
+
 end
 
-
-
 function xbraid_util.CreateNLLevel(app, domain, nlsolver, theta, num_steps, threshold)
-    app:set_default_integrator(xbraid_util.createNLTheta(domain,
-            nlsolver, theta,   num_steps  , threshold))
+    app:set_default_integrator(xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
     print("Set Integrator Methods - Leveldependend")
-    app:set_integrator(0, xbraid_util.createNLTheta(domain,
-            nlsolver, theta,   num_steps  , threshold))
+    app:set_integrator(0, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(1, xbraid_util.createNLTheta(domain,
-            nlsolver, theta,  num_steps   , threshold))
+    app:set_integrator(1, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(2, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(2, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(3, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(3, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(4, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(4, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(5, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(5, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(6, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(6, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(7, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(7, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(8, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(8, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(9, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(9, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
-    app:set_integrator(10, xbraid_util.createNLTheta(domain,
-            nlsolver, theta, num_steps, threshold))
+    app:set_integrator(10, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
+end
+
+function xbraid_util.CreateNLLevelFC(app, domain, nlsolver_fine,nlsolver_coarse, theta, num_steps, threshold)
+    app:set_default_integrator(xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    print("Set Integrator Methods - Leveldependend")
+    app:set_integrator(0, xbraid_util.createNLTheta(domain, nlsolver_fine, theta, num_steps, threshold))
+
+    app:set_integrator(1, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(2, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(3, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(4, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(5, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(6, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(7, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(8, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(9, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+
+    app:set_integrator(10, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
 end
 
 function xbraid_util.CreateFSLevel(app, domain, lsolver, theta, num_steps, threshold)
-    app:set_default_integrator(xbraid_util.createFSTheta(domain,
-            lsolver, theta,   num_steps  , threshold))
+    app:set_default_integrator(xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
     print("Set Integrator Methods - Leveldependend")
-    app:set_integrator(0, xbraid_util.createFSTheta(domain,
-            lsolver, theta,   num_steps  , threshold))
+    app:set_integrator(0, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(1, xbraid_util.createFSTheta(domain,
-            lsolver, theta,  num_steps   , threshold))
+    app:set_integrator(1, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(2, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(2, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(3, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(3, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(4, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(4, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(5, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(5, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(6, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(6, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(7, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(7, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(8, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(8, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(9, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(9, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 
-    app:set_integrator(10, xbraid_util.createFSTheta(domain,
-            lsolver, theta, num_steps, threshold))
+    app:set_integrator(10, xbraid_util.createFSTheta(domain, lsolver, theta, num_steps, threshold))
 end
 
-
-function xbraid_util.createBDF(domain,lsolver, order, threshold)
+function xbraid_util.createBDF(domain, lsolver, order, threshold)
     integrator = BDF_Integrator()
     integrator:set_order(order)
     integrator:set_reassemble_threshold(threshold)
@@ -261,7 +270,7 @@ function xbraid_util.createBDF(domain,lsolver, order, threshold)
     return integrator
 end
 
-function xbraid_util.createBDFLevel(app,domain,lsolver,order,threshold)
+function xbraid_util.createBDFLevel(app, domain, lsolver, order, threshold)
     app:set_default_integrator(xbraid_util.createBDF(domain,
             lsolver, 4, threshold))
     print("Set Integrator Methods - Leveldependend")
@@ -316,7 +325,6 @@ function xbraid_util.set_relax_type(braid, p_mgrit_relax_type)
         print("Invalid MGRIT-relax parameter - using FCF relaxation")
     end
 end
-
 
 function coarsening_strategie(numTemporalProcs, initial_time_steps, cfactor_communication, cfactor_innerproc)
 
@@ -388,7 +396,7 @@ function xbraid_util.CreateTimeStepper(desc, domain, scriptor, solver)
     return app
 end
 
-function xbraid_util.CreateStepperLevel(app,domainDiscT,lsolver,theta,threshold)
+function xbraid_util.CreateStepperLevel(app, domainDiscT, lsolver, theta, threshold)
     app:set_integrator(0, xbraid_util.createThetaStepper(domainDiscT,
             lsolver, theta, threshold))
 
@@ -431,7 +439,7 @@ function xbraid_util.CreateResidualStepper(desc, domain, scriptor, solver)
     return app
 end
 
-function xbraid_util.CreateExecutor(desc,communicator, app, logging)
+function xbraid_util.CreateExecutor(desc, communicator, app, logging)
     braid = BraidExecutor(communicator, app)
     braid:set_residual(desc.use_residual)
     braid:set_temporal_norm(desc.temporal_norm)

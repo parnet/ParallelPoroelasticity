@@ -51,6 +51,10 @@ XARGS = {
     p_tol_red_u = util.GetParamNumber("--tol-red-u", 1e-6, " 0 use residual, 1 xbraid residual"),
     p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
     p_tol_abs_u = util.GetParamNumber("--tol-abs-u", 1e-14, " 0 use residual, 1 xbraid residual"),
+
+    p_tol_abs_braid = util.GetParamNumber("--tol-abs-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
+    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
+    p_tol_rel_braid = util.GetParamNumber("--tol-rel-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
 }
 PARGS = {
     p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
@@ -69,6 +73,7 @@ RARGS = {
 
     rich_refine = util.GetParamNumber("--rich-refine", 2, "relaxation type FCF, FFCF or F-relaxation"),
     rich_bound = util.GetParamNumber("--rich-bound", 1.1, "relaxation type FCF, FFCF or F-relaxation"),
+    coarse = util.GetParamNumber("--coarse", 0, "relaxation type FCF, FFCF or F-relaxation"),
 }
 if XARGS.p_redirect then
     repl = ReplaceStandardStream()
@@ -84,6 +89,7 @@ local dtMinFrac = util.GetParamNumber("--dtminFrac", 1e-2, "minimal admissible t
 local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction factor on divergence")
 local numRefs = util.GetParamNumber("--num-refs", 3, "total number of refinements (incl. pre-Refinements)")
 local paraStab = util.GetParamNumber("--stab", 4, "total number of refinements (incl. pre-Refinements)")
+local endTimeFactor = util.GetParamNumber("--endtime", 0, "total number of refinements (incl. pre-Refinements)")
 
 local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinements (incl. pre-Refinements)")
 local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinements (incl. pre-Refinements)")
@@ -116,6 +122,10 @@ print("characteristic time is " .. charTime)
 
 startTime = 0.0 * charTime * math_pi
 endTime =   2.0 * charTime * math_pi
+if endTimeFactor > 0 then
+    endTime = endTimeFactor * math_pi * charTime
+end
+
 
 
 print("@Integrate from " .. startTime .. " to " .. endTime)
@@ -158,14 +168,17 @@ local mandatorySubsets = nil
 local dom = util.CreateDomain(gridName, 0, mandatorySubsets)
 util.refinement.CreateRegularHierarchy(dom, numRefs, true, balancerDesc)
 local approxSpace = util.biot.CreateApproxSpace(dom, dim, uorder, porder)
+
 print("FE discretization...")
 local bSteadyStateMechanics = ARGS.bSteadyStateMechanics -- true
 local domainDisc0 = DomainDiscretization(approxSpace)
 problem:add_elem_discs(domainDisc0, bSteadyStateMechanics)
 problem:add_boundary_conditions(domainDisc0, bSteadyStateMechanics)
+
 local domainDiscT = DomainDiscretization(approxSpace)
 problem:add_elem_discs(domainDiscT, bSteadyStateMechanics)
 problem:add_boundary_conditions(domainDiscT, bSteadyStateMechanics)
+
 local uzawaSchurUpdateDisc = DomainDiscretization(approxSpace)
 problem:add_uzawa_discs(uzawaSchurUpdateDisc, bSteadyStateMechanics)
 print("Discretization done!")
@@ -196,11 +209,11 @@ end
 local uzawaWeight = 1.0
 
 -- uzawa3
-local preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
-local postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
+-- local preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
+-- local postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
 
--- local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
--- local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
+local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
+local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
 local superLU = LU()
 local gmg = GeometricMultiGrid(approxSpace)
 gmg:set_discretization(domainDiscT)
@@ -228,9 +241,8 @@ if (dim == 3) then
     cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(false)
-
+cmpConvCheck:set_maximum_steps(1000)
+cmpConvCheck:set_verbose(true)
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
@@ -238,13 +250,46 @@ local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-12)
 convCheck:set_minimum_defect(1e-20)
-convCheck:set_verbose(false)
-
+convCheck:set_verbose(true)
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
-
 local lsolver = solver[ARGS.solverID]
+
+
+
+local uzawaWeight = 1.0
+-- coarse solver
+local gmgCoarse = GeometricMultiGrid(approxSpace)
+gmgCoarse:set_discretization(domainDiscT)
+gmgCoarse:set_base_level(ARGS.MGBaseLevel)  -- was 1 in Cincy
+gmgCoarse:set_base_solver(superLU)  -- was baseLU in Cincy
+gmgCoarse:set_presmoother(preSmoother) --(jac)
+gmgCoarse:set_postsmoother(postSmoother)
+gmgCoarse:set_cycle_type(ARGS.MGCycleType) -- 1:V, 2:W -- "F"
+gmgCoarse:set_num_presmooth(ARGS.MGNumSmooth)
+gmgCoarse:set_num_postsmooth(ARGS.MGNumSmooth)
+gmgCoarse:set_rap(true)  -- mandatory, if set_stationary
+gmgCoarse:set_transfer(transfer)
+
+solverCoarse = {}
+local cmpConvCheckCoarse = CompositeConvCheck(approxSpace)
+cmpConvCheckCoarse:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
+cmpConvCheckCoarse:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
+if (dim == 3) then
+    cmpConvCheckCoarse:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
+end
+cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
+cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
+cmpConvCheckCoarse:set_verbose(true)
+cmpConvCheckCoarse:set_supress_unsuccessful(true)
+solverCoarse["GMG"] = LinearSolver()
+solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
+solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
+local lsolverCoarse = solverCoarse[ARGS.solverID]
+
+
+
 local vtk = VTKOutput()
 
 print("initialization done.\n\n\n")
@@ -269,11 +314,11 @@ braid_desc = {
     print_level = XARGS.p_printlevel,
     access_level = XARGS.p_accesslevel,
     sequential = XARGS.p_method == "SEQMGRIT",
-    temporal_norm = 3, -- {1,2,3}
+    temporal_norm = XARGS.p_tol_norm_braid, -- {1,2,3}
     conv_check = {
         max_iter = XARGS.p_max_iter,
-        -- reduction = 1e-9
-        absolute = 5e-50
+        -- reduction = XARGS.p_tol_rel_braid
+        absolute = XARGS.p_tol_abs_braid
     },
     skip_downcycle_work = XARGS.p_boolskipdown,
     max_refinement = 10,
@@ -301,10 +346,35 @@ local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
 
-local secondNewtonSolver = NewtonSolver()
-secondNewtonSolver:set_linear_solver(lsolver)
-secondNewtonSolver:set_convergence_check(newtonCheck)
-local nlsolver = secondNewtonSolver
+
+
+
+local newtonCheckCoarse = ConvCheck()
+newtonCheckCoarse:set_maximum_steps(10)
+newtonCheckCoarse:set_minimum_defect(1e-14)
+newtonCheckCoarse:set_reduction(5e-6)
+newtonCheckCoarse:set_verbose(false)
+newtonCheckCoarse:set_maximum_steps(1)
+newtonCheckCoarse:set_supress_unsuccessful(true)
+local newtonSolverCoarse = NewtonSolver()
+newtonSolverCoarse:set_linear_solver(lsolverCoarse)
+newtonSolverCoarse:set_convergence_check(newtonCheckCoarse)
+
+
+local newtonSolverSec = NewtonSolver()
+newtonSolverSec:set_linear_solver(lsolver)
+newtonSolverSec:set_convergence_check(newtonCheck)
+
+local nlsolver = newtonSolver
+local nlsolver_coarse
+print("RARGS.coarse " , RARGS.coarse)
+if RARGS.coarse == 0 then
+    print("##### using fine")
+    nlsolver_coarse = nlsolver
+else
+    print("##### using coarse")
+    nlsolver_coarse = newtonSolverCoarse
+end
 
 print(lsolver:config_string())
 
@@ -322,7 +392,7 @@ print("Integrating from "..startTime.." to " .. endTime)
 if ((ARGS.LimexNStages ~= 0)) then
     local dt0 = charTime * 1e-50
     print("Computing consistent initial value w/ dt0=" .. dt0)
-    util.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolver, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
+    util.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolverSec, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
     print("initial value calculation done. \n\n\n\n\n")
 end
 
@@ -354,12 +424,11 @@ elseif environment == "local" then
     --scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
 end
 
-
 -- scr_biot = BraidBiotCheck()
 -- scr_biot:set_problem(problem)
 -- scr_biot:set_napprox(PARGS.p_napprox)
 
-scr_vtk = VTKScriptor(vtk, "sequential")
+scr_vtk = VTKScriptor(vtk, "method")
 
 if (XARGS.p_method == "SEQ") then
     timespan = braid_desc.time.t_end - braid_desc.time.t_0
@@ -415,7 +484,7 @@ elseif (XARGS.p_method == "NL") then
     print("\n"..integration_time, "finished sequential timestepping with integrator")
 
 elseif (XARGS.p_method == "CHK") then
-    vtk_scriptor = VTKScriptor(vtk, "output")
+
 
     base_path_1024 = "/home/maro/hawk/analyticsolution/num_ref_4/BarryMercer2D_"
     base_path_1448 = "/home/maro/hawk/analyticsolution_check/num_ref_4/BarryMercer2D_"
@@ -477,7 +546,7 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = scr_cmp
+    bscriptor = scr_vtk
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
@@ -496,12 +565,15 @@ else
                 domainDiscT,
                 bscriptor
         )
-        xbraid_util.CreateNLLevel(app,
+
+        xbraid_util.CreateNLLevelFC(app,
                     domainDiscT,
                     nlsolver,
+                    nlsolver_coarse,
                     IARGS.theta,
                     IARGS.num_step,
                     1e-8)
+
         app:set_ref_factor(RARGS.rich_refine)
         app:set_threshold(RARGS.rich_bound)
         braid = xbraid_util.CreateExecutor(braid_desc,
