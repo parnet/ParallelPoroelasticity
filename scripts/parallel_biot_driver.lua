@@ -53,7 +53,7 @@ XARGS = {
     p_tol_abs_u = util.GetParamNumber("--tol-abs-u", 1e-14, " 0 use residual, 1 xbraid residual"),
 
     p_tol_abs_braid = util.GetParamNumber("--tol-abs-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
-    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
+    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 2, " 0 use residual, 1 xbraid residual"),
     p_tol_rel_braid = util.GetParamNumber("--tol-rel-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
 }
 PARGS = {
