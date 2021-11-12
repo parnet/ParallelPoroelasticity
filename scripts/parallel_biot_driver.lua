@@ -250,7 +250,7 @@ local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-12)
 convCheck:set_minimum_defect(1e-20)
-convCheck:set_verbose(true)
+convCheck:set_verbose(false)
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
@@ -281,7 +281,7 @@ if (dim == 3) then
 end
 cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
-cmpConvCheckCoarse:set_verbose(true)
+cmpConvCheckCoarse:set_verbose(false)
 cmpConvCheckCoarse:set_supress_unsuccessful(true)
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
