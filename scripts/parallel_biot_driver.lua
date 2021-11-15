@@ -410,7 +410,7 @@ scr_cmp = BraidBiotCheckPrecomputed()
 scr_cmp:set_log(log_job)
 scr_cmp:set_solution_name(vtk, "sequential")
 scr_cmp:set_diff_name(vtk, "error")
-scr_cmp:set_vtk_write_mode(false,true)
+scr_cmp:set_vtk_write_mode(false,false)
 scr_cmp:set_io_write_mode(false,false)
 scr_cmp:set_num_ref(numRefs)
 scr_cmp:set_max_index(128, braid_desc.time.n)
@@ -546,7 +546,7 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = scr_vtk
+    bscriptor = scr_cmp
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
