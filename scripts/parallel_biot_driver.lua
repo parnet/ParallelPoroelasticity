@@ -242,7 +242,7 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(1000)
-cmpConvCheck:set_verbose(true)
+cmpConvCheck:set_verbose(false)
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
@@ -462,8 +462,8 @@ if (XARGS.p_method == "SEQ") then
         integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
         outputval = uapprox_tstop:clone()
 
-        --scr_cmp:lua_write(outputval, i, tstop)
-        scr_vtk:lua_write(outputval,i,tstop,0,1)
+        scr_cmp:lua_write(outputval, i, tstop)
+        -- scr_vtk:lua_write(outputval,i,tstop,0,1)
     end
     time:stop()
     integration_time = time:get()
