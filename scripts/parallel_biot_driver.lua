@@ -469,11 +469,12 @@ if (XARGS.p_method == "SEQ") then
     print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
 
     --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
-    integrator = NLFixedStepThetaIntegrator()
-    integrator:set_domain(domainDiscT)
-    integrator:set_solver(nlsolver)
-    integrator:set_theta(1)
-    integrator:set_num_steps(2)
+    --integrator = NLFixedStepThetaIntegrator()
+    --integrator:set_domain(domainDiscT)
+    --integrator:set_solver(nlsolver)
+    --integrator:set_theta(1)
+    --integrator:set_num_steps(IARGS.num_step)
+    integrator = xbraid_util.createNLTheta(domainDiscT,nlsolver,IARGS.num_step,1e-8)
 
     print("setup done ")
     time = BraidTimer()
