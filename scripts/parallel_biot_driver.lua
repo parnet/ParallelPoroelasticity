@@ -96,6 +96,8 @@ local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinemen
 
 local ARGS = {
     solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
+    smootherID = util.GetParam("--smoother-id", "uzawa"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
+
     bSteadyStateMechanics = not util.HasParamOption("--with-transient-mechanics"), -- OPTIONAL: transient mechanics
     MGCycleType = util.GetParam("--mg-cycle-type", "W", "V,F,W"),
     MGBaseLevel = util.GetParamNumber("--mg-base-level", 0, "some non-negative integer"),
@@ -208,12 +210,14 @@ end
 
 local uzawaWeight = 1.0
 
--- uzawa3
--- local preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
--- local postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
-
 local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
 local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
+
+if ARGS.smootherID == "uzawa3" then
+    print("using uzawa 3")
+    preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
+    postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
+end
 local superLU = SuperLU() --LU()
 local gmg = GeometricMultiGrid(approxSpace)
 gmg:set_discretization(domainDiscT)
@@ -243,10 +247,22 @@ end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(1000)
 cmpConvCheck:set_verbose(true)
+cmpConvCheck:set_supress_unsuccessful(true)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
+
+
+local convCheckKrylov = ConvCheck()
+convCheckKrylov:set_maximum_steps(50)
+convCheckKrylov:set_reduction(1e-8)
+convCheckKrylov:set_minimum_defect(1e-14)
+
+solver["GMGKrylov"] = BiCGStab()
+solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
+solver["GMGKrylov"]:set_convergence_check(convCheckKrylov) -- cmpConvCheck
+
 local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-12)
@@ -256,7 +272,7 @@ solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
 local lsolver = solver[ARGS.solverID]
-
+print("using "..ARGS.solverID)
 
 
 local uzawaWeight = 1.0
@@ -287,6 +303,17 @@ cmpConvCheckCoarse:set_supress_unsuccessful(true)
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
 solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
+
+
+local convCheckKrylovCoarse = ConvCheck()
+convCheckKrylovCoarse:set_maximum_steps(50)
+convCheckKrylovCoarse:set_reduction(1e-8)
+convCheckKrylovCoarse:set_minimum_defect(1e-14)
+
+solverCoarse["GMGKrylov"] = BiCGStab()
+solverCoarse["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
+solverCoarse["GMGKrylov"]:set_convergence_check(convCheckKrylovCoarse) -- cmpConvCheck
+
 local lsolverCoarse = solverCoarse[ARGS.solverID]
 
 
@@ -463,8 +490,8 @@ if (XARGS.p_method == "SEQ") then
         integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
         outputval = uapprox_tstop:clone()
 
-        scr_cmp:lua_write(outputval, i, tstop)
-        -- scr_vtk:lua_write(outputval,i,tstop,0,1)
+        -- scr_cmp:lua_write(outputval, i, tstop)
+        scr_vtk:lua_write(outputval,i,tstop,0,1)
     end
     time:stop()
     integration_time = time:get()
@@ -502,8 +529,8 @@ elseif (XARGS.p_method == "CHK") then
         iogf:read(u, base_path_1024 ..i ..".gridfunction")
         print(base_path_1448 ..i ..".gridfunction")
         iogf:read(v, base_path_1448 ..i ..".gridfunction")
-        scr_cmp:lua_compare(u,v,i,i/128*charTime*2*math_pi,0,0)
-        --scr_vtk:lua_write(outputval,i,tstop,0,1)
+        -- scr_cmp:lua_compare(u,v,i,i/128*charTime*2*math_pi,0,0)
+        scr_vtk:lua_write(outputval,i,tstop,0,1)
     end
     time:stop()
     integration_time = time:get()
@@ -547,7 +574,7 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = scr_cmp
+    bscriptor = scr_vtk
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
