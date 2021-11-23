@@ -245,7 +245,7 @@ if (dim == 3) then
     cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-cmpConvCheck:set_maximum_steps(1000)
+cmpConvCheck:set_maximum_steps(100)
 cmpConvCheck:set_verbose(true)
 cmpConvCheck:set_supress_unsuccessful(false)
 
