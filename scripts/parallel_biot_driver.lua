@@ -247,7 +247,7 @@ end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(1000)
 cmpConvCheck:set_verbose(true)
-cmpConvCheck:set_supress_unsuccessful(true)
+cmpConvCheck:set_supress_unsuccessful(false)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
@@ -267,7 +267,8 @@ local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-12)
 convCheck:set_minimum_defect(1e-20)
-convCheck:set_verbose(false)
+convCheck:set_verbose(true)
+
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 solver["LU"]:set_convergence_check(convCheck)
@@ -298,8 +299,8 @@ if (dim == 3) then
 end
 cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
-cmpConvCheckCoarse:set_verbose(false)
-cmpConvCheckCoarse:set_supress_unsuccessful(true)
+cmpConvCheckCoarse:set_verbose(true)
+cmpConvCheckCoarse:set_supress_unsuccessful(false)
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
 solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
@@ -366,9 +367,9 @@ local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(10)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_reduction(5e-6)
-newtonCheck:set_verbose(false)
+newtonCheck:set_verbose(true)
 newtonCheck:set_maximum_steps(1)
-newtonCheck:set_supress_unsuccessful(true)
+newtonCheck:set_supress_unsuccessful(false)
 
 local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
