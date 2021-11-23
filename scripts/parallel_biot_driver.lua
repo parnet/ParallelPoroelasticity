@@ -242,7 +242,8 @@ if (dim == 3) then
 end
 cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
 cmpConvCheck:set_maximum_steps(1000)
-cmpConvCheck:set_verbose(false)
+cmpConvCheck:set_verbose(true)
+
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMG"]:set_convergence_check(cmpConvCheck)
@@ -573,6 +574,32 @@ else
                     IARGS.theta,
                     IARGS.num_step,
                     1e-8)
+
+        app:set_ref_factor(RARGS.rich_refine)
+        app:set_threshold(RARGS.rich_bound)
+        braid = xbraid_util.CreateExecutor(braid_desc,
+                space_time_communicator,
+                app,
+                log_job
+        )
+    elseif braid_desc.driver == "NLIntegrator" then
+        print("NLDRIVER")
+        app = xbraid_util.CreateNLIntegrator(braid_desc,
+                domainDiscT,
+                bscriptor
+        )
+        -- app:set_iter(start_iter, target_iter, fulliter) -- not implemented
+        app:set_conv_check(cmpConvCheck)
+        app:set_tol(1e-3, 1e-14)
+
+
+        xbraid_util.CreateNLLevelFC(app,
+                domainDiscT,
+                nlsolver,
+                nlsolver_coarse,
+                IARGS.theta,
+                IARGS.num_step,
+                1e-8)
 
         app:set_ref_factor(RARGS.rich_refine)
         app:set_threshold(RARGS.rich_bound)

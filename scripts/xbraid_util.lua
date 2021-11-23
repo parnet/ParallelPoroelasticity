@@ -390,6 +390,18 @@ function xbraid_util.CreateIntegrator(desc, domain, scriptor)
     return app
 end
 
+
+function xbraid_util.CreateNLIntegrator(desc, domain, scriptor)
+    print("create app")
+    app = BraidNLIntegrator()
+    print("app created")
+    xbraid_util.SetBaseValues(app, desc, domain, scriptor)
+    print("base values set")
+    return app
+end
+
+
+
 function xbraid_util.CreateTimeStepper(desc, domain, scriptor, solver)
     app = BraidTimeStepper()
     xbraid_util.SetBaseValues(app, desc, domain, scriptor)
