@@ -46,7 +46,8 @@ XARGS = {
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
     p_printlevel = util.GetParamNumber("--printlevel", 1, ""),
     p_store_values = util.GetParamNumber("--store-level", 0, ""),
-
+-- 1e-6, 1e-6 for rel
+-- 1e-14, 1e-14 for cmpConvCheck
     p_tol_red_p = util.GetParamNumber("--tol-red-p", 1e-6, " 0 use residual, 1 xbraid residual"),
     p_tol_red_u = util.GetParamNumber("--tol-red-u", 1e-6, " 0 use residual, 1 xbraid residual"),
     p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
@@ -238,36 +239,52 @@ tol_reduction_p = XARGS.p_tol_red_p
 tol_absolute_p = XARGS.p_tol_abs_p
 tol_reduction_u = XARGS.p_tol_red_u
 tol_absolute_u = XARGS.p_tol_abs_u
-local cmpConvCheck = CompositeConvCheck(approxSpace)
-cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
-cmpConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
-if (dim == 3) then
-    cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
-end
-cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-cmpConvCheck:set_maximum_steps(100)
-cmpConvCheck:set_verbose(true)
-cmpConvCheck:set_supress_unsuccessful(false)
-
-solver["GMG"] = LinearSolver()
-solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMG"]:set_convergence_check(cmpConvCheck)
-
-
-local convCheckKrylov = ConvCheck()
-convCheckKrylov:set_maximum_steps(50)
-convCheckKrylov:set_reduction(1e-8)
-convCheckKrylov:set_minimum_defect(1e-14)
-
-solver["GMGKrylov"] = BiCGStab()
-solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMGKrylov"]:set_convergence_check(convCheckKrylov) -- cmpConvCheck
+-- local cmpConvCheck = CompositeConvCheck(approxSpace)
+-- cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
+-- cmpConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
+-- if (dim == 3) then
+--     cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
+-- end
+-- cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
+-- cmpConvCheck:set_maximum_steps(100)
+-- cmpConvCheck:set_verbose(true)
+-- cmpConvCheck:set_supress_unsuccessful(false)
 
 local convCheck = ConvCheck()
 convCheck:set_maximum_steps(100)
-convCheck:set_reduction(1e-12)
-convCheck:set_minimum_defect(1e-20)
+convCheck:set_reduction(1e-8)
+convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
+convCheck:set_supress_unsuccessful(false)
+
+local convCheckCoarse = ConvCheck()
+convCheckCoarse:set_maximum_steps(RARGS.coarse)
+convCheckCoarse:set_reduction(1e-8)
+convCheckCoarse:set_minimum_defect(1e-14)
+convCheckCoarse:set_verbose(true)
+convCheckCoarse:set_supress_unsuccessful(true)
+
+local newtonCheck = ConvCheck()
+newtonCheck:set_maximum_steps(1)
+newtonCheck:set_reduction(5e-6)
+newtonCheck:set_minimum_defect(1e-14)
+newtonCheck:set_verbose(true)
+newtonCheck:set_supress_unsuccessful(true)
+
+local newtonCheckCoarse = ConvCheck()
+newtonCheckCoarse:set_maximum_steps(1)
+newtonCheckCoarse:set_reduction(5e-6)
+newtonCheckCoarse:set_minimum_defect(1e-14)
+newtonCheckCoarse:set_verbose(true)
+newtonCheckCoarse:set_supress_unsuccessful(true)
+
+solver["GMG"] = LinearSolver()
+solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
+solver["GMG"]:set_convergence_check(convCheck)
+
+solver["GMGKrylov"] = BiCGStab()
+solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
+solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
 
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
@@ -291,29 +308,25 @@ gmgCoarse:set_rap(true)  -- mandatory, if set_stationary
 gmgCoarse:set_transfer(transfer)
 
 solverCoarse = {}
-local cmpConvCheckCoarse = CompositeConvCheck(approxSpace)
-cmpConvCheckCoarse:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
-cmpConvCheckCoarse:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
-if (dim == 3) then
-    cmpConvCheckCoarse:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
-end
-cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
-cmpConvCheckCoarse:set_verbose(true)
-cmpConvCheckCoarse:set_supress_unsuccessful(false)
+-- local cmpConvCheckCoarse = CompositeConvCheck(approxSpace)
+-- cmpConvCheckCoarse:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
+-- cmpConvCheckCoarse:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
+-- if (dim == 3) then
+--     cmpConvCheckCoarse:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
+-- end
+-- cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
+-- cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
+-- cmpConvCheckCoarse:set_verbose(true)
+-- cmpConvCheckCoarse:set_supress_unsuccessful(false)
+
+
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
-solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
-
-
-local convCheckKrylovCoarse = ConvCheck()
-convCheckKrylovCoarse:set_maximum_steps(50)
-convCheckKrylovCoarse:set_reduction(1e-8)
-convCheckKrylovCoarse:set_minimum_defect(1e-14)
+solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
 
 solverCoarse["GMGKrylov"] = BiCGStab()
-solverCoarse["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
-solverCoarse["GMGKrylov"]:set_convergence_check(convCheckKrylovCoarse) -- cmpConvCheck
+solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
+solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
 
 local lsolverCoarse = solverCoarse[ARGS.solverID]
 
@@ -363,13 +376,6 @@ braid_desc = {
     richardson_local_order = RARGS.rich_order,
     verbose = true,
 }
-local newtonCheck = ConvCheck()
-newtonCheck:set_maximum_steps(10)
-newtonCheck:set_minimum_defect(1e-14)
-newtonCheck:set_reduction(5e-6)
-newtonCheck:set_verbose(true)
-newtonCheck:set_maximum_steps(1)
-newtonCheck:set_supress_unsuccessful(false)
 
 local newtonSolver = NewtonSolver()
 newtonSolver:set_linear_solver(lsolver)
@@ -377,14 +383,6 @@ newtonSolver:set_convergence_check(newtonCheck)
 
 
 
-
-local newtonCheckCoarse = ConvCheck()
-newtonCheckCoarse:set_maximum_steps(10)
-newtonCheckCoarse:set_minimum_defect(1e-14)
-newtonCheckCoarse:set_reduction(5e-6)
-newtonCheckCoarse:set_verbose(false)
-newtonCheckCoarse:set_maximum_steps(1)
-newtonCheckCoarse:set_supress_unsuccessful(true)
 local newtonSolverCoarse = NewtonSolver()
 newtonSolverCoarse:set_linear_solver(lsolverCoarse)
 newtonSolverCoarse:set_convergence_check(newtonCheckCoarse)
@@ -618,7 +616,7 @@ else
                 bscriptor
         )
         -- app:set_iter(start_iter, target_iter, fulliter) -- not implemented
-        app:set_conv_check(cmpConvCheck)
+        app:set_conv_check(convCheck)
         app:set_tol(1e-3, 1e-14)
 
 
