@@ -452,6 +452,16 @@ if (XARGS.p_method == "SEQ") then
             print("Iteration did not converge")
             exit()
         end
+        if braid_desc.time.n == 4096 then
+            print("4096 --------------------------------- ")
+            if i % 32 == 0 or i < 32 then
+                print("vtk ||||||||||||||||||||||||||||||||||||||||<< ")
+                scr_vtk:lua_write(outputval,i,tstop,0,1)
+            end
+            if i > 256 then
+                exit()
+            end
+        end
         -- scr_cmp:lua_write(outputval, i, tstop)
         --scr_vtk:lua_write(outputval,i,tstop,0,1)
         print(get_spatial_memory_consumed())

@@ -496,6 +496,12 @@ if (XARGS.p_method == "SEQ") then
             exit()
         end
         -- scr_cmp:lua_write(outputval, i, tstop)
+        if braid_desc.time.n == 4096 then
+            if i % 32 == 0 or i < 32 then
+                print("")
+                scr_vtk:lua_write(outputval,i,tstop,0,1)
+            end
+        end
         --scr_vtk:lua_write(outputval,i,tstop,0,1)
         print(get_spatial_memory_consumed())
     end
