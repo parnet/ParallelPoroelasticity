@@ -16,6 +16,7 @@ if num_world_ranks % num_spatial_procs == 0 then
     print(num_temporal_procs.." x " .. num_spatial_procs .. " = " .. num_world_ranks)
 else
     space_time_communicator:split(1)
+    print("unsplit")
     print("temporal x spatial = world")
     print(num_world_ranks.." x " .. 1 .. " = " .. num_world_ranks)
 end
@@ -479,6 +480,7 @@ if (XARGS.p_method == "SEQ") then
     time = BraidTimer()
     time:start()
 
+    print(get_spatial_memory_consumed())
 
     for i = 1, braid_desc.time.n do
         tstart = tstop
