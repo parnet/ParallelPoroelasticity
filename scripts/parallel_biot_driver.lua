@@ -257,6 +257,13 @@ convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
 convCheck:set_supress_unsuccessful(false)
 
+local newtonCheck = ConvCheck()
+newtonCheck:set_maximum_steps(1)
+newtonCheck:set_reduction(5e-6)
+newtonCheck:set_minimum_defect(1e-14)
+newtonCheck:set_verbose(true)
+newtonCheck:set_supress_unsuccessful(false)
+
 local convCheckCoarse = ConvCheck()
 convCheckCoarse:set_maximum_steps(RARGS.coarse)
 convCheckCoarse:set_reduction(1e-8)
@@ -264,19 +271,12 @@ convCheckCoarse:set_minimum_defect(1e-14)
 convCheckCoarse:set_verbose(true)
 convCheckCoarse:set_supress_unsuccessful(true)
 
-local newtonCheck = ConvCheck()
-newtonCheck:set_maximum_steps(1)
-newtonCheck:set_reduction(5e-6)
-newtonCheck:set_minimum_defect(1e-24)
-newtonCheck:set_verbose(true)
-newtonCheck:set_supress_unsuccessful(false)
-
 local newtonCheckCoarse = ConvCheck()
 newtonCheckCoarse:set_maximum_steps(1)
-newtonCheckCoarse:set_reduction(1e-1)
-newtonCheckCoarse:set_minimum_defect(1e-24)
+newtonCheckCoarse:set_reduction(5e-6)
+newtonCheckCoarse:set_minimum_defect(1e-14)
 newtonCheckCoarse:set_verbose(true)
-newtonCheckCoarse:set_supress_unsuccessful(false)
+newtonCheckCoarse:set_supress_unsuccessful(true)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
@@ -487,13 +487,17 @@ if (XARGS.p_method == "SEQ") then
         uapprox_tstop = uapprox_tstart:clone()
         integrator:init(uapprox_tstart)
         print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
-        integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
+        success = integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
         outputval = uapprox_tstop:clone()
-
+        if( not success) then
+            print("Iteration did not converge")
+            exit()
+        end
         -- scr_cmp:lua_write(outputval, i, tstop)
         --scr_vtk:lua_write(outputval,i,tstop,0,1)
+        print(get_spatial_memory_consumed())
     end
-    scr_vtk:lua_write(outputval,braid_desc.time.n ,tstop,0,1)
+    scr_vtk:lua_write(outputval,braid_desc.time.n,tstop,0,1)
     time:stop()
     integration_time = time:get()
     print("\n"..integration_time, "finished sequential timestepping with integrator")
