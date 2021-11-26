@@ -491,8 +491,9 @@ if (XARGS.p_method == "SEQ") then
         outputval = uapprox_tstop:clone()
 
         -- scr_cmp:lua_write(outputval, i, tstop)
-        scr_vtk:lua_write(outputval,i,tstop,0,1)
+        --scr_vtk:lua_write(outputval,i,tstop,0,1)
     end
+    scr_vtk:lua_write(outputval,braid_desc.time.n ,tstop,0,1)
     time:stop()
     integration_time = time:get()
     print("\n"..integration_time, "finished sequential timestepping with integrator")
