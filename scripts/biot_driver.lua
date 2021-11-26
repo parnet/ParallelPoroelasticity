@@ -243,7 +243,7 @@ convCheck:set_supress_unsuccessful(false)
 
 local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(1)
-newtonCheck:set_reduction(5e-6)
+newtonCheck:set_reduction(1e-1)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
 newtonCheck:set_supress_unsuccessful(false)
