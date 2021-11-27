@@ -485,8 +485,8 @@ if (XARGS.p_method == "SEQ") then
     for i = 1, braid_desc.time.n do
         tstart = tstop
         tstop = tstop + dt
-        uapprox_tstart = uapprox_tstop:clone()
-        --uapprox_tstop = uapprox_tstart:clone()
+         uapprox_tstart = uapprox_tstop
+        -- uapprox_tstop = uapprox_tstart:clone()
         integrator:init(uapprox_tstart)
         print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
         success = integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
@@ -496,12 +496,12 @@ if (XARGS.p_method == "SEQ") then
             exit()
         end
         -- scr_cmp:lua_write(outputval, i, tstop)
-        if braid_desc.time.n == 4096 then
-            if i % 32 == 0 or i < 32 then
-                print("")
-                scr_vtk:lua_write(outputval,i,tstop,0,1)
-            end
-        end
+        --if braid_desc.time.n == 4096 then
+        --    if i % 32 == 0 or i < 32 then
+        --        print("")
+        --        scr_vtk:lua_write(outputval,i,tstop,0,1)
+        --    end
+        -- end
         --scr_vtk:lua_write(outputval,i,tstop,0,1)
         print(get_spatial_memory_consumed())
     end

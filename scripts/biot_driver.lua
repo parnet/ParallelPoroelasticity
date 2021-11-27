@@ -241,6 +241,7 @@ convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
 convCheck:set_supress_unsuccessful(false)
 
+
 local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(1)
 newtonCheck:set_reduction(1e-1)
@@ -261,6 +262,34 @@ newtonCheckCoarse:set_reduction(5e-6)
 newtonCheckCoarse:set_minimum_defect(1e-14)
 newtonCheckCoarse:set_verbose(true)
 newtonCheckCoarse:set_supress_unsuccessful(true)
+
+
+
+
+
+
+
+
+
+
+
+
+
+local convCheck = ConvCheck()
+convCheck:set_maximum_steps(100)
+convCheck:set_reduction(1e-5)
+convCheck:set_minimum_defect(1e-15)
+convCheck:set_verbose(true)
+convCheck:set_supress_unsuccessful(false)
+
+
+local newtonCheck = ConvCheck()
+newtonCheck:set_maximum_steps(1)
+newtonCheck:set_reduction(1e0)
+newtonCheck:set_minimum_defect(1e-1)
+newtonCheck:set_verbose(true)
+newtonCheck:set_supress_unsuccessful(false)
+
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
@@ -442,7 +471,7 @@ if (XARGS.p_method == "SEQ") then
     for i = 1, braid_desc.time.n do
         tstart = tstop
         tstop = tstop + dt
-        uapprox_tstart = uapprox_tstop:clone()
+        uapprox_tstart = uapprox_tstop
         --uapprox_tstop = uapprox_tstart:clone()
         integrator:init(uapprox_tstart)
         print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
