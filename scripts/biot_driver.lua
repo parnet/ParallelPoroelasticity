@@ -275,21 +275,6 @@ newtonCheckCoarse:set_supress_unsuccessful(true)
 
 
 
-local convCheck = ConvCheck()
-convCheck:set_maximum_steps(100)
-convCheck:set_reduction(1e-5)
-convCheck:set_minimum_defect(1e-15)
-convCheck:set_verbose(true)
-convCheck:set_supress_unsuccessful(false)
-
-
-local newtonCheck = ConvCheck()
-newtonCheck:set_maximum_steps(1)
-newtonCheck:set_reduction(1e0)
-newtonCheck:set_minimum_defect(1e-1)
-newtonCheck:set_verbose(true)
-newtonCheck:set_supress_unsuccessful(false)
-
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
