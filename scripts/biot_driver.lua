@@ -6,7 +6,7 @@ ug_load_script("ug_util.lua")
 num_world_ranks = NumProcs()
 num_spatial_procs = num_world_ranks
 
-
+print(math_pi)
 -- space_time_communicator = SpaceTimeCommunicator()
 
 
@@ -18,6 +18,7 @@ ug_load_script("xbraid_util.lua")
 
 environment = util.GetParam("--env", "hawk", "local, hawk, gcsc")
 print("ENVIRONMENT: " .. environment)
+print("XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
 XARGS = {
     p_method = util.GetParam("--mode", "MGRIT", ""), -- SEQ CHK R NL
@@ -153,6 +154,8 @@ local balancerDesc = {
 local gridName = problem:get_gridname()
 local mandatorySubsets = nil
 local dom = util.CreateDomain(gridName, 0, mandatorySubsets)
+print("...........................................................")
+print("REF: " .. numRefs)
 util.refinement.CreateRegularHierarchy(dom, numRefs, true, balancerDesc)
 local approxSpace = util.biot.CreateApproxSpace(dom, dim, uorder, porder)
 
@@ -484,6 +487,25 @@ if (XARGS.p_method == "SEQ") then
     time:stop()
     integration_time = time:get()
     print("\n"..integration_time, "finished sequential timestepping with integrator")
+elseif (XARGS.p_method == "GMG") then
+    convCheck:set_reduction(1e-10)
+    convCheck:set_maximum_steps(100)
+
+    local dtTestSet = {1.0, 1e-1, 1e-2, 1e-3, 1e-4,1e-5, 1e-6,1e-7, 1e-8,1e-9, 1e-10,1e-11, 1e-12, 1e-13,1e-14,1e-15}
+    for index, dtvalue in ipairs(dtTestSet) do
+        dt = dtvalue*charTime
+        endTime = dt
+        problem:interpolate_start_values(u_start, startTime)
+        time = BraidTimer()
+        time:start()
+        util.SolveNonlinearTimeProblem(u_start, domainDiscT, nlsolver, myStepCallback0, "SolverTest"..index,
+                "ImplEuler", 1, startTime, endTime, dt, dt, dtRed);
+        time:stop()
+        integration_time = time:get()
+        print("\n"..integration_time, "finished for dt="..dt .. " dtv="..dtvalue)
+    end
+
+
 elseif (XARGS.p_method == "NL") then
 
     dt = endTime / XARGS.p_num_time

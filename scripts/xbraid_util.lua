@@ -206,6 +206,16 @@ function xbraid_util.CreateNLLevel(app, domain, nlsolver, theta, num_steps, thre
     app:set_integrator(9, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 
     app:set_integrator(10, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
+
+    app:set_integrator(11, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
+
+    app:set_integrator(12, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
+
+    app:set_integrator(13, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
+
+    app:set_integrator(14, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
+
+    app:set_integrator(15, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 end
 
 function xbraid_util.CreateNLLevelFC(app, domain, nlsolver_fine,nlsolver_coarse, theta, num_steps, threshold)
