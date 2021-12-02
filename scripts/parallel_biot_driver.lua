@@ -265,6 +265,8 @@ newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
 newtonCheck:set_supress_unsuccessful(true)
 
+
+
 local convCheckCoarse = ConvCheck()
 convCheckCoarse:set_maximum_steps(RARGS.coarse)
 convCheckCoarse:set_reduction(1e-8)
