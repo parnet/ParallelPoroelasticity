@@ -256,14 +256,14 @@ convCheck:set_maximum_steps(100)
 convCheck:set_reduction(1e-8)
 convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
-convCheck:set_supress_unsuccessful(false)
+convCheck:set_supress_unsuccessful(true)
 
 local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(1)
 newtonCheck:set_reduction(2e-2)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
-newtonCheck:set_supress_unsuccessful(false)
+newtonCheck:set_supress_unsuccessful(true)
 
 local convCheckCoarse = ConvCheck()
 convCheckCoarse:set_maximum_steps(RARGS.coarse)
@@ -493,7 +493,6 @@ if (XARGS.p_method == "SEQ") then
         --outputval = uapprox_tstop:clone()
         if( not success) then
             print("Iteration did not converge")
-            exit()
         end
         -- scr_cmp:lua_write(outputval, i, tstop)
         --if braid_desc.time.n == 4096 then
