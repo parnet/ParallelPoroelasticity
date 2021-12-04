@@ -98,6 +98,7 @@ local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinemen
 
 local ARGS = {
     solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
+    solverIDCoarse = util.GetParam("--solver-id-coarse", nil), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
     smootherID = util.GetParam("--smoother-id", "uzawa"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
 
     bSteadyStateMechanics = not util.HasParamOption("--with-transient-mechanics"), -- OPTIONAL: transient mechanics
@@ -331,8 +332,12 @@ solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
 solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
 
-local lsolverCoarse = solverCoarse[ARGS.solverID]
-
+local lsolverCoarse = nil
+if ARGS.solverIDCoarse == nil then
+    lsolverCoarse = solverCoarse[ARGS.solverID]
+else
+    lsolverCoarse = solverCoarse[ARGS.solverIDCoarse]
+end
 
 
 local vtk = VTKOutput()
@@ -588,7 +593,7 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = scr_vtk
+    bscriptor = NoScriptor()
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
