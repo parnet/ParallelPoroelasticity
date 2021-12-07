@@ -41,7 +41,7 @@ XARGS = {
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
-    p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
+    p_boolskipdown = util.GetParamNumber("--boolskipdown", 1, "relaxation type FCF, FFCF or F-relaxation") == 1,
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
 
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
