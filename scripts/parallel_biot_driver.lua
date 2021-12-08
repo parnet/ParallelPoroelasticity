@@ -514,7 +514,7 @@ if (XARGS.p_method == "SEQ") then
     --scr_vtk:lua_write(outputval,braid_desc.time.n,tstop,0,1)
     time:stop()
     integration_time = time:get()
-    print("\n"..integration_time, "finished sequential timestepping with integrator")
+    print("\n<<T>>"..integration_time, "finished sequential timestepping with integrator")
 elseif (XARGS.p_method == "NL") then
 
     dt = endTime / XARGS.p_num_time
