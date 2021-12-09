@@ -18,7 +18,6 @@ ug_load_script("xbraid_util.lua")
 
 environment = util.GetParam("--env", "hawk", "local, hawk, gcsc")
 print("ENVIRONMENT: " .. environment)
-print("XXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
 XARGS = {
     p_method = util.GetParam("--mode", "MGRIT", ""), -- SEQ CHK R NL
@@ -410,7 +409,7 @@ function myStepCallback0(u, step, time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
-    vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    --vtk:print("PoroElasticityInitial.vtu", u, step, time)
 end
 print("Interpolation start values")
 problem:interpolate_start_values(u_start, startTime)
@@ -486,7 +485,7 @@ if (XARGS.p_method == "SEQ") then
     -- scr_vtk:lua_write(outputval,braid_desc.time.n,tstop,0,1)
     time:stop()
     integration_time = time:get()
-    print("\n"..integration_time, "finished sequential timestepping with integrator")
+    print("\n<<T>> "..integration_time, " |finished sequential timestepping with integrator")
 elseif (XARGS.p_method == "GMG") then
     convCheck:set_reduction(1e-10)
     convCheck:set_maximum_steps(100)
