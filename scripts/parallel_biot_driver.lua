@@ -253,7 +253,7 @@ tol_absolute_u = XARGS.p_tol_abs_u
 -- cmpConvCheck:set_supress_unsuccessful(false)
 
 local convCheck = ConvCheck()
-convCheck:set_maximum_steps(100)
+convCheck:set_maximum_steps(200)
 convCheck:set_reduction(1e-8)
 convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
@@ -417,7 +417,7 @@ function myStepCallback0(u, step, time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
-    vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    -- vtk:print("PoroElasticityInitial.vtu", u, step, time)
 end
 print("Interpolation start values")
 problem:interpolate_start_values(u_start, startTime)
@@ -487,7 +487,7 @@ if (XARGS.p_method == "SEQ") then
     time = BraidTimer()
     time:start()
 
-    print(get_spatial_memory_consumed())
+    print("<<M>> "..get_spatial_memory_consumed())
 
     for i = 1, braid_desc.time.n do
         tstart = tstop
@@ -509,7 +509,7 @@ if (XARGS.p_method == "SEQ") then
         --    end
         -- end
         --scr_vtk:lua_write(outputval,i,tstop,0,1)
-        print(get_spatial_memory_consumed())
+        print("<<M>> "..get_spatial_memory_consumed())
     end
     --scr_vtk:lua_write(outputval,braid_desc.time.n,tstop,0,1)
     time:stop()
