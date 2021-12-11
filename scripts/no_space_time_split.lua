@@ -6,20 +6,20 @@ ug_load_script("ug_util.lua")
 
 num_world_ranks = NumProcs()
 num_spatial_procs = num_world_ranks
--- num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)") -- numSpatialProcs * numTimeProcs = numGlobalProcs
+num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)") -- numSpatialProcs * numTimeProcs = numGlobalProcs
 
--- space_time_communicator = SpaceTimeCommunicator()
+space_time_communicator = SpaceTimeCommunicator()
 
---if num_world_ranks % num_spatial_procs == 0 then
---    space_time_communicator:split(num_spatial_procs)
---    local num_temporal_procs = num_world_ranks / num_spatial_procs;
---    print("temporal x spatial = world")
---    print(num_temporal_procs.." x " .. num_spatial_procs .. " = " .. num_world_ranks)
---else
---     space_time_communicator:split(1)
---     print("temporal x spatial = world")
---     print(num_world_ranks.." x " .. 1 .. " = " .. num_world_ranks)
---end
+if num_world_ranks % num_spatial_procs == 0 then
+    space_time_communicator:split(num_spatial_procs)
+    local num_temporal_procs = num_world_ranks / num_spatial_procs;
+    print("temporal x spatial = world")
+    print(num_temporal_procs.." x " .. num_spatial_procs .. " = " .. num_world_ranks)
+else
+     space_time_communicator:split(1)
+     print("temporal x spatial = world")
+     print(num_world_ranks.." x " .. 1 .. " = " .. num_world_ranks)
+end
 
 ug_load_script("util/load_balancing_util_2.lua")
 ug_load_script("util/profiler_util.lua")
