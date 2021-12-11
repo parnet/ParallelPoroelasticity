@@ -509,7 +509,7 @@ if (XARGS.p_method == "SEQ") then
         --    end
         -- end
         --scr_vtk:lua_write(outputval,i,tstop,0,1)
-        print("<<M>> "..get_spatial_memory_consumed())
+        -- print("<<M>> "..get_spatial_memory_consumed())
     end
     --scr_vtk:lua_write(outputval,braid_desc.time.n,tstop,0,1)
     time:stop()
