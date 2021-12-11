@@ -31,7 +31,7 @@ XARGS = {
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 
     p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
-    p_boolskipdown = util.GetParamNumber("--boolskipdown", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
+    p_boolskipdown = util.GetParamNumber("--boolskipdown", 1, "relaxation type FCF, FFCF or F-relaxation") == 1,
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
 
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
@@ -84,6 +84,7 @@ local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinemen
 
 local ARGS = {
     solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
+    solverIDCoarse = util.GetParam("--solver-id-coarse", nil), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
     smootherID = util.GetParam("--smoother-id", "uzawa"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
 
     bSteadyStateMechanics = not util.HasParamOption("--with-transient-mechanics"), -- OPTIONAL: transient mechanics
@@ -153,8 +154,6 @@ local balancerDesc = {
 local gridName = problem:get_gridname()
 local mandatorySubsets = nil
 local dom = util.CreateDomain(gridName, 0, mandatorySubsets)
-print("...........................................................")
-print("REF: " .. numRefs)
 util.refinement.CreateRegularHierarchy(dom, numRefs, true, balancerDesc)
 local approxSpace = util.biot.CreateApproxSpace(dom, dim, uorder, porder)
 
@@ -237,7 +236,7 @@ tol_absolute_u = XARGS.p_tol_abs_u
 -- cmpConvCheck:set_supress_unsuccessful(false)
 
 local convCheck = ConvCheck()
-convCheck:set_maximum_steps(100)
+convCheck:set_maximum_steps(200)
 convCheck:set_reduction(1e-8)
 convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
@@ -328,8 +327,12 @@ solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
 solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
 
-local lsolverCoarse = solverCoarse[ARGS.solverID]
-
+local lsolverCoarse = nil
+if ARGS.solverIDCoarse == nil then
+    lsolverCoarse = solverCoarse[ARGS.solverID]
+else
+    lsolverCoarse = solverCoarse[ARGS.solverIDCoarse]
+end
 
 
 local vtk = VTKOutput()
@@ -382,7 +385,6 @@ newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
 
 
-
 local newtonSolverCoarse = NewtonSolver()
 newtonSolverCoarse:set_linear_solver(lsolverCoarse)
 newtonSolverCoarse:set_convergence_check(newtonCheckCoarse)
@@ -406,10 +408,11 @@ end
 print(lsolver:config_string())
 
 function myStepCallback0(u, step, time)
+    print("::T:::"..step..":::"..time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
-    --vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    -- vtk:print("PoroElasticityInitial.vtu", u, step, time)
 end
 print("Interpolation start values")
 problem:interpolate_start_values(u_start, startTime)
@@ -518,7 +521,7 @@ elseif (XARGS.p_method == "NL") then
             "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5);
     time:stop()
     integration_time = time:get()
-    print("\n"..integration_time, "finished sequential timestepping with integrator")
+    print("\n"..integration_time, "  finished sequential timestepping with integrator")
 
 end
 walltime:stop()

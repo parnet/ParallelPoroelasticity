@@ -257,14 +257,14 @@ convCheck:set_maximum_steps(200)
 convCheck:set_reduction(1e-8)
 convCheck:set_minimum_defect(1e-14)
 convCheck:set_verbose(true)
-convCheck:set_supress_unsuccessful(true)
+convCheck:set_supress_unsuccessful(false)
 
 local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(1)
-newtonCheck:set_reduction(2e-2)
+newtonCheck:set_reduction(1e-1)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
-newtonCheck:set_supress_unsuccessful(true)
+newtonCheck:set_supress_unsuccessful(false)
 
 
 
@@ -390,7 +390,6 @@ newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
 
 
-
 local newtonSolverCoarse = NewtonSolver()
 newtonSolverCoarse:set_linear_solver(lsolverCoarse)
 newtonSolverCoarse:set_convergence_check(newtonCheckCoarse)
@@ -414,6 +413,7 @@ end
 print(lsolver:config_string())
 
 function myStepCallback0(u, step, time)
+    print("T:::"..step..":::"..time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
@@ -529,7 +529,6 @@ elseif (XARGS.p_method == "NL") then
     time:stop()
     integration_time = time:get()
     print("\n"..integration_time, "finished sequential timestepping with integrator")
-
 elseif (XARGS.p_method == "CHK") then
 
 
