@@ -5,20 +5,22 @@ local math_pi = 3.14159265359
 ug_load_script("ug_util.lua")
 
 num_world_ranks = NumProcs()
-num_spatial_procs = num_world_ranks
-num_spatial_procs = util.GetParamNumber("--npx", 1, "number of spatial procs (must divide totalproc number)") -- numSpatialProcs * numTimeProcs = numGlobalProcs
+num_spatial_procs = util.GetParamNumber("--npx", 0, "number of spatial procs (must divide totalproc number)") -- numSpatialProcs * numTimeProcs = numGlobalProcs
 
-space_time_communicator = SpaceTimeCommunicator()
-
-if num_world_ranks % num_spatial_procs == 0 then
-    space_time_communicator:split(num_spatial_procs)
-    local num_temporal_procs = num_world_ranks / num_spatial_procs;
-    print("temporal x spatial = world")
-    print(num_temporal_procs.." x " .. num_spatial_procs .. " = " .. num_world_ranks)
+if num_spatial_procs == 0 then
+    num_spatial_procs = num_world_ranks
 else
-     space_time_communicator:split(1)
-     print("temporal x spatial = world")
-     print(num_world_ranks.." x " .. 1 .. " = " .. num_world_ranks)
+    space_time_communicator = SpaceTimeCommunicator()
+    if num_world_ranks % num_spatial_procs == 0 then
+        space_time_communicator:split(num_spatial_procs)
+        local num_temporal_procs = num_world_ranks / num_spatial_procs;
+        print("temporal x spatial = world")
+        print(num_temporal_procs.." x " .. num_spatial_procs .. " = " .. num_world_ranks)
+    else
+        space_time_communicator:split(1)
+        print("temporal x spatial = world")
+        print(num_world_ranks.." x " .. 1 .. " = " .. num_world_ranks)
+    end
 end
 
 ug_load_script("util/load_balancing_util_2.lua")
@@ -412,13 +414,7 @@ end
 
 print(lsolver:config_string())
 
-function myStepCallback0(u, step, time)
-    print("T:::"..step..":::"..time)
-    -- problem:post_processing(u, step, time)
-    -- io = PIOGridFunction()
-    -- io:write(u,"solution_t"..step)
-    -- vtk:print("PoroElasticityInitial.vtu", u, step, time)
-end
+
 print("Interpolation start values")
 problem:interpolate_start_values(u_start, startTime)
 print("Integrating from "..startTime.." to " .. endTime)
@@ -431,39 +427,47 @@ if ((ARGS.LimexNStages ~= 0)) then
     print("initial value calculation done. \n\n\n\n\n")
 end
 
---log_job = Paralog() -- todo move to desc
+log_job = Paralog() -- todo move to desc
 --log_job:set_comm(space_time_communicator)
---log_job:set_file_name("joba")
---log_job:init()
+log_job:set_file_name("joba")
+log_job:init()
 
 --paralog_script = Paralog() -- todo move to desc
 --paralog_script:set_comm(space_time_communicator)
 --paralog_script:set_file_name("script")
 --paralog_script:init()
 
---scr_cmp = BraidBiotCheckPrecomputed()
---scr_cmp:set_log(log_job)
---scr_cmp:set_solution_name(vtk, "sequential")
---scr_cmp:set_diff_name(vtk, "error")
---scr_cmp:set_vtk_write_mode(false,false)
---scr_cmp:set_io_write_mode(false,false)
---scr_cmp:set_num_ref(numRefs)
---scr_cmp:set_max_index(128, braid_desc.time.n)
+scr_cmp = BraidBiotCheckPrecomputed()
+scr_cmp:set_log(log_job)
+scr_cmp:set_solution_name(vtk, "sequential")
+scr_cmp:set_diff_name(vtk, "error")
+scr_cmp:set_vtk_write_mode(false,false)
+scr_cmp:set_io_write_mode(false,false)
+scr_cmp:set_num_ref(numRefs)
+scr_cmp:set_max_index(128, braid_desc.time.n)
 
---if environment == "hawk" then
---    scr_cmp:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
---elseif environment == "gcsc" then
---    scr_cmp:set_base_path("/home/mparnet/analyticsolution")
---elseif environment == "local" then
---    scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
-    --scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
---end
+if environment == "hawk" then
+    scr_cmp:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
+elseif environment == "gcsc" then
+    scr_cmp:set_base_path("/home/mparnet/analyticsolution")
+elseif environment == "local" then
+    scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
+end
 
 -- scr_biot = BraidBiotCheck()
 -- scr_biot:set_problem(problem)
 -- scr_biot:set_napprox(PARGS.p_napprox)
 
 scr_vtk = VTKScriptor(vtk, "method")
+
+function myStepCallback0(u, step, time)
+    print("T:::"..step..":::"..time)
+    -- problem:post_processing(u, step, time)
+    -- io = PIOGridFunction()
+    -- io:write(u,"solution_t"..step)
+    -- vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    scr_cmp:lua_write(u, step, time)
+end
 
 if (XARGS.p_method == "SEQ") then
     timespan = braid_desc.time.t_end - braid_desc.time.t_0
