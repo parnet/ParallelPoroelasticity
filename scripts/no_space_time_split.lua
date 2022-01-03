@@ -465,8 +465,8 @@ function myStepCallback0(u, step, time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
-    -- vtk:print("PoroElasticityInitial.vtu", u, step, time)
-    scr_cmp:lua_write(u, step, time)
+    vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    -- scr_cmp:lua_write(u, step, time)
 end
 
 if (XARGS.p_method == "SEQ") then
@@ -519,6 +519,24 @@ if (XARGS.p_method == "SEQ") then
     time:stop()
     integration_time = time:get()
     print("\n<<T>> "..integration_time, " |finished sequential timestepping with integrator")
+elseif XARGS.p_method == "SMat" then
+    A = MatrixOperator()
+    u = GridFunction(approxSpace)
+    b = GridFunction(approxSpace)
+    u:set(0.0)
+    b:set(0.0)
+    -- 1. assemble matrix and rhs
+    domainDiscT:assemble_linear(A, b)
+
+    -- 2. set dirichlet values in start iterate
+    u:set(0.0)
+    domainDiscT:adjust_solution(u)
+
+    -- 3. init solver for linear Operator
+    lsolver:init(A)
+
+    SaveMatrixForConnectionViewer(u, A, "Stiffness.mat")
+
 elseif (XARGS.p_method == "NL") then
 
     dt = endTime / XARGS.p_num_time

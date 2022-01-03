@@ -326,13 +326,12 @@ solverCoarse = {}
 -- cmpConvCheckCoarse:set_verbose(true)
 -- cmpConvCheckCoarse:set_supress_unsuccessful(false)
 
-
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
-solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
+dbgItersolverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
 
 solverCoarse["GMGKrylov"] = BiCGStab()
-solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
+solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
 solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
 
 local lsolverCoarse = nil
@@ -420,7 +419,7 @@ function myStepCallback0(u, step, time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
-    -- vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    vtk:print("PoroElasticityInitial.vtu", u, step, time)
 end
 print("Interpolation start values")
 problem:interpolate_start_values(u_start, startTime)
