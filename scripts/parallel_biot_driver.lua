@@ -328,7 +328,7 @@ solverCoarse = {}
 
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
-dbgItersolverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
+solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
 
 solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
