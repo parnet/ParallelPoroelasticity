@@ -414,24 +414,6 @@ end
 
 print(lsolver:config_string())
 
-function myStepCallback0(u, step, time)
-    print("T:::"..step..":::"..time)
-    -- problem:post_processing(u, step, time)
-    -- io = PIOGridFunction()
-    -- io:write(u,"solution_t"..step)
-    vtk:print("PoroElasticityInitial.vtu", u, step, time)
-end
-print("Interpolation start values")
-problem:interpolate_start_values(u_start, startTime)
-print("Integrating from "..startTime.." to " .. endTime)
-
-
-if ((ARGS.LimexNStages ~= 0)) then
-    local dt0 = charTime * 1e-50
-    print("Computing consistent initial value w/ dt0=" .. dt0)
-    util.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolverSec, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
-    print("initial value calculation done. \n\n\n\n\n")
-end
 
 log_job = Paralog()
 log_job:set_comm(space_time_communicator)
@@ -451,6 +433,26 @@ scr_cmp:set_vtk_write_mode(false,false)
 scr_cmp:set_io_write_mode(false,false)
 scr_cmp:set_num_ref(numRefs)
 scr_cmp:set_max_index(128, braid_desc.time.n)
+
+function myStepCallback0(u, step, time)
+    print("T:::"..step..":::"..time)
+    -- problem:post_processing(u, step, time)
+    -- io = PIOGridFunction()
+    -- io:write(u,"solution_t"..step)
+    vtk:print("PoroElasticityInitial.vtu", u, step, time)
+end
+print("Interpolation start values")
+problem:interpolate_start_values(u_start, startTime)
+print("Integrating from "..startTime.." to " .. endTime)
+
+
+if ((ARGS.LimexNStages ~= 0)) then
+    local dt0 = charTime * 1e-50
+    print("Computing consistent initial value w/ dt0=" .. dt0)
+    util.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolverSec, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
+    print("initial value calculation done. \n\n\n\n\n")
+end
+
 
 if environment == "hawk" then
     scr_cmp:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")

@@ -67,7 +67,7 @@ IARGS = {
     method = util.GetParam("--integrator", 1, "relaxation type FCF, FFCF or F-relaxation"),
     theta = util.GetParamNumber("--theta", 1, "relaxation type FCF, FFCF or F-relaxation"),
     order = util.GetParamNumber("--order", 2, "relaxation type FCF, FFCF or F-relaxation"),
-    num_step = util.GetParamNumber("--gridstep", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    num_step = util.GetParamNumber("--gridstep", 1, "relaxation type FCF, FFCF or F-relaxation"),
 }
 RARGS = {
     rich_est = util.GetParamNumber("--rich-est", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
@@ -429,7 +429,7 @@ end
 
 log_job = Paralog() -- todo move to desc
 --log_job:set_comm(space_time_communicator)
-log_job:set_file_name("joba")
+log_job:set_file_name("job")
 log_job:init()
 
 --paralog_script = Paralog() -- todo move to desc
@@ -449,7 +449,7 @@ scr_cmp:set_max_index(128, braid_desc.time.n)
 if environment == "hawk" then
     scr_cmp:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
 elseif environment == "gcsc" then
-    scr_cmp:set_base_path("/home/mparnet/analyticsolution")
+    scr_cmp:set_base_path("/home/mparnet/ex")
 elseif environment == "local" then
     scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
 end
@@ -465,7 +465,8 @@ function myStepCallback0(u, step, time)
     -- problem:post_processing(u, step, time)
     -- io = PIOGridFunction()
     -- io:write(u,"solution_t"..step)
-    vtk:print("PoroElasticityInitial.vtu", u, step, time)
+    --scr_cmp:print("PoroElasticityInitial.vtu", u, step, time)
+    scr_cmp:lua_write(u, step, time)
     -- scr_cmp:lua_write(u, step, time)
 end
 
@@ -540,7 +541,7 @@ elseif XARGS.p_method == "SMat" then
 elseif (XARGS.p_method == "NL") then
 
     dt = endTime / XARGS.p_num_time
-    dtMin = dt
+    dtMin = dt*1e-20
     dtMax = dt
 
 
