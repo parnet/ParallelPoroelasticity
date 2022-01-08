@@ -35,7 +35,7 @@ XARGS = {
     p_method = util.GetParam("--mode", "MGRIT", ""), -- SEQ CHK R NL
     p_redirect = util.GetParamNumber("--redirect", 1, "") == 1, -- 0,1
 
-    p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
+    p_num_time = util.GetParamNumber("--num-time", 32, " maximum number of levels"),
     p_max_iter = util.GetParamNumber("--maxiter", 100, " maximum number of iterations"),
     p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_c_factor = util.GetParam("--cfactor", "2_2_2", "relaxation type FCF, FFCF or F-relaxation"),
