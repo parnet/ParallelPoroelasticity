@@ -469,7 +469,61 @@ end
 
 scr_vtk = VTKScriptor(vtk, "method")
 
-if (XARGS.p_method == "SEQ") then
+
+if (XARGS.p_method == "SEQSimple") then
+    timespan = braid_desc.time.t_end - braid_desc.time.t_0
+    dt = timespan / braid_desc.time.n
+
+    uapprox_tstart = u_start:clone()
+    uapprox_tstop = u_start:clone()
+    local tstop = braid_desc.time.t_0
+    local tstart = braid_desc.time.t_0
+    print("X\t\t", tstart, " \t ", tstop, " \t ", dt)
+
+    --integrator = xbraid_util.createBDF(domainDiscT,                lsolver, IARGS.order, 1e-8)
+    -- integrator = NLThetaIntegrator()
+    -- integrator:set_domain(domainDiscT)
+    -- integrator:set_solver(nlsolver)
+    -- integrator:set_theta(1)
+    -- integrator:set_num_steps(IARGS.num_step)
+    --integrator = xbraid_util.createNLTheta(domainDiscT,nlsolver,IARGS.theta,IARGS.num_step,1e-8)
+    time_disc = ThetaTimeStep(domainDiscT)
+    time_disc:set_theta(1)
+    integrator = SimpleTimeIntegrator(time_disc)
+
+    print("setup done ")
+    time = BraidTimer()
+    time:start()
+
+    print("<<M>> "..get_spatial_memory_consumed())
+
+    for i = 1, braid_desc.time.n do
+        tstart = tstop
+        tstop = tstop + dt
+        uapprox_tstart = uapprox_tstop
+        -- uapprox_tstop = uapprox_tstart:clone()
+        integrator:init(uapprox_tstart)
+        print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
+        success = integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
+        outputval = uapprox_tstop:clone()
+        if( not success) then
+            print("Iteration did not converge")
+        end
+        scr_cmp:lua_write(outputval, i, tstop)
+        --if braid_desc.time.n == 4096 then
+        --    if i % 32 == 0 or i < 32 then
+        --        print("")
+        --        scr_vtk:lua_write(outputval,i,tstop,0,1)
+        --    end
+        -- end
+        --scr_vtk:lua_write(outputval,i,tstop,0,1)
+        -- print("<<M>> "..get_spatial_memory_consumed())
+    end
+    --scr_vtk:lua_write(outputval,braid_desc.time.n,tstop,0,1)
+    time:stop()
+    integration_time = time:get()
+    print("\n<<T>> "..integration_time, " |finished sequential timestepping with integrator")
+elseif (XARGS.p_method == "SEQ") then
     timespan = braid_desc.time.t_end - braid_desc.time.t_0
     dt = timespan / braid_desc.time.n
 
