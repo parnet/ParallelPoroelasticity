@@ -499,7 +499,7 @@ if (XARGS.p_method == "SEQ") then
         integrator:init(uapprox_tstart)
         print("\nSeqStep: ", i, "\t\t from ", tstart, " to ", tstop, "  with dt=", dt)
         success = integrator:apply(uapprox_tstop, tstop, uapprox_tstart, tstart)
-        --outputval = uapprox_tstop:clone()
+        outputval = uapprox_tstop:clone()
         if( not success) then
             print("Iteration did not converge")
         end
