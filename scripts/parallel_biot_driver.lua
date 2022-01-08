@@ -36,7 +36,7 @@ XARGS = {
     p_method = util.GetParam("--mode", "MGRIT", ""), -- SEQ CHK R NL
     p_redirect = util.GetParamNumber("--redirect", 1, "") == 1, -- 0,1
 
-    p_num_time = util.GetParamNumber("--numtime", 32, " maximum number of levels"),
+    p_num_time = util.GetParamNumber("--num-time", 32, " maximum number of levels"),
     p_max_iter = util.GetParamNumber("--maxiter", 100, " maximum number of iterations"),
     p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
     p_c_factor = util.GetParam("--cfactor", "2_2_2", "relaxation type FCF, FFCF or F-relaxation"),
@@ -68,7 +68,7 @@ IARGS = {
     method = util.GetParam("--integrator", 1, "relaxation type FCF, FFCF or F-relaxation"),
     theta = util.GetParamNumber("--theta", 1, "relaxation type FCF, FFCF or F-relaxation"),
     order = util.GetParamNumber("--order", 2, "relaxation type FCF, FFCF or F-relaxation"),
-    num_step = util.GetParamNumber("--gridstep", 2, "relaxation type FCF, FFCF or F-relaxation"),
+    num_step = util.GetParamNumber("--gridstep", 1, "relaxation type FCF, FFCF or F-relaxation"),
 }
 RARGS = {
     rich_est = util.GetParamNumber("--rich-est", 0, "relaxation type FCF, FFCF or F-relaxation") == 1,
@@ -100,7 +100,7 @@ local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinemen
 local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinements (incl. pre-Refinements)")
 
 local ARGS = {
-    solverID = util.GetParam("--solver-id", "GMG"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
+    solverID = util.GetParam("--solver-id", "GMG"), -- GMGKrylov                 "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
     solverIDCoarse = util.GetParam("--solver-id-coarse", nil), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
     smootherID = util.GetParam("--smoother-id", "uzawa"), --  "FixedStressEX", "UzawaMG", "UzawaSmoother","UzawaMGKrylov"
 
@@ -503,7 +503,7 @@ if (XARGS.p_method == "SEQ") then
         if( not success) then
             print("Iteration did not converge")
         end
-        -- scr_cmp:lua_write(outputval, i, tstop)
+        scr_cmp:lua_write(outputval, i, tstop)
         --if braid_desc.time.n == 4096 then
         --    if i % 32 == 0 or i < 32 then
         --        print("")
