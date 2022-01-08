@@ -490,6 +490,7 @@ if (XARGS.p_method == "SEQSimple") then
     time_disc = ThetaTimeStep(domainDiscT)
     time_disc:set_theta(1)
     integrator = SimpleTimeIntegrator(time_disc)
+    integration_time:set_solver(nlsolver)
 
     print("setup done ")
     time = BraidTimer()
