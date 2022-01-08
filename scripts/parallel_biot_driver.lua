@@ -433,12 +433,12 @@ if ((ARGS.LimexNStages ~= 0)) then
     print("initial value calculation done. \n\n\n\n\n")
 end
 
-log_job = Paralog() -- todo move to desc
+log_job = Paralog()
 log_job:set_comm(space_time_communicator)
-log_job:set_file_name("joba")
+log_job:set_file_name("job")
 log_job:init()
 
-paralog_script = Paralog() -- todo move to desc
+paralog_script = Paralog()
 paralog_script:set_comm(space_time_communicator)
 paralog_script:set_file_name("script")
 paralog_script:init()
@@ -503,7 +503,7 @@ if (XARGS.p_method == "SEQ") then
         if( not success) then
             print("Iteration did not converge")
         end
-        scr_cmp:lua_write(outputval, i, tstop,0,1)
+        scr_cmp:lua_write(outputval, i, tstop)
         --if braid_desc.time.n == 4096 then
         --    if i % 32 == 0 or i < 32 then
         --        print("")
