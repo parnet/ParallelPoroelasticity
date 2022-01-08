@@ -455,7 +455,7 @@ scr_cmp:set_max_index(128, braid_desc.time.n)
 if environment == "hawk" then
     scr_cmp:set_base_path("/lustre/hpe/ws10/ws10.1/ws/igcmparn-mgrit/analyticsolution")
 elseif environment == "gcsc" then
-    scr_cmp:set_base_path("/home/mparnet/analyticsolution")
+    scr_cmp:set_base_path("/home/mparnet/pro/ex")
 elseif environment == "local" then
     scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
     --scr_cmp:set_base_path("/home/maro/hawk/analyticsolution")
