@@ -503,7 +503,7 @@ if (XARGS.p_method == "SEQ") then
         if( not success) then
             print("Iteration did not converge")
         end
-        scr_cmp:lua_write(outputval, i, tstop)
+        scr_cmp:lua_write(outputval, i, tstop,0,1)
         --if braid_desc.time.n == 4096 then
         --    if i % 32 == 0 or i < 32 then
         --        print("")
