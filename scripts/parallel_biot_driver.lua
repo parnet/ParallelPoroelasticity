@@ -305,19 +305,19 @@ newtonCheckCoarse:set_supress_unsuccessful(true)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMG"]:set_convergence_check(convCheck)
---solver["GMG"]:set_convergence_check(cmpConvCheck)
+--solver["GMG"]:set_convergence_check(convCheck)
+solver["GMG"]:set_convergence_check(cmpConvCheck)
 
 
 solver["GMGKrylov"] = BiCGStab()
 solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
---solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
+--solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
+solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
 
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
-solver["LU"]:set_convergence_check(convCheck)
---solver["LU"]:set_convergence_check(cmpConvCheck)
+--solver["LU"]:set_convergence_check(convCheck)
+solver["LU"]:set_convergence_check(cmpConvCheck)
 local lsolver = solver[ARGS.solverID]
 print("using "..ARGS.solverID)
 
@@ -350,13 +350,13 @@ solverCoarse = {}
 
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
-solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
---solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
+--solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
+solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
 
 solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
-solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
---solverCoarse["GMGKrylov"]:set_convergence_check(cmpConvCheckCoarse)
+--solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
+solverCoarse["GMGKrylov"]:set_convergence_check(cmpConvCheckCoarse)
 
 local lsolverCoarse = nil
 if ARGS.solverIDCoarse == nil then
