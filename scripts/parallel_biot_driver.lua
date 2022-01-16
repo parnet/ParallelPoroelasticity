@@ -282,7 +282,7 @@ convCheck:set_supress_unsuccessful(false)
 
 local newtonCheck = ConvCheck()
 newtonCheck:set_maximum_steps(1)
-newtonCheck:set_reduction(1e-1)
+newtonCheck:set_reduction(9.999999999999e-1)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
 newtonCheck:set_supress_unsuccessful(false)
@@ -309,7 +309,6 @@ solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 --solver["GMG"]:set_convergence_check(convCheck)
 solver["GMG"]:set_convergence_check(cmpConvCheck)
 
-
 solver["GMGKrylov"] = BiCGStab()
 solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
 --solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
@@ -319,6 +318,7 @@ solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
 --solver["LU"]:set_convergence_check(convCheck)
 solver["LU"]:set_convergence_check(cmpConvCheck)
+
 local lsolver = solver[ARGS.solverID]
 print("using "..ARGS.solverID)
 
