@@ -296,6 +296,7 @@ convCheckCoarse:set_minimum_defect(1e-14)
 convCheckCoarse:set_verbose(true)
 convCheckCoarse:set_supress_unsuccessful(true)
 
+
 local newtonCheckCoarse = ConvCheck()
 newtonCheckCoarse:set_maximum_steps(1)
 newtonCheckCoarse:set_reduction(5e-6)
@@ -337,17 +338,6 @@ gmgCoarse:set_rap(true)  -- mandatory, if set_stationary
 gmgCoarse:set_transfer(transfer)
 
 solverCoarse = {}
--- local cmpConvCheckCoarse = CompositeConvCheck(approxSpace)
--- cmpConvCheckCoarse:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
--- cmpConvCheckCoarse:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
--- if (dim == 3) then
---     cmpConvCheckCoarse:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
--- end
--- cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
--- cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
--- cmpConvCheckCoarse:set_verbose(true)
--- cmpConvCheckCoarse:set_supress_unsuccessful(false)
-
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
 --solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
