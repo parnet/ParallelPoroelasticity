@@ -423,7 +423,7 @@ print("Integrating from "..startTime.." to " .. endTime)
 if ((ARGS.LimexNStages ~= 0)) then
     local dt0 = charTime * 1e-50
     print("Computing consistent initial value w/ dt0=" .. dt0)
-    util.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolverSec, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
+    test.SolveNonlinearTimeProblem(u_start, domainDisc0, newtonSolverSec, myStepCallback0, "PoroElasticityInitial", "ImplEuler", 1, startTime, dt0, dt0, dt0, dtRed);
     print("initial value calculation done. \n\n\n\n\n")
 end
 
@@ -547,7 +547,7 @@ elseif (XARGS.p_method == "NL") then
 
     time = BraidTimer()
     time:start()
-    test.SolveNonlinearTimeProblem(u_start, domainDiscT, nlsolver, myStepCallback0, "PoroElasticityTransient",
+    util.SolveNonlinearTimeProblem(u_start, domainDiscT, nlsolver, myStepCallback0, "PoroElasticityTransient",
             "ImplEuler", 1, startTime, endTime, dt, dtMin, 0.5);
     time:stop()
     integration_time = time:get()

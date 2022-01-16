@@ -80,6 +80,7 @@ RARGS = {
     rich_bound = util.GetParamNumber("--rich-bound", 1.1, "relaxation type FCF, FFCF or F-relaxation"),
     coarse = util.GetParamNumber("--coarse", 0, "relaxation type FCF, FFCF or F-relaxation"),
 }
+print(XARGS.p_redirect)
 if XARGS.p_redirect then
     repl = ReplaceStandardStream()
     repl:set_space_time_comm(space_time_communicator)
@@ -244,16 +245,33 @@ tol_reduction_p = XARGS.p_tol_red_p
 tol_absolute_p = XARGS.p_tol_abs_p
 tol_reduction_u = XARGS.p_tol_red_u
 tol_absolute_u = XARGS.p_tol_abs_u
--- local cmpConvCheck = CompositeConvCheck(approxSpace)
--- cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
--- cmpConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
--- if (dim == 3) then
---     cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
--- end
--- cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
--- cmpConvCheck:set_maximum_steps(100)
--- cmpConvCheck:set_verbose(true)
--- cmpConvCheck:set_supress_unsuccessful(false)
+
+
+local cmpConvCheckCoarse = CompositeConvCheck(approxSpace)
+cmpConvCheckCoarse:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
+cmpConvCheckCoarse:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
+if (dim == 3) then
+    cmpConvCheckCoarse:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
+end
+cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
+cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
+cmpConvCheckCoarse:set_verbose(true)
+cmpConvCheckCoarse:set_supress_unsuccessful(true)
+
+
+local cmpConvCheck = CompositeConvCheck(approxSpace)
+cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
+cmpConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
+if (dim == 3) then
+    cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
+end
+cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
+cmpConvCheck:set_maximum_steps(200)
+cmpConvCheck:set_verbose(true)
+cmpConvCheck:set_supress_unsuccessful(false)
+
+
+
 
 local convCheck = ConvCheck()
 convCheck:set_maximum_steps(200)
@@ -287,15 +305,19 @@ newtonCheckCoarse:set_supress_unsuccessful(true)
 
 solver["GMG"] = LinearSolver()
 solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMG"]:set_convergence_check(convCheck)
+--solver["GMG"]:set_convergence_check(convCheck)
+solver["GMG"]:set_convergence_check(cmpConvCheck)
+
 
 solver["GMGKrylov"] = BiCGStab()
 solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
-solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
+--solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
+solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
 
 solver["LU"] = LinearSolver()
 solver["LU"]:set_preconditioner(LU())
-solver["LU"]:set_convergence_check(convCheck)
+--solver["LU"]:set_convergence_check(convCheck)
+solver["LU"]:set_convergence_check(cmpConvCheck)
 local lsolver = solver[ARGS.solverID]
 print("using "..ARGS.solverID)
 
@@ -328,11 +350,13 @@ solverCoarse = {}
 
 solverCoarse["GMG"] = LinearSolver()
 solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
-solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
+--solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
+solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
 
 solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
-solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
+--solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
+solverCoarse["GMGKrylov"]:set_convergence_check(cmpConvCheckCoarse)
 
 local lsolverCoarse = nil
 if ARGS.solverIDCoarse == nil then
