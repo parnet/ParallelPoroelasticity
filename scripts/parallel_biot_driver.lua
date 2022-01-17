@@ -285,7 +285,7 @@ newtonCheck:set_maximum_steps(1)
 newtonCheck:set_reduction(9.999999999999e-1)
 newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
-newtonCheck:set_supress_unsuccessful(false)
+newtonCheck:set_supress_unsuccessful(true)
 
 
 
