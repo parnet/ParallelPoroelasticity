@@ -47,8 +47,8 @@ XARGS = {
     p_boolskipdown = util.GetParamNumber("--boolskipdown", 1, "relaxation type FCF, FFCF or F-relaxation") == 1,
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
 
-    p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""),
-    p_printlevel = util.GetParamNumber("--printlevel", 1, ""),
+    p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""), -- todo access description
+    p_printlevel = util.GetParamNumber("--printlevel", 1, ""), -- todo leveldescription
     p_store_values = util.GetParamNumber("--store-level", 0, ""),
 -- 1e-6, 1e-6 for rel
 -- 1e-14, 1e-14 for cmpConvCheck
@@ -58,14 +58,14 @@ XARGS = {
     p_tol_abs_u = util.GetParamNumber("--tol-abs-u", 1e-14, " 0 use residual, 1 xbraid residual"),
 
     p_tol_abs_braid = util.GetParamNumber("--tol-abs-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
-    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 2, " 0 use residual, 1 xbraid residual"),
+    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 2, " 0 use residual, 1 xbraid residual"), -- 1: abs norm, 2: euclidian norm, 3: max norm
     p_tol_rel_braid = util.GetParamNumber("--tol-rel-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
 }
 PARGS = {
     p_napprox = util.GetParamNumber("--napprox", 512, "relaxation type FCF, FFCF or F-relaxation"),
 }
 IARGS = {
-    method = util.GetParam("--integrator", 1, "relaxation type FCF, FFCF or F-relaxation"),
+    -- method = util.GetParam("--integrator", 1, "relaxation type FCF, FFCF or F-relaxation"),
     theta = util.GetParamNumber("--theta", 1, "relaxation type FCF, FFCF or F-relaxation"),
     order = util.GetParamNumber("--order", 2, "relaxation type FCF, FFCF or F-relaxation"),
     num_step = util.GetParamNumber("--gridstep", 1, "relaxation type FCF, FFCF or F-relaxation"),
@@ -665,7 +665,7 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = NoScriptor()
+    bscriptor = scr_cmp --NoScriptor()
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
