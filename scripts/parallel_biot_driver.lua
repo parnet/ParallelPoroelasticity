@@ -309,7 +309,9 @@ solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
 --solver["GMG"]:set_convergence_check(convCheck)
 solver["GMG"]:set_convergence_check(cmpConvCheck)
 
-solver["GMGKrylov"] = BiCGStab()
+
+
+solver["GMGKrylov"] = BiCGStab()1
 solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
 --solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
 solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
