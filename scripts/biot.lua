@@ -244,7 +244,7 @@ ilut = ILUT()
 -------------------------
 
 	dbgWriter = GridFunctionDebugWriter(approxSpace)
-	
+	dbgWriter:set_conn_viewer_output(true)
 	-- Base Solver
 	baseConvCheck = ConvCheck()
 	baseConvCheck:set_maximum_steps(5000)
@@ -377,7 +377,6 @@ newtonSolver:set_linear_solver(lsolver)
 newtonSolver:set_convergence_check(newtonCheck)
 newtonSolver:set_line_search(lineSearch)
 newtonSolver:set_debug(dbgWriter)
-
 nlsolver = newtonSolver
 
 print("Interpolation start values")

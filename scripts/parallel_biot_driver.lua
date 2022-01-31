@@ -315,9 +315,10 @@ solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
 
 solver["LU"] = LinearSolver()
-solver["LU"]:set_preconditioner(LU())
+solver["LU"]:set_preconditioner(SuperLU())
 --solver["LU"]:set_convergence_check(convCheck)
 solver["LU"]:set_convergence_check(cmpConvCheck)
+
 
 local lsolver = solver[ARGS.solverID]
 print("using "..ARGS.solverID)
@@ -347,6 +348,11 @@ solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
 --solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
 solverCoarse["GMGKrylov"]:set_convergence_check(cmpConvCheckCoarse)
+
+solverCoarse["LU"] = LinearSolver()
+solverCoarse["LU"]:set_preconditioner(SuperLU())
+--solver["LU"]:set_convergence_check(convCheck)
+solverCoarse["LU"]:set_convergence_check(cmpConvCheck)
 
 local lsolverCoarse = nil
 if ARGS.solverIDCoarse == nil then
@@ -665,8 +671,8 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    --bscriptor = scr_cmp --NoScriptor()
-    bscriptor = NoScriptor()
+    bscriptor = scr_cmp --NoScriptor()
+    -- bscriptor = NoScriptor()
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,

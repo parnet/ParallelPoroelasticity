@@ -268,8 +268,6 @@ newtonCheck:set_minimum_defect(1e-14)
 newtonCheck:set_verbose(true)
 newtonCheck:set_supress_unsuccessful(false)
 
-
-
 local convCheckCoarse = ConvCheck()
 convCheckCoarse:set_maximum_steps(RARGS.coarse)
 convCheckCoarse:set_reduction(1e-8)
@@ -293,7 +291,7 @@ solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
 solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
 
 solver["LU"] = LinearSolver()
-solver["LU"]:set_preconditioner(LU())
+solver["LU"]:set_preconditioner(SuperLU())
 solver["LU"]:set_convergence_check(convCheck)
 local lsolver = solver[ARGS.solverID]
 print("using "..ARGS.solverID)
@@ -333,6 +331,10 @@ solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
 solverCoarse["GMGKrylov"] = BiCGStab()
 solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
 solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
+
+solverCoarse["LU"] = LinearSolver()
+solverCoarse["LU"]:set_preconditioner(SuperLU())
+solverCoarse["LU"]:set_convergence_check(convCheck)
 
 local lsolverCoarse = nil
 if ARGS.solverIDCoarse == nil then
@@ -401,7 +403,12 @@ local newtonSolverSec = NewtonSolver()
 newtonSolverSec:set_linear_solver(lsolver)
 newtonSolverSec:set_convergence_check(newtonCheck)
 
+dbgWriter = GridFunctionDebugWriter(approxSpace)
+dbgWriter:set_conn_viewer_output(true)
+
 local nlsolver = newtonSolver
+newtonSolver:set_debug(dbgWriter)
+
 local nlsolver_coarse
 print("RARGS.coarse " , RARGS.coarse)
 if RARGS.coarse == 0 then
@@ -543,7 +550,8 @@ elseif (XARGS.p_method == "NL") then
     dt = endTime / XARGS.p_num_time
     dtMin = dt*1e-20
     dtMax = dt
-
+--
+    --dbgWriter
 
     time = BraidTimer()
     time:start()
