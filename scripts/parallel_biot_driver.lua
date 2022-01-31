@@ -314,11 +314,11 @@ solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
 --solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
 solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
 
-solver["LU"] = LinearSolver()
-solver["LU"]:set_preconditioner(SuperLU())
+--solver["LU"] = LinearSolver()
+--solver["LU"]:set_preconditioner(SuperLU())
 --solver["LU"]:set_convergence_check(convCheck)
-solver["LU"]:set_convergence_check(cmpConvCheck)
-
+--solver["LU"]:set_convergence_check(cmpConvCheck)
+solver["LU"] = SuperLU() -- SuperLU
 
 local lsolver = solver[ARGS.solverID]
 print("using "..ARGS.solverID)
@@ -349,10 +349,7 @@ solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
 --solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
 solverCoarse["GMGKrylov"]:set_convergence_check(cmpConvCheckCoarse)
 
-solverCoarse["LU"] = LinearSolver()
-solverCoarse["LU"]:set_preconditioner(SuperLU())
---solver["LU"]:set_convergence_check(convCheck)
-solverCoarse["LU"]:set_convergence_check(cmpConvCheck)
+solverCoarse["LU"] = SuperLU() -- SuperLU
 
 local lsolverCoarse = nil
 if ARGS.solverIDCoarse == nil then
