@@ -220,15 +220,32 @@ local uzawaWeight = 1.0
 local preSmoother = nil
 local postSmoother = nil
 
+
+-- local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
+-- local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
+
+
 if ARGS.smootherID == "uzawa" then
-    preSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
-    postSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
+    preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
+    postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
+end
+
+if ARGS.smootherID == "uzawa1" then
+    print("using uzawa 1")
+    preSmoother = createUzawaIteration("p", gs, SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
+    postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), bgs, uzawaSchurUpdateOp, uzawaWeight)
+end
+if ARGS.smootherID == "uzawa2" then
+    print("using uzawa 2")
+    preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
+    postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
 end
 if ARGS.smootherID == "uzawa3" then
     print("using uzawa 3")
     preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
     postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
 end
+
 local superLU = SuperLU() --LU()
 local gmg = GeometricMultiGrid(approxSpace)
 gmg:set_discretization(domainDiscT)
