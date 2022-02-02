@@ -674,8 +674,8 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
-    bscriptor = scr_cmp --NoScriptor()
-    -- bscriptor = NoScriptor()
+    --bscriptor = scr_cmp --NoScriptor()
+    bscriptor = NoScriptor()
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
