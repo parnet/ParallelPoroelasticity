@@ -50,12 +50,6 @@ XARGS = {
     p_accesslevel = util.GetParamNumber("--accesslevel", 1, ""), -- todo access description
     p_printlevel = util.GetParamNumber("--printlevel", 1, ""), -- todo leveldescription
     p_store_values = util.GetParamNumber("--store-level", 0, ""),
--- 1e-6, 1e-6 for rel
--- 1e-14, 1e-14 for cmpConvCheck
-    p_tol_red_p = util.GetParamNumber("--tol-red-p", 1e-6, " 0 use residual, 1 xbraid residual"),
-    p_tol_red_u = util.GetParamNumber("--tol-red-u", 1e-6, " 0 use residual, 1 xbraid residual"),
-    p_tol_abs_p = util.GetParamNumber("--tol-abs-p", 1e-14, " 0 use residual, 1 xbraid residual"),
-    p_tol_abs_u = util.GetParamNumber("--tol-abs-u", 1e-14, " 0 use residual, 1 xbraid residual"),
 
     p_tol_abs_braid = util.GetParamNumber("--tol-abs-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
     p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 2, " 0 use residual, 1 xbraid residual"), -- 1: abs norm, 2: euclidian norm, 3: max norm
@@ -87,6 +81,7 @@ if XARGS.p_redirect then
     repl:apply()
 end
 ug_load_script("test.lua")
+ug_load_script("tools/factory.lua")
 util.biot.CheckAssertions()
 
 
@@ -192,208 +187,44 @@ local uzawaSchurUpdateDisc = DomainDiscretization(approxSpace)
 problem:add_uzawa_discs(uzawaSchurUpdateDisc, bSteadyStateMechanics)
 print("Discretization done!")
 local u_start = GridFunction(approxSpace)
+
+local uzawaWeight =1.0
+
 local gs = GaussSeidel()
+gs:enable_overlap(true)
+
 local bgs = BackwardGaussSeidel()
 bgs:enable_overlap(true)
-gs:enable_overlap(true)
+
 local uzawaSchurUpdateOp = AssembledLinearOperator()
 uzawaSchurUpdateOp:set_discretization(uzawaSchurUpdateDisc)
 
-function createUzawaIteration(sSchurCmp, aiForward, aiSchur, aiBackward, uzawaSchurUpdateOp, uzawaSchurWeight)
-    local uzawa = UzawaBase(sSchurCmp)
-    local weight = uzawaSchurWeight or 1.0
-    if (aiForward) then
-        uzawa:set_forward_iter(aiForward)
-    end
-    if (aiSchur) then
-        uzawa:set_schur_iter(aiSchur)
-    end
-    if (aiBackward) then
-        uzawa:set_backward_iter(aiBackward)
-    end
-    uzawa:set_schur_operator_update(uzawaSchurUpdateOp, weight)
-    return uzawa
-end
-
-local uzawaWeight = 1.0
-
-local preSmoother = nil
-local postSmoother = nil
-
-
--- local preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
--- local postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
-
-
-if ARGS.smootherID == "uzawa" then
-    preSmoother = createUzawaIteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
-    postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
-end
-
-if ARGS.smootherID == "uzawa1" then
-    print("using uzawa 1")
-    preSmoother = createUzawaIteration("p", gs, SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
-    postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), bgs, uzawaSchurUpdateOp, uzawaWeight)
-end
---if ARGS.smootherID == "uzawa2" then
---    print("using uzawa 2")
---    preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
---    postSmoother = createUzawaIteration("p", nil, Jacobi(0.66), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
---end
-if ARGS.smootherID == "uzawa3" then
-    print("using uzawa 3")
-    preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
-    postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
-end
-if ARGS.smootherID == "uzawa5" then
-    print("using uzawa 1")
-    preSmoother = createUzawaIteration("p", SymmetricGaussSeidel(), SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
-    postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), bgs, uzawaSchurUpdateOp, uzawaWeight)
-end
-
-if ARGS.smootherID == "uzawa6" then
-    print("using uzawa 1")
-    preSmoother = createUzawaIteration("p", gs, SymmetricGaussSeidel(), nil, uzawaSchurUpdateOp, uzawaWeight)
-    postSmoother = createUzawaIteration("p", nil, SymmetricGaussSeidel(), SymmetricGaussSeidel(), uzawaSchurUpdateOp, uzawaWeight)
-end
-local superLU = SuperLU() --LU()
-local gmg = GeometricMultiGrid(approxSpace)
-gmg:set_discretization(domainDiscT)
-gmg:set_base_level(ARGS.MGBaseLevel)  -- was 1 in Cincy
-gmg:set_base_solver(superLU)  -- was baseLU in Cincy
-gmg:set_presmoother(preSmoother) --(jac)
-gmg:set_postsmoother(postSmoother)
-gmg:set_cycle_type(ARGS.MGCycleType) -- 1:V, 2:W -- "F"
-gmg:set_num_presmooth(ARGS.MGNumSmooth)
-gmg:set_num_postsmooth(ARGS.MGNumSmooth)
-gmg:set_rap(true)  -- mandatory, if set_stationary
-local transfer = StdTransfer()
-transfer:enable_p1_lagrange_optimization(true)
-gmg:set_transfer(transfer)
-local p0 = 1.0
-local solver = {}
-tol_reduction_p = XARGS.p_tol_red_p
-tol_absolute_p = XARGS.p_tol_abs_p
-tol_reduction_u = XARGS.p_tol_red_u
-tol_absolute_u = XARGS.p_tol_abs_u
-
-
-local cmpConvCheckCoarse = CompositeConvCheck(approxSpace)
-cmpConvCheckCoarse:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
-cmpConvCheckCoarse:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
-if (dim == 3) then
-    cmpConvCheckCoarse:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
-end
-cmpConvCheckCoarse:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-cmpConvCheckCoarse:set_maximum_steps(RARGS.coarse)
-cmpConvCheckCoarse:set_verbose(true)
-cmpConvCheckCoarse:set_supress_unsuccessful(true)
-
-
-local cmpConvCheck = CompositeConvCheck(approxSpace)
-cmpConvCheck:set_component_check("ux", p0 * tol_absolute_u, tol_reduction_u)
-cmpConvCheck:set_component_check("uy", p0 * tol_absolute_u, tol_reduction_u)
-if (dim == 3) then
-    cmpConvCheck:set_component_check("uz", p0 * tol_absolute_u, tol_reduction_u)
-end
-cmpConvCheck:set_component_check("p", p0 * tol_absolute_p, tol_reduction_p)
-cmpConvCheck:set_maximum_steps(200)
-cmpConvCheck:set_verbose(true)
-cmpConvCheck:set_supress_unsuccessful(false)
+preSmoother = factory.create_uzawa_iteration("p", gs, Jacobi(0.66), nil, uzawaSchurUpdateOp, uzawaWeight)
+postSmoother = factory.create_uzawa_iteration("p", nil, Jacobi(0.66), bgs, uzawaSchurUpdateOp, uzawaWeight)
 
 
 
+lsolver = factory.create_lsolver(ARGS.solverID,approxSpace,domainDiscT,preSmoother,postSmoother)
+newtonSolver = factory.create_nlsolver(lsolver)
+newtonSolverSec = factory.create_nlsolver(lsolver)
 
-local convCheck = ConvCheck()
-convCheck:set_maximum_steps(200)
-convCheck:set_reduction(1e-8)
-convCheck:set_minimum_defect(1e-14)
-convCheck:set_verbose(true)
-convCheck:set_supress_unsuccessful(false)
-
-local newtonCheck = ConvCheck()
-newtonCheck:set_maximum_steps(1)
-newtonCheck:set_reduction(9.999999999999e-1)
-newtonCheck:set_minimum_defect(1e-14)
-newtonCheck:set_verbose(true)
-newtonCheck:set_supress_unsuccessful(true)
+lsolverCoarse = factory.create_lsolver_coarse(ARGS.solverIDCoarse,approxSpace,domainDiscT,RARGS.coarse,preSmoother,postSmoother)
+--newtonSolverCoarse = factory.create_nlsolver_coarse(lsolverCoarse)
 
 
-
-local convCheckCoarse = ConvCheck()
-convCheckCoarse:set_maximum_steps(RARGS.coarse)
-convCheckCoarse:set_reduction(1e-8)
-convCheckCoarse:set_minimum_defect(1e-14)
-convCheckCoarse:set_verbose(true)
-convCheckCoarse:set_supress_unsuccessful(true)
-
-
-local newtonCheckCoarse = ConvCheck()
-newtonCheckCoarse:set_maximum_steps(1)
-newtonCheckCoarse:set_reduction(5e-6)
-newtonCheckCoarse:set_minimum_defect(1e-14)
-newtonCheckCoarse:set_verbose(true)
-newtonCheckCoarse:set_supress_unsuccessful(true)
-
-solver["GMG"] = LinearSolver()
-solver["GMG"]:set_preconditioner(gmg) -- gmg, dbgIter
---solver["GMG"]:set_convergence_check(convCheck)
-solver["GMG"]:set_convergence_check(cmpConvCheck)
-
-
-
-solver["GMGKrylov"] = BiCGStab()
-solver["GMGKrylov"]:set_preconditioner(gmg) -- gmg, dbgIter
---solver["GMGKrylov"]:set_convergence_check(convCheck) -- convCheck
-solver["GMGKrylov"]:set_convergence_check(cmpConvCheck) -- convCheck
-
---solver["LU"] = LinearSolver()
---solver["LU"]:set_preconditioner(SuperLU())
---solver["LU"]:set_convergence_check(convCheck)
---solver["LU"]:set_convergence_check(cmpConvCheck)
-solver["LU"] = LinearSolver()
-solver["LU"]:set_preconditioner(LU())
-solver["LU"]:set_convergence_check(convCheck)
-
-local lsolver = solver[ARGS.solverID]
-print("using "..ARGS.solverID)
-
-
-local uzawaWeight = 1.0
--- coarse solver
-local gmgCoarse = GeometricMultiGrid(approxSpace)
-gmgCoarse:set_discretization(domainDiscT)
-gmgCoarse:set_base_level(ARGS.MGBaseLevel)  -- was 1 in Cincy
-gmgCoarse:set_base_solver(superLU)  -- was baseLU in Cincy
-gmgCoarse:set_presmoother(preSmoother) --(jac)
-gmgCoarse:set_postsmoother(postSmoother)
-gmgCoarse:set_cycle_type(ARGS.MGCycleType) -- 1:V, 2:W -- "F"
-gmgCoarse:set_num_presmooth(ARGS.MGNumSmooth)
-gmgCoarse:set_num_postsmooth(ARGS.MGNumSmooth)
-gmgCoarse:set_rap(true)  -- mandatory, if set_stationary
-gmgCoarse:set_transfer(transfer)
-
-solverCoarse = {}
-solverCoarse["GMG"] = LinearSolver()
-solverCoarse["GMG"]:set_preconditioner(gmgCoarse) -- gmg, dbgIter
---solverCoarse["GMG"]:set_convergence_check(convCheckCoarse)
-solverCoarse["GMG"]:set_convergence_check(cmpConvCheckCoarse)
-
-solverCoarse["GMGKrylov"] = BiCGStab()
-solverCoarse["GMGKrylov"]:set_preconditioner(gmgCoarse) -- gmg,
---solverCoarse["GMGKrylov"]:set_convergence_check(convCheckCoarse)
-solverCoarse["GMGKrylov"]:set_convergence_check(cmpConvCheckCoarse)
-
-solverCoarse["LU"] = LinearSolver()
-solverCoarse["LU"]:set_preconditioner(LU())
-solverCoarse["LU"]:set_convergence_check(convCheck)
-
-local lsolverCoarse = nil
-if ARGS.solverIDCoarse == nil then
-    lsolverCoarse = solverCoarse[ARGS.solverID]
+local nlsolver = newtonSolver
+local nlsolver_coarse = nil
+print("RARGS.coarse " , RARGS.coarse)
+if RARGS.coarse == 0 then
+    print("##### using fine")
+    nlsolver_coarse = nlsolver
 else
-    lsolverCoarse = solverCoarse[ARGS.solverIDCoarse]
+    print("##### using coarse")
+    nlsolver_coarse = newtonSolverCoarse
 end
+
+
+print("using "..ARGS.solverID .. " - "..  ARGS.solverIDCoarse)
 
 
 local vtk = VTKOutput()
@@ -441,30 +272,8 @@ braid_desc = {
     verbose = true,
 }
 
-local newtonSolver = NewtonSolver()
-newtonSolver:set_linear_solver(lsolver)
-newtonSolver:set_convergence_check(newtonCheck)
 
 
-local newtonSolverCoarse = NewtonSolver()
-newtonSolverCoarse:set_linear_solver(lsolverCoarse)
-newtonSolverCoarse:set_convergence_check(newtonCheckCoarse)
-
-
-local newtonSolverSec = NewtonSolver()
-newtonSolverSec:set_linear_solver(lsolver)
-newtonSolverSec:set_convergence_check(newtonCheck)
-
-local nlsolver = newtonSolver
-local nlsolver_coarse
-print("RARGS.coarse " , RARGS.coarse)
-if RARGS.coarse == 0 then
-    print("##### using fine")
-    nlsolver_coarse = nlsolver
-else
-    print("##### using coarse")
-    nlsolver_coarse = newtonSolverCoarse
-end
 
 print(lsolver:config_string())
 
@@ -728,8 +537,8 @@ else
 
         xbraid_util.CreateNLLevelFC(app,
                     domainDiscT,
-                    nlsolver,
-                    nlsolver_coarse,
+                    lsolver,
+                    lsolverCoarse,
                     IARGS.theta,
                     IARGS.num_step,
                     1e-8)

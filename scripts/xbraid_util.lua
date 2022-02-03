@@ -3,6 +3,7 @@
 --- Created by parnet.
 --- DateTime: 28.05.21 15:44
 ---
+---ug_load_script("tools/factory.lua")
 xbraid_util = xbraid_util or {}
 
 p_mgrit_cycle_type = "V" or "F" -- todo
@@ -218,7 +219,8 @@ function xbraid_util.CreateNLLevel(app, domain, nlsolver, theta, num_steps, thre
     app:set_integrator(15, xbraid_util.createNLTheta(domain, nlsolver, theta, num_steps, threshold))
 end
 
-function xbraid_util.CreateNLLevelFC(app, domain, nlsolver_fine,nlsolver_coarse, theta, num_steps, threshold)
+
+function xbraid_util.CreateNLLevelFC_old(app, domain, nlsolver_fine,nlsolver_coarse, theta, num_steps, threshold)
     app:set_default_integrator(xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
 
     print("Set Integrator Methods - Leveldependend")
@@ -243,6 +245,47 @@ function xbraid_util.CreateNLLevelFC(app, domain, nlsolver_fine,nlsolver_coarse,
     app:set_integrator(9, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
 
     app:set_integrator(10, xbraid_util.createNLTheta(domain, nlsolver_coarse, theta, num_steps, threshold))
+end
+
+function xbraid_util.CreateNLLevelFC(app, domain, lsolver_fine,lsolver_coarse, theta, num_steps, threshold)
+    print("herexe")
+    nlsolver_fine = factory.create_nlsolver(lsolver_fine)
+    nlsolver_coarse_a = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_b = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_c = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_d = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_e = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_f = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_g = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_h = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_i = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_j = factory.create_nlsolver_coarse(lsolver_coarse)
+    nlsolver_coarse_k = factory.create_nlsolver_coarse(lsolver_coarse)
+    print("asdads")
+    app:set_default_integrator(xbraid_util.createNLTheta(domain, nlsolver_coarse_a, theta, num_steps, threshold))
+
+    print("Set Integrator Methods - Leveldependend")
+    app:set_integrator(0, xbraid_util.createNLTheta(domain, nlsolver_fine, theta, num_steps, threshold))
+
+    app:set_integrator(1, xbraid_util.createNLTheta(domain, nlsolver_coarse_b, theta, num_steps, threshold))
+
+    app:set_integrator(2, xbraid_util.createNLTheta(domain, nlsolver_coarse_c, theta, num_steps, threshold))
+
+    app:set_integrator(3, xbraid_util.createNLTheta(domain, nlsolver_coarse_d, theta, num_steps, threshold))
+
+    app:set_integrator(4, xbraid_util.createNLTheta(domain, nlsolver_coarse_e, theta, num_steps, threshold))
+
+    app:set_integrator(5, xbraid_util.createNLTheta(domain, nlsolver_coarse_f, theta, num_steps, threshold))
+
+    app:set_integrator(6, xbraid_util.createNLTheta(domain, nlsolver_coarse_g, theta, num_steps, threshold))
+
+    app:set_integrator(7, xbraid_util.createNLTheta(domain, nlsolver_coarse_h, theta, num_steps, threshold))
+
+    app:set_integrator(8, xbraid_util.createNLTheta(domain, nlsolver_coarse_i, theta, num_steps, threshold))
+
+    app:set_integrator(9, xbraid_util.createNLTheta(domain, nlsolver_coarse_j, theta, num_steps, threshold))
+
+    app:set_integrator(10, xbraid_util.createNLTheta(domain, nlsolver_coarse_k, theta, num_steps, threshold))
 end
 
 function xbraid_util.CreateFSLevel(app, domain, lsolver, theta, num_steps, threshold)
