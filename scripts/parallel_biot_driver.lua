@@ -89,7 +89,7 @@ local dtFrac = util.GetParamNumber("--dtFrac", 1e-5, "time step size")
 local dtMinFrac = util.GetParamNumber("--dtminFrac", 1e-2, "minimal admissible time step size")
 local dtRed = util.GetParamNumber("--dtred", 0.5, "time step size reduction factor on divergence")
 local numRefs = util.GetParamNumber("--num-refs", 3, "total number of refinements (incl. pre-Refinements)")
-local paraStab = util.GetParamNumber("--stab", 4, "total number of refinements (incl. pre-Refinements)")
+local paraStab = util.GetParamNumber("--stab", 0, "total number of refinements (incl. pre-Refinements)")  -- todo changed  from 4 to 0
 local endTimeFactor = util.GetParamNumber("--endtime", 0, "total number of refinements (incl. pre-Refinements)")
 
 local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinements (incl. pre-Refinements)")
@@ -514,8 +514,14 @@ else
     for i = 1, #braid_desc.cfactor do
         scr_cmp:set_c_factor(i - 1, braid_desc.cfactor[i])
     end
+
+
+
     --bscriptor = scr_cmp --NoScriptor()
     bscriptor = NoScriptor()
+
+
+
     if braid_desc.driver == "IntegratorFactory" then
         app = xbraid_util.CreateIntegratorFactory(braid_desc,
                 domainDiscT,
