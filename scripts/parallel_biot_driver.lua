@@ -34,16 +34,16 @@ print("ENVIRONMENT: " .. environment)
 
 XARGS = {
     p_method = util.GetParam("--mode", "MGRIT", ""), -- SEQ CHK R NL
-    p_redirect = util.GetParamNumber("--redirect", 1, "") == 1, -- 0,1
+    p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
+    p_redirect = util.GetParamNumber("--redirect", 0, "") == 1, -- 0,1
 
     p_num_time = util.GetParamNumber("--num-time", 32, " maximum number of levels"),
-    p_max_iter = util.GetParamNumber("--maxiter", 100, " maximum number of iterations"),
-    p_max_level = util.GetParamNumber("--maxlevel", 15, " maximum number of levels"),
+    p_max_iter = util.GetParamNumber("--maxiter", 50, " maximum number of iterations"),
+    p_max_level = util.GetParamNumber("--maxlevel", 20, " maximum number of levels"),
     p_c_factor = util.GetParam("--cfactor", "2_2_2", "relaxation type FCF, FFCF or F-relaxation"),
     p_cycle = util.GetParam("--cycle", "V", " cycletype V-Cycle or F-Cycle "),
     p_relaxation = util.GetParam("--relax", "FCF", "relaxation type FCF, FFCF or F-relaxation"),
 
-    p_driver = util.GetParam("--driver", "Integrator", "relaxation type FCF, FFCF or F-relaxation"),
     p_boolskipdown = util.GetParamNumber("--boolskipdown", 1, "relaxation type FCF, FFCF or F-relaxation") == 1,
     p_useResidual = util.GetParamNumber("--use-residual", 0, " 0 xbraid residual, 1 use residual") == 1,
 
@@ -52,7 +52,7 @@ XARGS = {
     p_store_values = util.GetParamNumber("--store-level", 0, ""),
 
     p_tol_abs_braid = util.GetParamNumber("--tol-abs-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
-    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 2, " 0 use residual, 1 xbraid residual"), -- 1: abs norm, 2: euclidian norm, 3: max norm
+    p_tol_norm_braid = util.GetParamNumber("--tol-norm-braid", 3, " 0 use residual, 1 xbraid residual"), -- 1: abs norm, 2: euclidian norm, 3: max norm
     p_tol_rel_braid = util.GetParamNumber("--tol-rel-braid", 1e-50, " 0 use residual, 1 xbraid residual"),
 }
 PARGS = {
@@ -72,7 +72,7 @@ RARGS = {
 
     rich_refine = util.GetParamNumber("--rich-refine", 2, "relaxation type FCF, FFCF or F-relaxation"),
     rich_bound = util.GetParamNumber("--rich-bound", 1.1, "relaxation type FCF, FFCF or F-relaxation"),
-    coarse = util.GetParamNumber("--coarse", 0, "relaxation type FCF, FFCF or F-relaxation"),
+    coarse = util.GetParamNumber("--coarse", 3, "relaxation type FCF, FFCF or F-relaxation"),
 }
 print(XARGS.p_redirect)
 if XARGS.p_redirect then
@@ -92,7 +92,7 @@ local numRefs = util.GetParamNumber("--num-refs", 2, "total number of refinement
 
 
 local paraStab = util.GetParamNumber("--stab", 0, "total number of refinements (incl. pre-Refinements)")  -- todo changed  from 4 to 0
-local endTimeFactor = util.GetParamNumber("--endtime", 0, "total number of refinements (incl. pre-Refinements)")
+local endTimeFactor = util.GetParamNumber("--endtime", 2, "total number of refinements (incl. pre-Refinements)")
 
 local paraPOrder = util.GetParamNumber("--porder", 1, "total number of refinements (incl. pre-Refinements)")
 local paraUOrder = util.GetParamNumber("--uorder", 2, "total number of refinements (incl. pre-Refinements)")
