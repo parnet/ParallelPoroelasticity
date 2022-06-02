@@ -519,8 +519,8 @@ else
 
 
 
-    bscriptor = scr_cmp --NoScriptor()
-    --bscriptor = NoScriptor()
+    --bscriptor = scr_cmp --NoScriptor()
+    bscriptor = NoScriptor()
 
 
 
