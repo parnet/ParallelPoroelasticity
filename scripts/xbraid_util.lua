@@ -374,6 +374,10 @@ function xbraid_util.set_relax_type(braid, p_mgrit_relax_type)
         braid:set_n_relax(-1, 1)
         braid:set_n_relax(0, 0)
         print("MGRIT uses FCF-Relaxation on coarse level and F-Relaxation on fines level ")
+    elseif p_mgrit_relax_type == "FCFF" then
+        braid:set_n_relax(-1, 0)
+        braid:set_n_relax(0, 1)
+        print("MGRIT uses FCF-Relaxation on coarse level and F-Relaxation on fines level ")
     else
         print("Invalid MGRIT-relax parameter - using FCF relaxation")
     end
